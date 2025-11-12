@@ -12,7 +12,7 @@ class Warga extends Model
     protected $table = 'warga';
     protected $primaryKey = 'warga_id';
     public $incrementing = true;   // kalau PK auto increment
-    protected $keyType = 'int';    // tipe data PK integer
+    protected $keyType = 'int';    // tipe data PK integerrr
 
     protected $fillable = [
         'no_ktp',
