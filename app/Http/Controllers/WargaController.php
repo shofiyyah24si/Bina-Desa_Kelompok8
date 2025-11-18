@@ -63,7 +63,7 @@ class WargaController extends Controller
      */
     public function edit(string $id)
     {
-        $data['Warga'] = Warga::findOrFail($id);
+        $data['warga'] = Warga::findOrFail($id);
         return view('admin.warga.edit', $data);
     }
 

@@ -41,7 +41,7 @@
                 <!-- ===================== KEJADIAN BENCANA ===================== -->
                 <li class="sidebar-item {{ Request::is('kejadian*') ? 'active' : '' }}">
                     <a class="sidebar-link {{ Request::is('kejadian*') ? 'active-link' : '' }}"
-                       href="#" aria-expanded="false">
+                       href="{{ route('kejadian.index') }}" aria-expanded="false">
                         <div class="d-flex align-items-center gap-3">
                             <span class="d-flex">
                                 <i class="ti ti-aperture"></i>

@@ -1,9 +1,10 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\WargaController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\WargaController;
+use App\Http\Controllers\KejadianBencanaController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -34,3 +35,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
   Route::resource('incidents', Admin\IncidentController::class);
 });
+
+
+Route::resource('kejadian', KejadianBencanaController::class);
