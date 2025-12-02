@@ -70,12 +70,22 @@
                           placeholder="Catatan tambahan mengenai kejadian"></textarea>
             </div>
 
-            <!-- FOTO UPLOAD -->
+            <!-- FOTO UPLOAD MULTIPLE -->
             <div class="mb-3">
-                <label class="form-label">Foto Kejadian</label>
-                <input type="file" name="foto" class="form-control" accept="image/*">
-                <small class="text-muted">Unggah 1 foto sebagai bukti kejadian (format: JPG/PNG, max 2MB).</small>
+                <label class="form-label">Foto Kejadian (Multiple Files)</label>
+                <input type="file" 
+                       name="foto[]" 
+                       id="foto" 
+                       multiple
+                       class="form-control @error('foto.*') is-invalid @enderror"
+                       accept="image/*">
+                <small class="form-text text-muted">Pilih beberapa file gambar sekaligus sebagai bukti kejadian. Format: JPG, PNG. Maksimal 2MB per file.</small>
+                @error('foto.*') 
+                    <div class="invalid-feedback">{{ $message }}</div> 
+                @enderror
             </div>
+
+            <div id="foto-preview" class="mb-3 row g-2"></div>
 
             <div class="text-end">
                 <a href="{{ route('kejadian.index') }}" class="btn btn-light">Batal</a>
@@ -85,4 +95,32 @@
         </form>
     </div>
 </div>
+
+<script>
+    // Preview multiple images
+    document.getElementById('foto').addEventListener('change', function(e) {
+        const preview = document.getElementById('foto-preview');
+        preview.innerHTML = '';
+        
+        if (this.files.length > 0) {
+            preview.innerHTML = '<label class="form-label mb-2">Preview Foto:</label>';
+        }
+        
+        Array.from(this.files).forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const col = document.createElement('div');
+                col.className = 'col-md-3 col-sm-4 col-6';
+                col.innerHTML = `
+                    <img src="${e.target.result}" 
+                         alt="Preview ${index + 1}" 
+                         class="img-thumbnail w-100" 
+                         style="height: 120px; object-fit: cover;">
+                `;
+                preview.appendChild(col);
+            };
+            reader.readAsDataURL(file);
+        });
+    });
+</script>
 @endsection

@@ -74,20 +74,56 @@
             </div>
 
             {{-- FOTO LAMA --}}
-            @if ($kejadian->foto)
+            @php
+                $fotos = is_array($kejadian->foto) ? $kejadian->foto : (!empty($kejadian->foto) ? [$kejadian->foto] : []);
+            @endphp
+            @if(!empty($fotos))
                 <div class="mb-3">
-                    <label class="form-label d-block">Foto Sebelumnya</label>
-                    <img src="{{ asset('uploads/kejadian/' . $kejadian->foto) }}"
-                         width="200" class="rounded">
+                    <label class="form-label d-block mb-2">Foto Saat Ini:</label>
+                    <div class="row g-2">
+                        @foreach($fotos as $index => $fotoFile)
+                            <div class="col-md-3 col-sm-4 col-6">
+                                <div class="position-relative">
+                                    <img src="{{ asset('uploads/kejadian/' . $fotoFile) }}"
+                                         alt="Foto {{ $index + 1 }}" 
+                                         class="img-thumbnail w-100"
+                                         style="height: 120px; object-fit: cover;">
+                                    <div class="form-check position-absolute top-0 end-0 m-1">
+                                        <input class="form-check-input" 
+                                               type="checkbox" 
+                                               name="delete_foto[]" 
+                                               value="{{ $fotoFile }}" 
+                                               id="delete_foto_{{ $index }}">
+                                        <label class="form-check-label text-white bg-danger rounded-circle p-1" 
+                                               for="delete_foto_{{ $index }}" 
+                                               style="font-size: 10px;">
+                                            <i class="fa fa-times"></i>
+                                        </label>
+                                    </div>
+                                </div>
+                                <small class="d-block text-center mt-1">Hapus</small>
+                            </div>
+                        @endforeach
+                    </div>
                 </div>
             @endif
 
             {{-- FOTO BARU --}}
             <div class="mb-3">
-                <label class="form-label">Ganti Foto</label>
-                <input type="file" name="foto" class="form-control" accept="image/*">
-                <small class="text-muted">Kosongkan jika tidak ingin mengganti foto.</small>
+                <label class="form-label">Tambah Foto (Multiple Files)</label>
+                <input type="file" 
+                       name="foto[]" 
+                       id="foto" 
+                       multiple
+                       class="form-control @error('foto.*') is-invalid @enderror"
+                       accept="image/*">
+                <small class="form-text text-muted">Pilih beberapa file gambar sekaligus. Format: JPG, PNG. Maksimal 2MB per file.</small>
+                @error('foto.*') 
+                    <div class="invalid-feedback">{{ $message }}</div> 
+                @enderror
             </div>
+
+            <div id="foto-preview" class="mb-3 row g-2"></div>
 
             <div class="text-end">
                 <a href="{{ route('kejadian.index') }}" class="btn btn-light">Batal</a>
@@ -98,4 +134,32 @@
 
     </div>
 </div>
+
+<script>
+    // Preview multiple images
+    document.getElementById('foto').addEventListener('change', function(e) {
+        const preview = document.getElementById('foto-preview');
+        preview.innerHTML = '';
+        
+        if (this.files.length > 0) {
+            preview.innerHTML = '<label class="form-label mb-2">Preview Foto Baru:</label>';
+        }
+        
+        Array.from(this.files).forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const col = document.createElement('div');
+                col.className = 'col-md-3 col-sm-4 col-6';
+                col.innerHTML = `
+                    <img src="${e.target.result}" 
+                         alt="Preview ${index + 1}" 
+                         class="img-thumbnail w-100" 
+                         style="height: 120px; object-fit: cover;">
+                `;
+                preview.appendChild(col);
+            };
+            reader.readAsDataURL(file);
+        });
+    });
+</script>
 @endsection

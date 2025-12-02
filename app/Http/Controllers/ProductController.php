@@ -26,14 +26,17 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'price' => 'required|integer',
             'description' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
-            
+            'images.*' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
 
-        if ($request->hasFile('image')) {
-    $data['image'] = $request->file('image')->store('uploads', 'public');
-}
-
+        // Handle multiple file uploads
+        if ($request->hasFile('images')) {
+            $images = [];
+            foreach ($request->file('images') as $file) {
+                $images[] = $file->store('uploads/products', 'public');
+            }
+            $data['images'] = $images;
+        }
 
         Product::create($data);
 
@@ -56,17 +59,33 @@ class ProductController extends Controller
             'name' => 'required|string|max:255',
             'price' => 'required|integer',
             'description' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
-            
+            'images.*' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+            'delete_images' => 'nullable|array',
         ]);
 
-        if ($request->hasFile('image')) {
-    if ($product->image) {
-        Storage::disk('public')->delete($product->image);
-    }
-    $data['image'] = $request->file('image')->store('uploads', 'public');
-}
+        // Handle deletion of existing images
+        if ($request->has('delete_images')) {
+            $currentImages = $product->images ?? [];
+            foreach ($request->delete_images as $imageToDelete) {
+                if (in_array($imageToDelete, $currentImages)) {
+                    Storage::disk('public')->delete($imageToDelete);
+                    $currentImages = array_diff($currentImages, [$imageToDelete]);
+                }
+            }
+            $data['images'] = array_values($currentImages);
+        } else {
+            // Keep existing images if no deletion requested
+            $data['images'] = $product->images ?? [];
+        }
 
+        // Handle new file uploads
+        if ($request->hasFile('images')) {
+            $newImages = $data['images'] ?? [];
+            foreach ($request->file('images') as $file) {
+                $newImages[] = $file->store('uploads/products', 'public');
+            }
+            $data['images'] = $newImages;
+        }
 
         $product->update($data);
 

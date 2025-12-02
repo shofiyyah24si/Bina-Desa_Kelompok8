@@ -27,11 +27,25 @@
                 @forelse ($kejadian as $row)
                     <tr>
                         <td>
-                            @if ($row->foto)
-                                <img src="{{ asset('uploads/kejadian/' . $row->foto) }}"
-                                     class="rounded"
-                                     width="70" height="70"
-                                     style="object-fit: cover;">
+                            @php
+                                $fotos = is_array($row->foto) ? $row->foto : (!empty($row->foto) ? [$row->foto] : []);
+                            @endphp
+                            @if(!empty($fotos))
+                                <div class="d-flex gap-1">
+                                    @foreach(array_slice($fotos, 0, 3) as $fotoFile)
+                                        <img src="{{ asset('uploads/kejadian/' . $fotoFile) }}"
+                                             class="rounded"
+                                             width="70" 
+                                             height="70"
+                                             style="object-fit: cover;">
+                                    @endforeach
+                                    @if(count($fotos) > 3)
+                                        <div class="bg-secondary d-flex align-items-center justify-content-center text-white rounded" 
+                                             style="width: 70px; height: 70px;">
+                                            +{{ count($fotos) - 3 }}
+                                        </div>
+                                    @endif
+                                </div>
                             @else
                                 <span class="text-muted">-</span>
                             @endif
@@ -52,6 +66,8 @@
                         </td>
 
                         <td>
+                            <a href="{{ route('kejadian.show', $row->kejadian_id) }}"
+                               class="btn btn-sm btn-info">Detail</a>
                             <a href="{{ route('kejadian.edit', $row->kejadian_id) }}"
                                class="btn btn-sm btn-warning">Edit</a>
 

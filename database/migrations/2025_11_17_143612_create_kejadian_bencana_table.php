@@ -14,23 +14,23 @@ return new class extends Migration
         Schema::create('kejadian_bencana', function (Blueprint $table) {
             $table->increments('kejadian_id');          // Primary Key
 
-            $table->string('jenis_bencana', 100);        // Jenis bencana (banjir, gempa, dll)
-            $table->date('tanggal');                     // Tanggal kejadian
-            $table->text('lokasi_text')->nullable();     // Lokasi detail
-            $table->string('rt', 5)->nullable();         // RT
-            $table->string('rw', 5)->nullable();         // RW
-            $table->string('dampak', 150)->nullable();   // Dampak (kerusakan, korban, dll)
+            $table->string('jenis_bencana', 100);        
+            $table->date('tanggal');                     
+            $table->text('lokasi_text')->nullable();     
+            $table->string('rt', 5)->nullable();         
+            $table->string('rw', 5)->nullable();         
+            $table->string('dampak', 150)->nullable();  
 
             $table->enum('status_kejadian', [
                 'Dilaporkan',
                 'Diproses',
                 'Verifikasi',
                 'Selesai'
-            ])->default('Dilaporkan');                   // Status bencana
+            ])->default('Dilaporkan');                  
 
-            $table->text('keterangan')->nullable();      // Keterangan tambahan
+            $table->text('keterangan')->nullable();      
 
-            $table->timestamps();                        // created_at & updated_at
+            $table->timestamps();                        
         });
     }
 

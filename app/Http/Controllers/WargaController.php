@@ -4,15 +4,58 @@ namespace App\Http\Controllers;
 
 use App\Models\Warga;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class WargaController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display a listing of the resource with pagination, filter, and search.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $data['dataWarga'] = Warga::all();
+        $query = Warga::query();
+
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                    ->orWhere('no_ktp', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('telp', 'like', "%{$search}%");
+            });
+        }
+
+        foreach (['jenis_kelamin', 'agama', 'pekerjaan'] as $filterField) {
+            if ($value = $request->input($filterField)) {
+                $query->where($filterField, $value);
+            }
+        }
+
+        $perPageOptions = [10, 25, 50];
+        $perPage = $request->integer('per_page', 10);
+        if (! in_array($perPage, $perPageOptions)) {
+            $perPage = 10;
+        }
+
+        $data['dataWarga'] = $query->orderBy('nama')
+            ->paginate($perPage)
+            ->appends($request->query());
+
+        $data['filters'] = $request->only([
+            'search',
+            'jenis_kelamin',
+            'agama',
+            'pekerjaan',
+            'per_page',
+        ]);
+
+        $data['filterOptions'] = [
+            'jenis_kelamin' => Warga::select('jenis_kelamin')->distinct()->whereNotNull('jenis_kelamin')->pluck('jenis_kelamin'),
+            'agama' => Warga::select('agama')->distinct()->whereNotNull('agama')->pluck('agama'),
+            'pekerjaan' => Warga::select('pekerjaan')->distinct()->whereNotNull('pekerjaan')->pluck('pekerjaan'),
+        ];
+
+        $data['perPageOptions'] = $perPageOptions;
+
         return view('admin.warga.index', $data);
     }
 
@@ -38,6 +81,7 @@ class WargaController extends Controller
             'pekerjaan'     => 'required|string|max:100',
             'telp'          => 'nullable|string|max:20',
             'email'         => 'nullable|email|unique:warga,email',
+            'foto_profil'   => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ], [
             'no_ktp.required' => 'Nomor KTP wajib diisi.',
             'no_ktp.unique'   => 'Nomor KTP sudah terdaftar.',
@@ -52,6 +96,11 @@ class WargaController extends Controller
         $data['pekerjaan']     = $request->pekerjaan;
         $data['telp']          = $request->telp;
         $data['email']         = $request->email;
+
+        // Handle foto profil upload
+        if ($request->hasFile('foto_profil')) {
+            $data['foto_profil'] = $request->file('foto_profil')->store('uploads/warga', 'public');
+        }
 
         Warga::create($data);
 
@@ -83,6 +132,7 @@ class WargaController extends Controller
             'pekerjaan'     => 'required|string|max:100',
             'telp'          => 'nullable|string|max:20',
             'email'         => 'nullable|email|unique:warga,email,' . $warga->warga_id . ',warga_id',
+            'foto_profil'   => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ], [
             'no_ktp.unique' => 'Nomor KTP sudah terdaftar.',
             'email.unique'  => 'Email sudah digunakan.',
@@ -95,6 +145,15 @@ class WargaController extends Controller
         $warga->pekerjaan     = $request->pekerjaan;
         $warga->telp          = $request->telp;
         $warga->email         = $request->email;
+
+        // Handle foto profil upload
+        if ($request->hasFile('foto_profil')) {
+            // Delete old foto if exists
+            if ($warga->foto_profil) {
+                Storage::disk('public')->delete($warga->foto_profil);
+            }
+            $warga->foto_profil = $request->file('foto_profil')->store('uploads/warga', 'public');
+        }
 
         $warga->save();
 

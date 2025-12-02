@@ -29,7 +29,7 @@ class KejadianBencanaController extends Controller
             'dampak'         => 'nullable|string|max:150',
             'status_kejadian'=> 'required|in:Dilaporkan,Verifikasi,Selesai',
             'keterangan'     => 'nullable|string',
-            'foto'           => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'foto.*'         => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         // Ambil data kecuali file
@@ -40,17 +40,27 @@ class KejadianBencanaController extends Controller
             mkdir(public_path('uploads/kejadian'), 0777, true);
         }
 
-        // Upload foto jika ada
+        // Handle multiple file uploads
         if ($request->hasFile('foto')) {
-            $filename = time() . '_' . $request->foto->getClientOriginalName();
-            $request->foto->move(public_path('uploads/kejadian'), $filename);
-            $data['foto'] = $filename;
+            $fotoArray = [];
+            foreach ($request->file('foto') as $file) {
+                $filename = time() . '_' . uniqid() . '_' . $file->getClientOriginalName();
+                $file->move(public_path('uploads/kejadian'), $filename);
+                $fotoArray[] = $filename;
+            }
+            $data['foto'] = $fotoArray;
         }
 
         KejadianBencana::create($data);
 
         return redirect()->route('kejadian.index')
             ->with('success', 'Kejadian bencana berhasil ditambahkan!');
+    }
+
+    public function show($id)
+    {
+        $data['kejadian'] = KejadianBencana::findOrFail($id);
+        return view('admin.kejadian.show', $data);
     }
 
     public function edit($id)
@@ -72,30 +82,51 @@ class KejadianBencanaController extends Controller
             'dampak'         => 'nullable|string|max:150',
             'status_kejadian'=> 'required|in:Dilaporkan,Verifikasi,Selesai',
             'keterangan'     => 'nullable|string',
-            'foto'           => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'foto.*'         => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'delete_foto'    => 'nullable|array',
         ]);
 
-        $data = $request->except('foto');
+        $data = $request->except('foto', 'delete_foto');
 
         // Buat folder jika belum ada
         if (!file_exists(public_path('uploads/kejadian'))) {
             mkdir(public_path('uploads/kejadian'), 0777, true);
         }
 
-        // Jika ada foto baru
-        if ($request->hasFile('foto')) {
-
-            // Hapus foto lama jika ada
-            if ($kejadian->foto && file_exists(public_path('uploads/kejadian/' . $kejadian->foto))) {
-                unlink(public_path('uploads/kejadian/' . $kejadian->foto));
+        // Handle deletion of existing foto
+        $currentFoto = $kejadian->foto ?? [];
+        // Convert string to array if needed (for old data)
+        if (is_string($currentFoto) && !empty($currentFoto)) {
+            $currentFoto = [$currentFoto];
+        }
+        if (!is_array($currentFoto)) {
+            $currentFoto = [];
+        }
+        
+        if ($request->has('delete_foto')) {
+            foreach ($request->delete_foto as $fotoToDelete) {
+                if (in_array($fotoToDelete, $currentFoto)) {
+                    // Delete file from storage
+                    if (file_exists(public_path('uploads/kejadian/' . $fotoToDelete))) {
+                        unlink(public_path('uploads/kejadian/' . $fotoToDelete));
+                    }
+                    // Remove from array
+                    $currentFoto = array_diff($currentFoto, [$fotoToDelete]);
+                }
             }
-
-            // Upload foto baru
-            $filename = time() . '_' . $request->foto->getClientOriginalName();
-            $request->foto->move(public_path('uploads/kejadian'), $filename);
-            $data['foto'] = $filename;
+            $currentFoto = array_values($currentFoto);
         }
 
+        // Handle new file uploads
+        if ($request->hasFile('foto')) {
+            foreach ($request->file('foto') as $file) {
+                $filename = time() . '_' . uniqid() . '_' . $file->getClientOriginalName();
+                $file->move(public_path('uploads/kejadian'), $filename);
+                $currentFoto[] = $filename;
+            }
+        }
+
+        $data['foto'] = $currentFoto;
         $kejadian->update($data);
 
         return redirect()->route('kejadian.index')
@@ -106,8 +137,15 @@ class KejadianBencanaController extends Controller
     {
         $kejadian = KejadianBencana::findOrFail($id);
 
-        // Hapus foto lama
-        if ($kejadian->foto && file_exists(public_path('uploads/kejadian/' . $kejadian->foto))) {
+        // Hapus semua foto
+        if ($kejadian->foto && is_array($kejadian->foto)) {
+            foreach ($kejadian->foto as $fotoFile) {
+                if (file_exists(public_path('uploads/kejadian/' . $fotoFile))) {
+                    unlink(public_path('uploads/kejadian/' . $fotoFile));
+                }
+            }
+        } elseif ($kejadian->foto && file_exists(public_path('uploads/kejadian/' . $kejadian->foto))) {
+            // Fallback for old single foto format
             unlink(public_path('uploads/kejadian/' . $kejadian->foto));
         }
 

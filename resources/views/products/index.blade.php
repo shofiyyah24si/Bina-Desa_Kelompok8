@@ -30,7 +30,22 @@
                 @forelse($products as $item)
                     <tr>
                         <td>{{ $item->id }}</td>
-                        <td>@if($item->image)<img src="{{ asset('storage/' . $item->image) }}" alt="" width="60">@endif</td>
+                        <td>
+                            @if($item->images && !empty($item->images))
+                                <div class="d-flex gap-1">
+                                    @foreach(array_slice($item->images, 0, 3) as $image)
+                                        <img src="{{ asset('storage/' . $image) }}" alt="" width="60" height="60" style="object-fit: cover;">
+                                    @endforeach
+                                    @if(count($item->images) > 3)
+                                        <div class="bg-secondary d-flex align-items-center justify-content-center text-white" style="width: 60px; height: 60px;">
+                                            +{{ count($item->images) - 3 }}
+                                        </div>
+                                    @endif
+                                </div>
+                            @else
+                                <span class="text-muted">-</span>
+                            @endif
+                        </td>
                         <td>{{ $item->name }}</td>
                         <td>{{ $item->price }}</td>
                         <td>

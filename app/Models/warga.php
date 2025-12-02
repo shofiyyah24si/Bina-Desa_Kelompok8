@@ -16,5 +16,6 @@ class Warga extends Model
         'pekerjaan',
         'telp',
         'email',
+        'foto_profil',
     ];
 }

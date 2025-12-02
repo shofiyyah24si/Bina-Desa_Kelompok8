@@ -20,4 +20,8 @@ class KejadianBencana extends Model
         'keterangan',
         'foto',
     ];
+
+    protected $casts = [
+        'foto' => 'array',
+    ];
 }

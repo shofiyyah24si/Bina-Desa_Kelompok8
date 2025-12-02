@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\WargaController;
 use App\Http\Controllers\KejadianBencanaController;
+use App\Http\Controllers\UserController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -26,14 +27,14 @@ Route::get('dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
 
 Route::resource('warga',WargaController::class);
+Route::resource('users', UserController::class)->only(['index', 'edit', 'update']);
 
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::prefix('admin')->name('admin.')->group(function () {
-  Route::get('/', fn() => redirect()->route('admin.dashboard'));
-  Route::get('/dashboard', [AdminDashboardController::class,'index'])->name('dashboard');
-
-  Route::resource('incidents', Admin\IncidentController::class);
+  // Route::get('/', fn() => redirect()->route('admin.dashboard'));
+  // Route::get('/dashboard', [AdminDashboardController::class,'index'])->name('dashboard');
+  // Route::resource('incidents', Admin\IncidentController::class);
 });
 
 
