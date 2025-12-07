@@ -7,35 +7,42 @@ use App\Http\Controllers\WargaController;
 use App\Http\Controllers\KejadianBencanaController;
 use App\Http\Controllers\UserController;
 
+
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+
 Route::get('/', function () {
-    return view('welcome');
-}); 
-
-Route::get('/login', function () {
-    return view('login');
-})->name('login');
-
-Route::get('/ketua', function () {
-    return view('ketua');
-});
-
-Route::get('/angggota', function () {
-    return view('anggota');
-});
-
-Route::get('dashboard', [DashboardController::class, 'index'])
-        ->name('dashboard');
-
-Route::resource('warga',WargaController::class);
-Route::resource('users', UserController::class)->only(['index', 'edit', 'update']);
-
-Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
-
-Route::prefix('admin')->name('admin.')->group(function () {
-  // Route::get('/', fn() => redirect()->route('admin.dashboard'));
-  // Route::get('/dashboard', [AdminDashboardController::class,'index'])->name('dashboard');
-  // Route::resource('incidents', Admin\IncidentController::class);
+    return redirect()->route('login');
 });
 
 
-Route::resource('kejadian', KejadianBencanaController::class);
+Route::middleware('check.login')->group(function () {
+
+    // Dashboard bisa diakses semua role (Admin, Warga, Mitra)
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    /// ===================== ADMIN =====================
+    Route::middleware('checkrole:Admin')->group(function () {
+        Route::resource('warga', WargaController::class);
+        Route::resource('users', UserController::class);
+
+        // Admin boleh CRUD kejadian
+        Route::resource('kejadian', KejadianBencanaController::class)
+            ->except(['index', 'show']);
+    });
+
+    // ===================== WARGA =====================
+    Route::middleware('checkrole:Warga')->group(function () {
+        Route::resource('kejadian', KejadianBencanaController::class)
+            ->only(['index', 'show']);
+    });
+
+    // ===================== MITRA =====================
+    Route::middleware('checkrole:Mitra')->group(function () {
+        Route::resource('kejadian', KejadianBencanaController::class)
+            ->only(['index', 'show']);
+    });
+    
+    // Logout untuk semua role
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+});

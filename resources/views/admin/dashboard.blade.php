@@ -52,94 +52,103 @@
                         <i class="ti ti-x fs-6"></i>
                     </div>
                 </div>
-        <!-- Sidebar navigation-->
-        <nav class="sidebar-nav scroll-sidebar" data-simplebar="">
-            <ul id="sidebarnav">
+                <!-- Sidebar navigation-->
+                <nav class="sidebar-nav scroll-sidebar" data-simplebar="">
+                    <ul id="sidebarnav">
 
-                <!-- ===================== HOME ===================== -->
-                <li class="nav-small-cap">
-                    <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
-                    <span class="hide-menu">Home</span>
-                </li>
+                        <!-- ===================== HOME ===================== -->
+                        <li class="nav-small-cap">
+                            <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
+                            <span class="hide-menu">Home</span>
+                        </li>
 
-                <li class="sidebar-item {{ Request::is('dashboard') ? 'active' : '' }}">
-                    <a class="sidebar-link {{ Request::is('dashboard') ? 'active-link' : '' }}"
-                       href="{{ route('dashboard') }}" aria-expanded="false">
-                        <i class="ti ti-atom"></i>
-                        <span class="hide-menu">Dashboard</span>
-                    </a>
-                </li>
+                        <li class="sidebar-item {{ Request::is('dashboard') ? 'active' : '' }}">
+                            <a class="sidebar-link {{ Request::is('dashboard') ? 'active-link' : '' }}"
+                                href="{{ route('dashboard') }}" aria-expanded="false">
+                                <i class="ti ti-atom"></i>
+                                <span class="hide-menu">Dashboard</span>
+                            </a>
+                        </li>
 
-                <!-- ===================== DATA WARGA ===================== -->
-                <li class="sidebar-item {{ Request::is('warga*') ? 'active' : '' }}">
-                    <a class="sidebar-link {{ Request::is('warga*') ? 'active-link' : '' }}"
-                       href="{{ route('warga.index') }}" aria-expanded="false">
-                        <i class="ti ti-users"></i>
-                        <span class="hide-menu">Data Warga</span>
-                    </a>
-                </li>
+                        <!-- ===================== DATA WARGA ===================== -->
+                        <li class="sidebar-item {{ Request::is('warga*') ? 'active' : '' }}">
+                            <a class="sidebar-link {{ Request::is('warga*') ? 'active-link' : '' }}"
+                                href="{{ route('warga.index') }}" aria-expanded="false">
+                                <i class="ti ti-users"></i>
+                                <span class="hide-menu">Data Warga</span>
+                            </a>
+                        </li>
 
-                <!-- ===================== KEJADIAN BENCANA ===================== -->
-                <li class="sidebar-item {{ Request::is('kejadian*') ? 'active' : '' }}">
-                    <a class="sidebar-link {{ Request::is('kejadian*') ? 'active-link' : '' }}"
-                       href="#" aria-expanded="false">
-                        <div class="d-flex align-items-center gap-3">
-                            <span class="d-flex">
-                                <i class="ti ti-aperture"></i>
-                            </span>
-                            <span class="hide-menu">Kejadian Bencana</span>
-                        </div>
-                    </a>
-                </li>
+                        <!-- ===================== DATA USER ===================== -->
+                        <li class="sidebar-item {{ Request::is('users*') ? 'active' : '' }}">
+                            <a class="sidebar-link {{ Request::is('users*') ? 'active-link' : '' }}"
+                                href="{{ route('users.index') }}" aria-expanded="false">
+                                <i class="ti ti-user-circle"></i>
+                                <span class="hide-menu">Data User</span>
+                            </a>
+                        </li>
 
-                <!-- ===================== POSKO BENCANA ===================== -->
-                <li class="sidebar-item">
-                    <a class="sidebar-link justify-content-between has-arrow" href="javascript:void(0)"
-                       aria-expanded="false">
-                        <div class="d-flex align-items-center gap-3">
-                            <span class="d-flex">
-                                <i class="ti ti-layout-grid"></i>
-                            </span>
-                            <span class="hide-menu">Posko Bencana</span>
-                        </div>
-                    </a>
-                    <ul aria-expanded="false" class="collapse first-level">
-                        <li class="sidebar-item">
-                            <a class="sidebar-link justify-content-between" href="#">
+                        <!-- ===================== KEJADIAN BENCANA ===================== -->
+                        <li class="sidebar-item {{ Request::is('kejadian*') ? 'active' : '' }}">
+                            <a class="sidebar-link {{ Request::is('kejadian*') ? 'active-link' : '' }}" href="#"
+                                aria-expanded="false">
                                 <div class="d-flex align-items-center gap-3">
-                                    <div class="round-16 d-flex align-items-center justify-content-center">
-                                        <i class="ti ti-circle"></i>
-                                    </div>
-                                    <span class="hide-menu">Homepage</span>
+                                    <span class="d-flex">
+                                        <i class="ti ti-aperture"></i>
+                                    </span>
+                                    <span class="hide-menu">Kejadian Bencana</span>
                                 </div>
                             </a>
                         </li>
-                        <!-- tambahkan submenu lain di sini -->
+
+                        <!-- ===================== POSKO BENCANA ===================== -->
+                        <li class="sidebar-item">
+                            <a class="sidebar-link justify-content-between has-arrow" href="javascript:void(0)"
+                                aria-expanded="false">
+                                <div class="d-flex align-items-center gap-3">
+                                    <span class="d-flex">
+                                        <i class="ti ti-layout-grid"></i>
+                                    </span>
+                                    <span class="hide-menu">Posko Bencana</span>
+                                </div>
+                            </a>
+                            <ul aria-expanded="false" class="collapse first-level">
+                                <li class="sidebar-item">
+                                    <a class="sidebar-link justify-content-between" href="#">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="round-16 d-flex align-items-center justify-content-center">
+                                                <i class="ti ti-circle"></i>
+                                            </div>
+                                            <span class="hide-menu">Homepage</span>
+                                        </div>
+                                    </a>
+                                </li>
+                                <!-- tambahkan submenu lain di sini -->
+                            </ul>
+                        </li>
+
+                        <!-- ===================== PEMBATAS ===================== -->
+                        <li><span class="sidebar-divider lg"></span></li>
+
+                        <!-- ===================== STATISTIK ===================== -->
+                        <li class="nav-small-cap">
+                            <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
+                            <span class="hide-menu">Statistik</span>
+                        </li>
+
+                        <!-- (Menu-menu lain tetap seperti aslinya, tidak dihapus) -->
+                        <!-- ... -->
+
+                        <li class="sidebar-item">
+                            <a class="sidebar-link" href="{{ route('login') }}" aria-expanded="false">
+                                <i class="ti ti-login"></i>
+                                <span class="hide-menu">Login</span>
+                            </a>
+                        </li>
+
                     </ul>
-                </li>
-
-                <!-- ===================== PEMBATAS ===================== -->
-                <li><span class="sidebar-divider lg"></span></li>
-
-                <!-- ===================== STATISTIK ===================== -->
-                <li class="nav-small-cap">
-                    <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
-                    <span class="hide-menu">Statistik</span>
-                </li>
-
-                <!-- (Menu-menu lain tetap seperti aslinya, tidak dihapus) -->
-                <!-- ... -->
-
-                <li class="sidebar-item">
-                    <a class="sidebar-link" href="{{ route('login') }}" aria-expanded="false">
-                        <i class="ti ti-login"></i>
-                        <span class="hide-menu">Login</span>
-                    </a>
-                </li>
-
-            </ul>
-        </nav>
-        <!-- End Sidebar navigation -->
+                </nav>
+                <!-- End Sidebar navigation -->
             </div>
             <!-- End Sidebar scroll-->
         </aside>
@@ -175,12 +184,32 @@
                     </ul>
                     <div class="navbar-collapse justify-content-end px-0" id="navbarNav">
                         <ul class="navbar-nav flex-row ms-auto align-items-center justify-content-end">
-
+                            @auth
+                                <li class="nav-item me-3">
+                                    <span class="text-muted small">
+                                        Hai, {{ Auth::user()->role }} ({{ Auth::user()->name }})
+                                        @if (Auth::user()->last_login)
+                                            — Last Login: {{ Auth::user()->last_login->format('d-m-Y H:i:s') }}
+                                        @endif
+                                    </span>
+                                </li>
+                            @endauth
                             <li class="nav-item dropdown">
                                 <a class="nav-link " href="javascript:void(0)" id="drop2"
                                     data-bs-toggle="dropdown" aria-expanded="false">
-                                    <img src="{{ asset('assets-admin/images/profile/sofia.png') }}" alt=""
-                                        width="35" height="35" class="rounded-circle">
+                                    @auth
+                                        @if (Auth::user()->foto_profil)
+                                            <img src="{{ asset('storage/' . Auth::user()->foto_profil) }}" alt=""
+                                                width="35" height="35" class="rounded-circle"
+                                                style="object-fit: cover;">
+                                        @else
+                                            <img src="{{ asset('assets-admin/images/profile/sofia.png') }}"
+                                                alt="" width="35" height="35" class="rounded-circle">
+                                        @endif
+                                    @else
+                                        <img src="{{ asset('assets-admin/images/profile/sofia.png') }}" alt=""
+                                            width="35" height="35" class="rounded-circle">
+                                    @endauth
                                 </a>
                                 <div class="dropdown-menu dropdown-menu-end dropdown-menu-animate-up"
                                     aria-labelledby="drop2">
@@ -200,8 +229,11 @@
                                             <i class="ti ti-list-check fs-6"></i>
                                             <p class="mb-0 fs-3">My Task</p>
                                         </a>
-                                        <a href="{{ route('login') }}"
-                                            class="btn btn-outline-primary mx-3 mt-2 d-block">Logout</a>
+                                        <form action="{{ route('logout') }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <button type="submit"
+                                                class="btn btn-outline-primary mx-3 mt-2 d-block w-auto">Logout</button>
+                                        </form>
                                     </div>
                                 </div>
                             </li>

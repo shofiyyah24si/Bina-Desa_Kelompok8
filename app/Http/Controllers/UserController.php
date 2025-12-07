@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -19,7 +20,8 @@ class UserController extends Controller
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('role', 'like', "%{$search}%");
             });
         }
 
@@ -32,6 +34,40 @@ class UserController extends Controller
         $users = $query->orderBy('name')->paginate($perPage)->appends($request->query());
 
         return view('admin.users.index', compact('users', 'perPageOptions'));
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        return view('admin.users.create');
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:6',
+            'role' => 'required|in:Admin,Warga,Mitra',
+            'foto_profil' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+        ]);
+
+        // Hash password
+        $data['password'] = bcrypt($data['password']);
+
+        // Handle foto profil upload
+        if ($request->hasFile('foto_profil')) {
+            $data['foto_profil'] = $request->file('foto_profil')->store('uploads/users', 'public');
+        }
+
+        User::create($data);
+
+        return redirect()->route('users.index')->with('success', 'Data user berhasil ditambahkan!');
     }
 
     /**
@@ -50,8 +86,17 @@ class UserController extends Controller
         $data = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
+            'password' => 'nullable|string|min:6',
+            'role' => 'required|in:Admin,Warga,Mitra',
             'foto_profil' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
+
+        // Hash password jika diisi
+        if (!empty($data['password'])) {
+            $data['password'] = bcrypt($data['password']);
+        } else {
+            unset($data['password']);
+        }
 
         // Handle foto profil upload
         if ($request->hasFile('foto_profil')) {
@@ -69,6 +114,27 @@ class UserController extends Controller
 
         return redirect()->route('users.index')->with('success', 'Data user berhasil diperbarui!');
     }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(User $user)
+    {
+        // Jangan hapus user yang sedang login
+        if (auth()->id() === $user->id) {
+            return redirect()->route('users.index')->with('error', 'Tidak dapat menghapus user yang sedang login!');
+        }
+
+        // Hapus foto profil jika ada
+        if ($user->foto_profil) {
+            Storage::disk('public')->delete($user->foto_profil);
+        }
+
+        $user->delete();
+
+        return redirect()->route('users.index')->with('success', 'Data user berhasil dihapus!');
+    }
 }
+
 
 

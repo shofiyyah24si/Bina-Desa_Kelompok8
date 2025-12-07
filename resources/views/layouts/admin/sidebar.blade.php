@@ -38,6 +38,15 @@
                     </a>
                 </li>
 
+                <!-- ===================== DATA USER ===================== -->
+                <li class="sidebar-item {{ Request::is('users*') ? 'active' : '' }}">
+                    <a class="sidebar-link {{ Request::is('users*') ? 'active-link' : '' }}"
+                       href="{{ route('users.index') }}" aria-expanded="false">
+                        <i class="ti ti-user-circle"></i>
+                        <span class="hide-menu">Data User</span>
+                    </a>
+                </li>
+
                 <!-- ===================== KEJADIAN BENCANA ===================== -->
                 <li class="sidebar-item {{ Request::is('kejadian*') ? 'active' : '' }}">
                     <a class="sidebar-link {{ Request::is('kejadian*') ? 'active-link' : '' }}"
@@ -89,12 +98,6 @@
                 <!-- (Menu-menu lain tetap seperti aslinya, tidak dihapus) -->
                 <!-- ... -->
 
-                <li class="sidebar-item">
-                    <a class="sidebar-link" href="{{ route('login') }}" aria-expanded="false">
-                        <i class="ti ti-login"></i>
-                        <span class="hide-menu">Login</span>
-                    </a>
-                </li>
 
             </ul>
         </nav>

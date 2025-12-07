@@ -1,14 +1,13 @@
 @extends('layouts.admin.app')
-@section('title', 'Edit User')
+@section('title', 'Tambah User')
 
 @section('content')
     <div class="card shadow-sm border-0">
         <div class="card-body">
-            <h4 class="card-title mb-4">Edit Data User</h4>
+            <h4 class="card-title mb-4">Tambah Data User</h4>
 
-            <form action="{{ route('users.update', $user) }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('users.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
-                @method('PUT')
 
                 <div class="row">
                     <div class="col-md-8">
@@ -18,7 +17,7 @@
                                    class="form-control @error('name') is-invalid @enderror" 
                                    id="name" 
                                    name="name" 
-                                   value="{{ old('name', $user->name) }}" 
+                                   value="{{ old('name') }}" 
                                    required>
                             @error('name')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -31,7 +30,7 @@
                                    class="form-control @error('email') is-invalid @enderror" 
                                    id="email" 
                                    name="email" 
-                                   value="{{ old('email', $user->email) }}" 
+                                   value="{{ old('email') }}" 
                                    required>
                             @error('email')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -39,12 +38,13 @@
                         </div>
 
                         <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
+                            <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
                             <input type="password" 
                                    class="form-control @error('password') is-invalid @enderror" 
                                    id="password" 
-                                   name="password">
-                            <small class="form-text text-muted">Kosongkan jika tidak ingin mengubah password. Minimal 6 karakter</small>
+                                   name="password" 
+                                   required>
+                            <small class="form-text text-muted">Minimal 6 karakter</small>
                             @error('password')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -54,9 +54,9 @@
                             <label for="role" class="form-label">Role</label>
                             <select id="role" name="role" class="form-select @error('role') is-invalid @enderror" required>
                                 <option value="">-- Pilih --</option>
-                                <option value="Admin" @selected(old('role', $user->role) == 'Admin')>Admin</option>
-                                <option value="Warga" @selected(old('role', $user->role) == 'Warga')>Warga</option>
-                                <option value="Mitra" @selected(old('role', $user->role) == 'Mitra')>Mitra</option>
+                                <option value="Admin" @selected(old('role') == 'Admin')>Admin</option>
+                                <option value="Warga" @selected(old('role') == 'Warga')>Pelanggan</option>
+                                <option value="Mitra" @selected(old('role') == 'Mitra')>Mitra</option>
                             </select>
                             @error('role')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -80,22 +80,14 @@
                     <div class="col-md-4">
                         <div class="card">
                             <div class="card-body text-center">
-                                <h6 class="card-title mb-3">Foto Profil Saat Ini</h6>
-                                @if($user->foto_profil)
-                                    <img src="{{ asset('storage/' . $user->foto_profil) }}" 
-                                         alt="Foto Profil" 
-                                         id="preview-foto" 
-                                         class="img-fluid rounded-circle mb-3" 
-                                         style="width: 150px; height: 150px; object-fit: cover;">
-                                @else
-                                    <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center mb-3" 
-                                         id="preview-foto-placeholder"
-                                         style="width: 150px; height: 150px;">
-                                        <i class="ti ti-user text-white" style="font-size: 60px;"></i>
-                                    </div>
-                                    <img src="" alt="Preview" id="preview-foto" class="img-fluid rounded-circle mb-3 d-none" 
-                                         style="width: 150px; height: 150px; object-fit: cover;">
-                                @endif
+                                <h6 class="card-title mb-3">Preview Foto Profil</h6>
+                                <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center mb-3" 
+                                     id="preview-foto-placeholder"
+                                     style="width: 150px; height: 150px;">
+                                    <i class="ti ti-user text-white" style="font-size: 60px;"></i>
+                                </div>
+                                <img src="" alt="Preview" id="preview-foto" class="img-fluid rounded-circle mb-3 d-none" 
+                                     style="width: 150px; height: 150px; object-fit: cover;">
                                 <p class="text-muted small mb-0">Preview akan muncul setelah memilih file</p>
                             </div>
                         </div>
@@ -103,7 +95,7 @@
                 </div>
 
                 <div class="d-flex gap-2 mt-4">
-                    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
                     <a href="{{ route('users.index') }}" class="btn btn-secondary">Batal</a>
                 </div>
             </form>
@@ -134,6 +126,4 @@
         });
     </script>
 @endsection
-
-
 
