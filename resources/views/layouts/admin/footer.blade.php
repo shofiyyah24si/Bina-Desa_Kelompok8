@@ -1,8 +1,3 @@
-<div class="py-6 px-6 text-center">
-    <p class="mb-0 fs-4">
-        Design and Developed by
-        <a href="#" class="text-primary text-decoration-underline">shopie.com</a>
-        Distributed by
-        <a href="https://themewagon.com" target="_blank">ThemeWagon</a>
-    </p>
+<div class="text-center py-3 mt-4 text-muted small">
+    © {{ date('Y') }} — Bina Desa Kelompok 8  
 </div>

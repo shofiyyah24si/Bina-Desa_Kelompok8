@@ -1,68 +1,48 @@
-<nav class="navbar navbar-expand-lg navbar-light">
+<nav class="navbar navbar-expand-lg border-bottom"
+     style="backdrop-filter: blur(14px); background: rgba(255,255,255,0.7);">
+
     <ul class="navbar-nav">
-        <li class="nav-item d-block d-xl-none">
-            <a class="nav-link sidebartoggler" id="headerCollapse" href="javascript:void(0)">
-                <i class="ti ti-menu-2"></i>
+        <li class="nav-item d-xl-none">
+            <a class="nav-link sidebartoggler">
+                <i class="ti ti-menu-2 fs-4"></i>
             </a>
         </li>
+
         <li class="nav-item dropdown">
-            <a class="nav-link" href="#" id="drop1" data-bs-toggle="dropdown">
-                <i class="ti ti-bell"></i>
-                <div class="notification bg-primary rounded-circle"></div>
+            <a class="nav-link" data-bs-toggle="dropdown">
+                <i class="ti ti-bell fs-4"></i>
+                <span class="notification bg-primary rounded-circle"></span>
             </a>
             <div class="dropdown-menu dropdown-menu-animate-up">
-                <div class="message-body">
-                    <a href="#" class="dropdown-item">Item 1</a>
-                    <a href="#" class="dropdown-item">Item 2</a>
-                </div>
+                <a class="dropdown-item">Tidak ada notifikasi</a>
             </div>
         </li>
     </ul>
 
-    <div class="navbar-collapse justify-content-end">
-        <ul class="navbar-nav flex-row ms-auto align-items-center justify-content-end">
-            @auth
-                <li class="nav-item me-3">
-                    <span class="text-muted small">
-                        Hai, {{ Auth::user()->role }} ({{ Auth::user()->name }})
-                        @if (Auth::user()->last_login)
-                            — Last Login: {{ Auth::user()->last_login->format('d-m-Y H:i:s') }}
-                        @endif
+    <div class="ms-auto d-flex align-items-center">
 
-                    </span>
-                </li>
-            @endauth
-            <li class="nav-item dropdown">
-                <a class="nav-link" href="#" id="drop2" data-bs-toggle="dropdown">
-                    @auth
-                        @if (Auth::user()->foto_profil)
-                            <img src="{{ asset('storage/' . Auth::user()->foto_profil) }}" width="35" height="35"
-                                class="rounded-circle" style="object-fit: cover;">
-                        @else
-                            <img src="{{ asset('assets-admin/images/profile/sofia.png') }}" width="35" height="35"
-                                class="rounded-circle">
-                        @endif
-                    @else
-                        <img src="{{ asset('assets-admin/images/profile/sofia.png') }}" width="35" height="35"
-                            class="rounded-circle">
-                    @endauth
-                </a>
-                <div class="dropdown-menu dropdown-menu-end dropdown-menu-animate-up">
-                    <div class="message-body">
-                        <a href="#" class="dropdown-item d-flex align-items-center gap-2"><i
-                                class="ti ti-user fs-6"></i>My Profile</a>
-                        <a href="#" class="dropdown-item d-flex align-items-center gap-2"><i
-                                class="ti ti-mail fs-6"></i>My Account</a>
-                        <a href="#" class="dropdown-item d-flex align-items-center gap-2"><i
-                                class="ti ti-list-check fs-6"></i>My Task</a>
-                        <form action="{{ route('logout') }}" method="POST" class="d-inline">
-                            @csrf
-                            <button type="submit"
-                                class="btn btn-outline-primary mx-3 mt-2 d-block w-auto">Logout</button>
-                        </form>
-                    </div>
-                </div>
-            </li>
-        </ul>
+        <span class="me-3 text-muted small">
+            Hai, {{ Auth::user()->name }} — <strong>{{ Auth::user()->role }}</strong>
+        </span>
+
+        <div class="dropdown">
+            <a data-bs-toggle="dropdown">
+                <img src="{{ asset('assets-admin/images/profile/sofia.png') }}"
+                     width="40" height="40" class="rounded-circle" style="object-fit: cover;">
+            </a>
+
+            <div class="dropdown-menu dropdown-menu-end shadow-sm">
+                <a class="dropdown-item d-flex gap-2"><i class="ti ti-user"></i> Profile</a>
+                <a class="dropdown-item d-flex gap-2"><i class="ti ti-settings"></i> Pengaturan</a>
+
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button class="dropdown-item text-danger d-flex gap-2">
+                        <i class="ti ti-logout"></i> Logout
+                    </button>
+                </form>
+            </div>
+        </div>
+
     </div>
 </nav>

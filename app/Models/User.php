@@ -25,6 +25,7 @@ class User extends Authenticatable
         'role',
         'avatar',
         'last_login',
+        'last_login_at',
     ];
 
     /**
@@ -48,6 +49,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'last_login' => 'datetime',
+            'last_login_at' => 'datetime',
         ];
     }
 }

@@ -1,784 +1,998 @@
-<!doctype html>
-<html lang="en">
+@extends('layouts.admin.app')
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Kebencanaan & Tanggap Darurat </title>
-    <link rel="shortcut icon" type="image/png" href="{{ asset('assets-admin/images/logos/favicon.png') }}" />
-    <link rel="stylesheet" href="{{ asset('assets-admin/css/styles.min.css') }}" />
-</head>
+@section('title', 'Dashboard')
 
-<body>
-    <!--  Body Wrapper -->
-    <div class="page-wrapper" id="main-wrapper" data-layout="vertical" data-navbarbg="skin6" data-sidebartype="full"
-        data-sidebar-position="fixed" data-header-position="fixed">
+@section('content')
+<style>
+    /* ================================ */
+    /* 🎨 MODERN DASHBOARD STYLES */
+    /* ================================ */
+    :root {
+        --soft-melon: #F6CFB5;
+        --soft-melon-light: #F9E1D3;
+        --astral-blue: #191B47;
+        --astral-blue-light: #242A61;
+        --soft-bg: #f4f5fb;
+        --shadow-light: 0 4px 12px rgba(0,0,0,0.08);
+        --shadow-medium: 0 8px 24px rgba(0,0,0,0.12);
+        --shadow-heavy: 0 12px 32px rgba(0,0,0,0.15);
+        --border-radius: 16px;
+        --transition: all .3s cubic-bezier(.4,0,.2,1);
+    }
 
-        <!--  App Topstrip -->
-        <div class="app-topstrip bg-dark py-6 px-3 w-100 d-lg-flex align-items-center justify-content-between">
-            <div class="d-flex align-items-center justify-content-center gap-5 mb-2 mb-lg-0">
-                <a class="d-flex justify-content-center" href="#">
-                    <img src="{{ asset('assets-admin/images/logos/logo-wrappixel.svg') }}" alt=""
-                        width="150">
-                </a>
+    /* ================================ */
+    /* HERO WELCOME SECTION */
+    /* ================================ */
+    .hero-section {
+        background: linear-gradient(135deg, var(--soft-melon), var(--soft-melon-light));
+        border-radius: var(--border-radius);
+        padding: 40px;
+        box-shadow: var(--shadow-medium);
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 30px;
+        animation: fadeInUp 0.8s ease-out;
+    }
 
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 200px;
+        height: 200px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+    }
 
-            </div>
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
 
-            <div class="d-lg-flex align-items-center gap-2">
-                <h3 class="text-white mb-2 mb-lg-0 fs-5 text-center">Kebencanaan & Tanggap Darurat</h3>
-                <div class="d-flex align-items-center justify-content-center gap-2">
+    .hero-title {
+        font-size: 32px;
+        font-weight: 800;
+        color: var(--astral-blue);
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
 
-                    <div class="dropdown d-flex">
-                        <a class="btn btn-primary d-flex align-items-center gap-1 " href="javascript:void(0)"
-                            id="drop4" data-bs-toggle="dropdown" aria-expanded="false">
-                            Info Terkini
-                            <i class="ti ti-chevron-down fs-5"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
+    .hero-subtitle {
+        font-size: 16px;
+        color: rgba(25,27,71,0.8);
+        margin: 0;
+    }
 
+    .hero-profile {
+        position: absolute;
+        right: 40px;
+        bottom: 20px;
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        object-fit: cover;
+        object-position: center;
+        border: 4px solid white;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.18);
+        animation: fadeInProfile 0.8s ease-out;
+        z-index: 3;
+    }
+
+    /* ================================ */
+    /* MOBILE RESPONSIVENESS */
+    /* ================================ */
+    @media (max-width: 768px) {
+        .hero-section {
+            padding: 25px 20px;
+            margin-bottom: 20px;
+        }
+        
+        .hero-profile {
+            position: static;
+            width: 100px;
+            height: 100px;
+            margin: 15px auto 0;
+            display: block;
+        }
+        
+        .hero-title {
+            font-size: 22px;
+            text-align: center;
+        }
+        
+        .hero-subtitle {
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-card {
+            padding: 20px 15px;
+        }
+        
+        .stat-value {
+            font-size: 28px;
+        }
+        
+        .stat-icon {
+            font-size: 24px;
+            top: 15px;
+            right: 15px;
+        }
+        
+        .content-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .section-header {
+            padding: 20px;
+        }
+        
+        .section-content {
+            padding: 20px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+        }
+        
+        .photo-gallery {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        
+        .photo-item {
+            height: 120px;
+        }
+        
+        .photo-placeholder {
+            height: 120px;
+            font-size: 36px;
+        }
+        
+        .system-info-grid {
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        .info-card-header {
+            padding: 15px;
+        }
+        
+        .info-card-body {
+            padding: 15px;
+        }
+        
+        .info-item {
+            padding: 10px 0;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
+        }
+        
+        .info-label {
+            font-size: 13px;
+        }
+        
+        .info-value {
+            font-size: 13px;
+        }
+        
+        .table-responsive {
+            font-size: 14px;
+        }
+        
+        .table thead th {
+            padding: 12px 8px;
+            font-size: 11px;
+        }
+        
+        .table tbody td {
+            padding: 12px 8px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .hero-section {
+            padding: 20px 15px;
+        }
+        
+        .hero-title {
+            font-size: 20px;
+        }
+        
+        .stats-grid {
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+        
+        .stat-card {
+            padding: 18px 15px;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+        }
+        
+        .photo-gallery {
+            grid-template-columns: 1fr;
+        }
+        
+        .system-info-grid {
+            gap: 12px;
+        }
+        
+        .info-card-header {
+            padding: 12px;
+        }
+        
+        .info-card-body {
+            padding: 12px;
+        }
+        
+        .info-card-title {
+            font-size: 14px;
+        }
+        
+        .table thead th {
+            padding: 10px 6px;
+            font-size: 10px;
+        }
+        
+        .table tbody td {
+            padding: 10px 6px;
+            font-size: 13px;
+        }
+        
+        .status-badge {
+            font-size: 10px;
+            padding: 4px 8px;
+        }
+    }
+
+    /* ================================ */
+    /* STATISTICS CARDS */
+    /* ================================ */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 40px;
+    }
+
+    .stat-card {
+        background: linear-gradient(135deg, var(--astral-blue), var(--astral-blue-light));
+        color: white;
+        padding: 30px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-light);
+        position: relative;
+        overflow: hidden;
+        transition: var(--transition);
+        animation: slideInUp 0.6s ease-out;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100px;
+        height: 100px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: var(--shadow-heavy);
+    }
+
+    .stat-icon {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        font-size: 28px;
+        opacity: 0.7;
+        z-index: 2;
+    }
+
+    .stat-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .stat-title {
+        font-size: 14px;
+        opacity: 0.9;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .stat-value {
+        font-size: 36px;
+        font-weight: 900;
+        margin: 0;
+    }
+
+    /* ================================ */
+    /* CONTENT SECTIONS */
+    /* ================================ */
+    .content-grid {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 30px;
+        margin-bottom: 40px;
+    }
+
+    @media (max-width: 992px) {
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .section-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-light);
+        overflow: hidden;
+        transition: var(--transition);
+    }
+
+    .section-card:hover {
+        box-shadow: var(--shadow-medium);
+        transform: translateY(-2px);
+    }
+
+    .section-header {
+        padding: 25px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .section-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--astral-blue);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .section-title::before {
+        content: '';
+        width: 4px;
+        height: 20px;
+        background: var(--astral-blue);
+        border-radius: 2px;
+    }
+
+    .section-content {
+        padding: 25px;
+    }
+
+    /* ================================ */
+    /* CALENDAR SECTION */
+    /* ================================ */
+    .calendar-container {
+        background: white;
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        box-shadow: var(--shadow-light);
+    }
+
+    .calendar-iframe {
+        width: 100%;
+        height: 300px;
+        border: none;
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+    }
+
+    /* ================================ */
+    /* PHOTO GALLERY */
+    /* ================================ */
+    .photo-gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 16px;
+    }
+
+    .photo-item {
+        width: 100%;
+        height: 160px;
+        object-fit: cover;
+        border-radius: 12px;
+        box-shadow: var(--shadow-light);
+        transition: var(--transition);
+        cursor: pointer;
+    }
+
+    .photo-item:hover {
+        transform: scale(1.05);
+        box-shadow: var(--shadow-medium);
+    }
+
+    .photo-placeholder {
+        width: 100%;
+        height: 160px;
+        background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #64748b;
+        font-size: 48px;
+    }
+
+    /* ================================ */
+    /* RECENT INCIDENTS TABLE */
+    /* ================================ */
+    .incidents-table {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-light);
+        overflow: hidden;
+    }
+
+    .table {
+        margin: 0;
+    }
+
+    .table thead {
+        background: linear-gradient(135deg, var(--astral-blue), var(--astral-blue-light));
+        color: white;
+    }
+
+    .table thead th {
+        border: none;
+        padding: 18px 20px;
+        font-weight: 600;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .table tbody td {
+        padding: 16px 20px;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+    }
+
+    .table tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    .status-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .status-verifikasi {
+        background: rgba(245, 158, 11, 0.1);
+        color: #d97706;
+    }
+
+    .status-selesai {
+        background: rgba(34, 197, 94, 0.1);
+        color: #16a34a;
+    }
+
+    .status-dilaporkan {
+        background: rgba(107, 114, 128, 0.1);
+        color: #374151;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #64748b;
+    }
+
+    .empty-state i {
+        font-size: 48px;
+        color: #cbd5e1;
+        margin-bottom: 12px;
+    }
+
+    /* ================================ */
+    /* ANIMATIONS */
+    /* ================================ */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeInProfile {
+        from {
+            opacity: 0;
+            transform: translateX(20px) scale(0.9);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+        }
+    }
+
+    @keyframes slideInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Add staggered animation delays */
+    .stat-card:nth-child(1) { animation-delay: 0.1s; }
+    .stat-card:nth-child(2) { animation-delay: 0.2s; }
+    .stat-card:nth-child(3) { animation-delay: 0.3s; }
+    .stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+    /* ================================ */
+    /* SYSTEM INFO SECTION */
+    /* ================================ */
+    .system-info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-top: 40px;
+    }
+
+    .info-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-light);
+        overflow: hidden;
+        transition: var(--transition);
+        border-left: 4px solid var(--astral-blue);
+    }
+
+    .info-card:hover {
+        box-shadow: var(--shadow-medium);
+        transform: translateY(-2px);
+    }
+
+    .info-card-header {
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        padding: 20px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .info-card-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--astral-blue);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .info-card-body {
+        padding: 20px;
+    }
+
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .info-item:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        font-size: 14px;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .info-value {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--astral-blue);
+    }
+
+    .status-online {
+        color: #16a34a;
+        background: rgba(34, 197, 94, 0.1);
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .status-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #16a34a;
+        display: inline-block;
+        margin-right: 6px;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+
+    .user-activity-card {
+        border-left-color: #10b981;
+    }
+
+    .system-status-card {
+        border-left-color: #3b82f6;
+    }
+
+    .server-info-card {
+        border-left-color: #f59e0b;
+    }
+</style>
+
+<!-- Hero Welcome Section -->
+<div class="hero-section">
+    <div class="hero-content">
+        <h1 class="hero-title">
+            👋 Hai, {{ Auth::user()->name }}!
+        </h1>
+        <p class="hero-subtitle">
+            Selamat datang kembali! Siap mengelola data kebencanaan hari ini?
+        </p>
+    </div>
+    
+    <img src="{{ Auth::user()->foto_profil 
+        ? asset('storage/'.Auth::user()->foto_profil) 
+        : asset('assets-admin/images/profile/sofia.png') }}" 
+        class="hero-profile" 
+        alt="Foto Profil {{ Auth::user()->name }}">
+</div>
+
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <i class="fas fa-users stat-icon"></i>
+        <div class="stat-content">
+            <div class="stat-title">Total Warga</div>
+            <div class="stat-value">{{ number_format($totalWarga) }}</div>
         </div>
-        <!-- Sidebar Start -->
-        <aside class="left-sidebar">
-            <!-- Sidebar scroll-->
-            <div>
-                <div class="brand-logo d-flex align-items-center justify-content-between">
-                    <a href="./index.html" class="text-nowrap logo-img">
-                        <img src="{{ asset('assets-admin/images/logos/logoD.png') }}" alt="" width="150" />
-                    </a>
-                    <div class="close-btn d-xl-none d-block sidebartoggler cursor-pointer" id="sidebarCollapse">
-                        <i class="ti ti-x fs-6"></i>
+    </div>
+
+    <div class="stat-card">
+        <i class="fas fa-user-shield stat-icon"></i>
+        <div class="stat-content">
+            <div class="stat-title">Total User</div>
+            <div class="stat-value">{{ number_format($totalUser) }}</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <i class="fas fa-exclamation-triangle stat-icon"></i>
+        <div class="stat-content">
+            <div class="stat-title">Kejadian Bencana</div>
+            <div class="stat-value">{{ number_format($totalKejadian) }}</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <i class="fas fa-home stat-icon"></i>
+        <div class="stat-content">
+            <div class="stat-title">Posko Aktif</div>
+            <div class="stat-value">{{ number_format($totalPosko) }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Content Grid: Calendar & Photos -->
+<div class="content-grid">
+    <!-- Calendar Section -->
+    <div class="section-card">
+        <div class="section-header">
+            <h2 class="section-title">
+                📅 Kalender
+            </h2>
+        </div>
+        <iframe src="https://calendar.google.com/calendar/embed?height=300&wkst=1&bgcolor=%23ffffff&ctz=Asia%2FJakarta"
+                class="calendar-iframe"
+                title="Kalender Google"></iframe>
+    </div>
+
+    <!-- Photo Gallery Section -->
+    <div class="section-card">
+        <div class="section-header">
+            <h2 class="section-title">
+                📸 Dokumentasi Kejadian Terbaru
+            </h2>
+        </div>
+        <div class="section-content">
+            <div class="photo-gallery">
+                @forelse ($fotoKejadian as $foto)
+                    <img src="{{ asset('uploads/'.$foto->file_url) }}" 
+                         class="photo-item" 
+                         alt="Dokumentasi Kejadian"
+                         loading="lazy">
+                @empty
+                    <div class="photo-placeholder">
+                        <i class="fas fa-camera"></i>
                     </div>
-                </div>
-                <!-- Sidebar navigation-->
-                <nav class="sidebar-nav scroll-sidebar" data-simplebar="">
-                    <ul id="sidebarnav">
-
-                        <!-- ===================== HOME ===================== -->
-                        <li class="nav-small-cap">
-                            <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
-                            <span class="hide-menu">Home</span>
-                        </li>
-
-                        <li class="sidebar-item {{ Request::is('dashboard') ? 'active' : '' }}">
-                            <a class="sidebar-link {{ Request::is('dashboard') ? 'active-link' : '' }}"
-                                href="{{ route('dashboard') }}" aria-expanded="false">
-                                <i class="ti ti-atom"></i>
-                                <span class="hide-menu">Dashboard</span>
-                            </a>
-                        </li>
-
-                        <!-- ===================== DATA WARGA ===================== -->
-                        <li class="sidebar-item {{ Request::is('warga*') ? 'active' : '' }}">
-                            <a class="sidebar-link {{ Request::is('warga*') ? 'active-link' : '' }}"
-                                href="{{ route('warga.index') }}" aria-expanded="false">
-                                <i class="ti ti-users"></i>
-                                <span class="hide-menu">Data Warga</span>
-                            </a>
-                        </li>
-
-                        <!-- ===================== DATA USER ===================== -->
-                        <li class="sidebar-item {{ Request::is('users*') ? 'active' : '' }}">
-                            <a class="sidebar-link {{ Request::is('users*') ? 'active-link' : '' }}"
-                                href="{{ route('users.index') }}" aria-expanded="false">
-                                <i class="ti ti-user-circle"></i>
-                                <span class="hide-menu">Data User</span>
-                            </a>
-                        </li>
-
-                        <!-- ===================== KEJADIAN BENCANA ===================== -->
-                        <li class="sidebar-item {{ Request::is('kejadian*') ? 'active' : '' }}">
-                            <a class="sidebar-link {{ Request::is('kejadian*') ? 'active-link' : '' }}" href="#"
-                                aria-expanded="false">
-                                <div class="d-flex align-items-center gap-3">
-                                    <span class="d-flex">
-                                        <i class="ti ti-aperture"></i>
-                                    </span>
-                                    <span class="hide-menu">Kejadian Bencana</span>
-                                </div>
-                            </a>
-                        </li>
-
-                        <!-- ===================== POSKO BENCANA ===================== -->
-                        <li class="sidebar-item">
-                            <a class="sidebar-link justify-content-between has-arrow" href="javascript:void(0)"
-                                aria-expanded="false">
-                                <div class="d-flex align-items-center gap-3">
-                                    <span class="d-flex">
-                                        <i class="ti ti-layout-grid"></i>
-                                    </span>
-                                    <span class="hide-menu">Posko Bencana</span>
-                                </div>
-                            </a>
-                            <ul aria-expanded="false" class="collapse first-level">
-                                <li class="sidebar-item">
-                                    <a class="sidebar-link justify-content-between" href="#">
-                                        <div class="d-flex align-items-center gap-3">
-                                            <div class="round-16 d-flex align-items-center justify-content-center">
-                                                <i class="ti ti-circle"></i>
-                                            </div>
-                                            <span class="hide-menu">Homepage</span>
-                                        </div>
-                                    </a>
-                                </li>
-                                <!-- tambahkan submenu lain di sini -->
-                            </ul>
-                        </li>
-
-                        <!-- ===================== PEMBATAS ===================== -->
-                        <li><span class="sidebar-divider lg"></span></li>
-
-                        <!-- ===================== STATISTIK ===================== -->
-                        <li class="nav-small-cap">
-                            <iconify-icon icon="solar:menu-dots-linear" class="nav-small-cap-icon fs-4"></iconify-icon>
-                            <span class="hide-menu">Statistik</span>
-                        </li>
-
-                        <!-- (Menu-menu lain tetap seperti aslinya, tidak dihapus) -->
-                        <!-- ... -->
-
-                        <li class="sidebar-item">
-                            <a class="sidebar-link" href="{{ route('login') }}" aria-expanded="false">
-                                <i class="ti ti-login"></i>
-                                <span class="hide-menu">Login</span>
-                            </a>
-                        </li>
-
-                    </ul>
-                </nav>
-                <!-- End Sidebar navigation -->
+                    <div class="col-12 text-center text-muted">
+                        <p>Belum ada dokumentasi kejadian</p>
+                    </div>
+                @endforelse
             </div>
-            <!-- End Sidebar scroll-->
-        </aside>
-        <!--  Sidebar End -->
-        <!--  Main wrapper -->
-        <div class="body-wrapper">
-            <!--  Header Start -->
-            <header class="app-header">
-                <nav class="navbar navbar-expand-lg navbar-light">
-                    <ul class="navbar-nav">
-                        <li class="nav-item d-block d-xl-none">
-                            <a class="nav-link sidebartoggler " id="headerCollapse" href="javascript:void(0)">
-                                <i class="ti ti-menu-2"></i>
-                            </a>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link " href="javascript:void(0)" id="drop1" data-bs-toggle="dropdown"
-                                aria-expanded="false">
-                                <i class="ti ti-bell"></i>
-                                <div class="notification bg-primary rounded-circle"></div>
-                            </a>
-                            <div class="dropdown-menu dropdown-menu-animate-up" aria-labelledby="drop1">
-                                <div class="message-body">
-                                    <a href="javascript:void(0)" class="dropdown-item">
-                                        Item 1
-                                    </a>
-                                    <a href="javascript:void(0)" class="dropdown-item">
-                                        Item 2
-                                    </a>
-                                </div>
-                            </div>
-                        </li>
-                    </ul>
-                    <div class="navbar-collapse justify-content-end px-0" id="navbarNav">
-                        <ul class="navbar-nav flex-row ms-auto align-items-center justify-content-end">
-                            @auth
-                                <li class="nav-item me-3">
-                                    <span class="text-muted small">
-                                        Hai, {{ Auth::user()->role }} ({{ Auth::user()->name }})
-                                        @if (Auth::user()->last_login)
-                                            — Last Login: {{ Auth::user()->last_login->format('d-m-Y H:i:s') }}
-                                        @endif
-                                    </span>
-                                </li>
-                            @endauth
-                            <li class="nav-item dropdown">
-                                <a class="nav-link " href="javascript:void(0)" id="drop2"
-                                    data-bs-toggle="dropdown" aria-expanded="false">
-                                    @auth
-                                        @if (Auth::user()->foto_profil)
-                                            <img src="{{ asset('storage/' . Auth::user()->foto_profil) }}" alt=""
-                                                width="35" height="35" class="rounded-circle"
-                                                style="object-fit: cover;">
-                                        @else
-                                            <img src="{{ asset('assets-admin/images/profile/sofia.png') }}"
-                                                alt="" width="35" height="35" class="rounded-circle">
-                                        @endif
-                                    @else
-                                        <img src="{{ asset('assets-admin/images/profile/sofia.png') }}" alt=""
-                                            width="35" height="35" class="rounded-circle">
-                                    @endauth
-                                </a>
-                                <div class="dropdown-menu dropdown-menu-end dropdown-menu-animate-up"
-                                    aria-labelledby="drop2">
-                                    <div class="message-body">
-                                        <a href="javascript:void(0)"
-                                            class="d-flex align-items-center gap-2 dropdown-item">
-                                            <i class="ti ti-user fs-6"></i>
-                                            <p class="mb-0 fs-3">My Profile</p>
-                                        </a>
-                                        <a href="javascript:void(0)"
-                                            class="d-flex align-items-center gap-2 dropdown-item">
-                                            <i class="ti ti-mail fs-6"></i>
-                                            <p class="mb-0 fs-3">My Account</p>
-                                        </a>
-                                        <a href="javascript:void(0)"
-                                            class="d-flex align-items-center gap-2 dropdown-item">
-                                            <i class="ti ti-list-check fs-6"></i>
-                                            <p class="mb-0 fs-3">My Task</p>
-                                        </a>
-                                        <form action="{{ route('logout') }}" method="POST" class="d-inline">
-                                            @csrf
-                                            <button type="submit"
-                                                class="btn btn-outline-primary mx-3 mt-2 d-block w-auto">Logout</button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-                </nav>
-            </header>
-            <!--  Header End -->
-            <div class="body-wrapper-inner">
-                <div class="container-fluid">
-                    <!--  Row 1 -->
-                    <div class="row">
-                        <div class="col-lg-8">
-                            <div class="card w-100">
-                                <div class="card-body">
-                                    <div class="d-md-flex align-items-center">
-                                        <div>
-                                            <h4 class="card-title">Logistik Bencana</h4>
-                                            <p class="card-subtitle">
-                                                Ample admin Vs Pixel admin
-                                            </p>
-                                        </div>
-                                        <div class="ms-auto">
-                                            <ul class="list-unstyled mb-0">
-                                                <li class="list-inline-item text-primary">
-                                                    <span
-                                                        class="round-8 text-bg-primary rounded-circle me-1 d-inline-block"></span>
-                                                    Ample
-                                                </li>
-                                                <li class="list-inline-item text-info">
-                                                    <span
-                                                        class="round-8 text-bg-info rounded-circle me-1 d-inline-block"></span>
-                                                    Pixel Admin
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                    <div id="sales-overview" class="mt-4 mx-n6"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-4">
-                            <div class="card overflow-hidden">
-                                <div class="card-body pb-0">
-                                    <div class="d-flex align-items-start">
-                                        <div>
-                                            <h4 class="card-title">Emergency Stats</h4>
-                                            <p class="card-subtitle">Average sales</p>
-                                        </div>
-                                        <div class="ms-auto">
-                                            <div class="dropdown">
-                                                <a href="javascript:void(0)" class="text-muted" id="year1-dropdown"
-                                                    data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <i class="ti ti-dots fs-7"></i>
-                                                </a>
-                                                <ul class="dropdown-menu dropdown-menu-end"
-                                                    aria-labelledby="year1-dropdown">
-                                                    <li>
-                                                        <a class="dropdown-item" href="javascript:void(0)">Action</a>
-                                                    </li>
-                                                    <li>
-                                                        <a class="dropdown-item" href="javascript:void(0)">Another
-                                                            action</a>
-                                                    </li>
-                                                    <li>
-                                                        <a class="dropdown-item" href="javascript:void(0)">Something
-                                                            else here</a>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="mt-4 pb-3 d-flex align-items-center">
-                                        <span
-                                            class="btn btn-primary rounded-circle round-48 hstack justify-content-center">
-                                            <i class="ti ti-shopping-cart fs-6"></i>
-                                        </span>
-                                        <div class="ms-3">
-                                            <h5 class="mb-0 fw-bolder fs-4">Top Sales</h5>
-                                            <span class="text-muted fs-3">Johnathan Doe</span>
-                                        </div>
-                                        <div class="ms-auto">
-                                            <span class="badge bg-secondary-subtle text-muted">+68%</span>
-                                        </div>
-                                    </div>
-                                    <div class="py-3 d-flex align-items-center">
-                                        <span
-                                            class="btn btn-warning rounded-circle round-48 hstack justify-content-center">
-                                            <i class="ti ti-star fs-6"></i>
-                                        </span>
-                                        <div class="ms-3">
-                                            <h5 class="mb-0 fw-bolder fs-4">Best Seller</h5>
-                                            <span class="text-muted fs-3">MaterialPro Admin</span>
-                                        </div>
-                                        <div class="ms-auto">
-                                            <span class="badge bg-secondary-subtle text-muted">+68%</span>
-                                        </div>
-                                    </div>
-                                    <div class="py-3 d-flex align-items-center">
-                                        <span
-                                            class="btn btn-success rounded-circle round-48 hstack justify-content-center">
-                                            <i class="ti ti-message-dots fs-6"></i>
-                                        </span>
-                                        <div class="ms-3">
-                                            <h5 class="mb-0 fw-bolder fs-4">Most Commented</h5>
-                                            <span class="text-muted fs-3">Ample Admin</span>
-                                        </div>
-                                        <div class="ms-auto">
-                                            <span class="badge bg-secondary-subtle text-muted">+68%</span>
-                                        </div>
-                                    </div>
-                                    <div class="pt-3 mb-7 d-flex align-items-center">
-                                        <span
-                                            class="btn btn-secondary rounded-circle round-48 hstack justify-content-center">
-                                            <i class="ti ti-diamond fs-6"></i>
-                                        </span>
-                                        <div class="ms-3">
-                                            <h5 class="mb-0 fw-bolder fs-4">Top Budgets</h5>
-                                            <span class="text-muted fs-3">Sunil Joshi</span>
-                                        </div>
-                                        <div class="ms-auto">
-                                            <span class="badge bg-secondary-subtle text-muted">+15%</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="d-md-flex align-items-center">
-                                        <div>
-                                            <h4 class="card-title">Products Performance</h4>
-                                            <p class="card-subtitle">
-                                                Ample Admin Vs Pixel Admin
-                                            </p>
-                                        </div>
-                                        <div class="ms-auto mt-3 mt-md-0">
-                                            <select class="form-select theme-select border-0"
-                                                aria-label="Default select example">
-                                                <option value="1">March 2025</option>
-                                                <option value="2">March 2025</option>
-                                                <option value="3">March 2025</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="table-responsive mt-4">
-                                        <table class="table mb-0 text-nowrap varient-table align-middle fs-3">
-                                            <thead>
-                                                <tr>
-                                                    <th scope="col" class="px-0 text-muted">
-                                                        Assigned
-                                                    </th>
-                                                    <th scope="col" class="px-0 text-muted">Name</th>
-                                                    <th scope="col" class="px-0 text-muted">
-                                                        Priority
-                                                    </th>
-                                                    <th scope="col" class="px-0 text-muted text-end">
-                                                        Budget
-                                                    </th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td class="px-0">
-                                                        <div class="d-flex align-items-center">
-                                                            <img src="{{ asset('assets-admin/images/profile/user-3.jpg') }}"
-                                                                class="rounded-circle" width="40"
-                                                                alt="flexy" />
-                                                            <div class="ms-3">
-                                                                <h6 class="mb-0 fw-bolder">Sunil Joshi</h6>
-                                                                <span class="text-muted">Web Designer</span>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td class="px-0">Elite Admin</td>
-                                                    <td class="px-0">
-                                                        <span class="badge bg-info">Low</span>
-                                                    </td>
-                                                    <td class="px-0 text-dark fw-medium text-end">
-                                                        $3.9K
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="px-0">
-                                                        <div class="d-flex align-items-center">
-                                                            <img src="{{ asset('assets-admin/images/profile/user-5.jpg') }}"
-                                                                class="rounded-circle" width="40"
-                                                                alt="flexy" />
-                                                            <div class="ms-3">
-                                                                <h6 class="mb-0 fw-bolder">
-                                                                    Andrew McDownland
-                                                                </h6>
-                                                                <span class="text-muted">Project Manager</span>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td class="px-0">Real Homes WP Theme</td>
-                                                    <td class="px-0">
-                                                        <span class="badge text-bg-primary">Medium</span>
-                                                    </td>
-                                                    <td class="px-0 text-dark fw-medium text-end">
-                                                        $24.5K
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="px-0">
-                                                        <div class="d-flex align-items-center">
-                                                            <img src="{{ asset('assets-admin/images/profile/user-6.jpg') }}"
-                                                                class="rounded-circle" width="40"
-                                                                alt="flexy" />
-                                                            <div class="ms-3">
-                                                                <h6 class="mb-0 fw-bolder">
-                                                                    Christopher Jamil
-                                                                </h6>
-                                                                <span class="text-muted">SEO Manager</span>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td class="px-0">MedicalPro WP Theme</td>
-                                                    <td class="px-0">
-                                                        <span class="badge bg-warning">Hight</span>
-                                                    </td>
-                                                    <td class="px-0 text-dark fw-medium text-end">
-                                                        $12.8K
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="px-0">
-                                                        <div class="d-flex align-items-center">
-                                                            <img src="{{ asset('assets-admin/images/profile/user-7.jpg') }}"
-                                                                class="rounded-circle" width="40"
-                                                                alt="flexy" />
-                                                            <div class="ms-3">
-                                                                <h6 class="mb-0 fw-bolder">Nirav Joshi</h6>
-                                                                <span class="text-muted">Frontend Engineer</span>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td class="px-0">Hosting Press HTML</td>
-                                                    <td class="px-0">
-                                                        <span class="badge bg-danger">Low</span>
-                                                    </td>
-                                                    <td class="px-0 text-dark fw-medium text-end">
-                                                        $2.4K
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td class="px-0">
-                                                        <div class="d-flex align-items-center">
-                                                            <img src="{{ asset('assets-admin/images/profile/user-8.jpg') }}"
-                                                                class="rounded-circle" width="40"
-                                                                alt="flexy" />
-                                                            <div class="ms-3">
-                                                                <h6 class="mb-0 fw-bolder">Micheal Doe</h6>
-                                                                <span class="text-muted">Content Writer</span>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td class="px-0">Helping Hands WP Theme</td>
-                                                    <td class="px-0">
-                                                        <span class="badge bg-success">Low</span>
-                                                    </td>
-                                                    <td class="px-0 text-dark fw-medium text-end">
-                                                        $9.3K
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-6">
-                            <!-- Card -->
-                            <div class="card">
-                                <div class="card-body">
-                                    <h4 class="card-title mb-0">Recent Comments</h4>
-                                </div>
-                                <div class="comment-widgets scrollable mb-2 common-widget" style="height: 465px"
-                                    data-simplebar="">
-                                    <!-- Comment Row -->
-                                    <div class="d-flex flex-row comment-row border-bottom p-3 gap-3">
-                                        <div>
-                                            <span><img src="{{ asset('assets-admin/images/profile/ale.png') }}"
-                                                    class="rounded-circle" alt="user" width="50" /></span>
-                                        </div>
-                                        <div class="comment-text w-100">
-                                            <h6 class="fw-medium">Aliyah</h6>
-                                            <p class="mb-1 fs-2 text-muted">
-                                                Lorem Ipsum is simply dummy text of the printing and
-                                                type etting industry
-                                            </p>
-                                            <div class="comment-footer mt-2">
-                                                <div class="d-flex align-items-center">
-                                                    <span
-                                                        class="
-                              badge
-                              bg-info-subtle
-                              text-info
+        </div>
+    </div>
+</div>
 
-                            ">Pending</span>
-                                                    <span class="action-icons">
-                                                        <a href="javascript:void(0)" class="ps-3"><i
-                                                                class="ti ti-edit fs-5"></i></a>
-                                                        <a href="javascript:void(0)" class="ps-3"><i
-                                                                class="ti ti-check fs-5"></i></a>
-                                                        <a href="javascript:void(0)" class="ps-3"><i
-                                                                class="ti ti-heart fs-5"></i></a>
-                                                    </span>
-                                                </div>
-                                                <span
-                                                    class="
-                            text-muted
-                            ms-auto
-                            fw-normal
-                            fs-2
-                            d-block
-                            mt-2
-                            text-end
-                          ">April
-                                                    14, 2025</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!-- Comment Row -->
-                                    <div class="d-flex flex-row comment-row border-bottom active p-3 gap-3">
-                                        <div>
-                                            <span><img src="{{ asset('assets-admin/images/profile/piw.png') }}"
-                                                    class="rounded-circle" alt="user" width="50" /></span>
-                                        </div>
-                                        <div class="comment-text active w-100">
-                                            <h6 class="fw-medium">Afifah</h6>
-                                            <p class="mb-1 fs-2 text-muted">
-                                                Lorem Ipsum is simply dummy text of the printing and
-                                                type setting industry.
-                                            </p>
-                                            <div class="comment-footer mt-2">
-                                                <div class="d-flex align-items-center">
-                                                    <span
-                                                        class="
-                              badge
-                              bg-success-subtle
-                              text-success
-
-                            ">Approved</span>
-                                                    <span class="action-icons active">
-                                                        <a href="javascript:void(0)" class="ps-3"><i
-                                                                class="ti ti-edit fs-5"></i></a>
-                                                        <a href="javascript:void(0)" class="ps-3"><i
-                                                                class="ti ti-circle-x fs-5"></i></a>
-                                                        <a href="javascript:void(0)" class="ps-3"><i
-                                                                class="ti ti-heart text-danger fs-5"></i></a>
-                                                    </span>
-                                                </div>
-                                                <span
-                                                    class="
-                            text-muted
-                            ms-auto
-                            fw-normal
-                            fs-2
-                            text-end
-                            mt-2
-                            d-block
-                          ">April
-                                                    14, 2025</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!-- Comment Row -->
-                                    <div class="d-flex flex-row comment-row border-bottom p-3 gap-3">
-                                        <div>
-                                            <span><img src="{{ asset('assets-admin/images/profile/phar.png') }}"
-                                                    class="rounded-circle" alt="user" width="50" /></span>
-                                        </div>
-                                        <div class="comment-text w-100">
-                                            <h6 class="fw-medium">Fharadilah</h6>
-                                            <p class="mb-1 fs-2 text-muted">
-                                                Lorem Ipsum is simply dummy text of the printing and
-                                                type setting industry.
-                                            </p>
-                                            <div class="comment-footer mt-2">
-                                                <div class="d-flex align-items-center">
-                                                    <span
-                                                        class="
-                              badge
-                              bg-danger-subtle
-                              text-danger
-
-                            ">Rejected</span>
-                                                    <span class="action-icons">
-                                                        <a href="javascript:void(0)" class="ps-3"><i
-                                                                class="ti ti-edit fs-5"></i></a>
-                                                        <a href="javascript:void(0)" class="ps-3"><i
-                                                                class="ti ti-check fs-5"></i></a>
-                                                        <a href="javascript:void(0)" class="ps-3"><i
-                                                                class="ti ti-heart fs-5"></i></a>
-                                                    </span>
-                                                </div>
-                                                <span
-                                                    class="
-                            text-muted
-                            ms-auto
-                            fw-normal
-                            fs-2
-                            d-block
-                            mt-2
-                            text-end
-                          ">April
-                                                    14, 2025</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <!-- Comment Row -->
-                                    <div class="d-flex flex-row comment-row p-3 gap-3">
-                                        <div>
-                                            <span><img src="{{ asset('assets-admin/images/profile/jaa.png') }}"
-                                                    class="rounded-circle" alt="user" width="50" /></span>
-                                        </div>
-                                        <div class="comment-text w-100">
-                                            <h6 class="fw-medium">Azizah</h6>
-                                            <p class="mb-1 fs-2 text-muted">
-                                                Lorem Ipsum is simply dummy text of the printing and
-                                                type setting industry.
-                                            </p>
-                                            <div class="comment-footer mt-2">
-                                                <div class="d-flex align-items-center">
-                                                    <span
-                                                        class="
-                              badge
-                              bg-info-subtle
-                              text-info
-
-                            ">Pending</span>
-                                                    <span class="action-icons">
-                                                        <a href="javascript:void(0)" class="ps-3"><i
-                                                                class="ti ti-edit fs-5"></i></a>
-                                                        <a href="javascript:void(0)" class="ps-3"><i
-                                                                class="ti ti-check fs-5"></i></a>
-                                                        <a href="javascript:void(0)" class="ps-3"><i
-                                                                class="ti ti-heart fs-5"></i></a>
-                                                    </span>
-                                                </div>
-                                                <span
-                                                    class="
-                            text-muted
-                            ms-auto
-                            fw-normal
-                            fs-2
-                            d-block
-                            text-end
-                            mt-2
-                          ">April
-                                                    14, 2025</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+<!-- Recent Incidents Table -->
+<div class="incidents-table">
+    <div class="section-header">
+        <h2 class="section-title">
+            🚨 Kejadian Terbaru
+        </h2>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Jenis Bencana</th>
+                    <th>Lokasi</th>
+                    <th>Status</th>
+                    <th>Tanggal</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse ($kejadianTerbaru as $kejadian)
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fas fa-exclamation-triangle text-danger"></i>
+                                <strong>{{ $kejadian->jenis_bencana }}</strong>
                             </div>
-                        </div>
-                        <div class="col-lg-6">
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center">
-                                        <h4 class="card-title mb-0">Weather Report</h4>
-                                        <select class="form-select w-auto ms-auto">
-                                            <option selected="">Today</option>
-                                            <option value="1">Weekly</option>
-                                        </select>
-                                    </div>
-                                    <div class="d-flex align-items-center flex-row mt-4">
-                                        <div class="p-2 display-5 text-primary">
-                                            <i class="ti ti-cloud-snow"></i>
-                                            <span>73<sup>°</sup></span>
-                                        </div>
-                                        <div class="p-2">
-                                            <h3 class="mb-0">Saturday</h3>
-                                            <small>Ahmedabad, India</small>
-                                        </div>
-                                    </div>
-                                    <table class="table table-borderless">
-                                        <tbody>
-                                            <tr>
-                                                <td>Wind</td>
-                                                <td class="fw-medium">ESE 17 mph</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Humidity</td>
-                                                <td class="fw-medium">83%</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Pressure</td>
-                                                <td class="fw-medium">28.56 in</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Cloud Cover</td>
-                                                <td class="fw-medium">78%</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Ceiling</td>
-                                                <td class="fw-medium">25760 ft</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                    <hr />
-                                    <ul class="list-unstyled row text-center city-weather-days mb-0">
-                                        <li class="col">
-                                            <i class="ti ti-sun-high fs-4"></i><span>09:30</span>
-                                            <h3 class="mb-0 fs-6 lh-base">70<sup>°</sup></h3>
-                                        </li>
-                                        <li class="col">
-                                            <i class="ti ti-cloud fs-4"></i><span>11:30</span>
-                                            <h3 class="mb-0 fs-6 lh-base">72<sup>°</sup></h3>
-                                        </li>
-                                        <li class="col">
-                                            <i class="ti ti-cloud-rain fs-4"></i><span>13:30</span>
-                                            <h3 class="mb-0 fs-6 lh-base">75<sup>°</sup></h3>
-                                        </li>
-                                        <li class="col">
-                                            <i class="ti ti-cloud-snow fs-4"></i><span>15:30</span>
-                                            <h3 class="mb-0 fs-6 lh-base">76<sup>°</sup></h3>
-                                        </li>
-                                    </ul>
-                                </div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fas fa-map-marker-alt text-primary"></i>
+                                {{ $kejadian->lokasi_text }}
                             </div>
-                        </div>
-                    </div>
-                    <div class="py-6 px-6 text-center">
-                        <p class="mb-0 fs-4">Design and Developed by <a href="#"
-                                class="pe-1 text-primary text-decoration-underline">shopie.com</a> Distributed by <a
-                                href="https://themewagon.com" target="_blank">ThemeWagon</a></p>
-                    </div>
+                        </td>
+                        <td>
+                            <span class="status-badge status-{{ strtolower($kejadian->status_kejadian) }}">
+                                @if($kejadian->status_kejadian == 'Verifikasi')
+                                    🔍 {{ $kejadian->status_kejadian }}
+                                @elseif($kejadian->status_kejadian == 'Selesai')
+                                    ✅ {{ $kejadian->status_kejadian }}
+                                @else
+                                    📝 {{ $kejadian->status_kejadian }}
+                                @endif
+                            </span>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fas fa-calendar text-info"></i>
+                                {{ $kejadian->created_at->format('d M Y') }}
+                            </div>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="4" class="empty-state">
+                            <i class="fas fa-clipboard-list"></i>
+                            <p class="mb-0">Belum ada data kejadian terbaru</p>
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- System Information Section -->
+<div class="system-info-grid">
+    <!-- User Activity Card -->
+    <div class="info-card user-activity-card">
+        <div class="info-card-header">
+            <h3 class="info-card-title">
+                <i class="fas fa-user-clock"></i>
+                Aktivitas Pengguna
+            </h3>
+        </div>
+        <div class="info-card-body">
+            <div class="info-item">
+                <div class="info-label">
+                    <i class="fas fa-sign-in-alt text-success"></i>
+                    Login Terakhir
+                </div>
+                <div class="info-value">
+                    {{ Auth::user()->last_login_at ? Auth::user()->last_login_at->diffForHumans() : 'Belum pernah login' }}
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">
+                    <i class="fas fa-calendar-check text-primary"></i>
+                    Bergabung Sejak
+                </div>
+                <div class="info-value">
+                    {{ Auth::user()->created_at->format('d M Y') }}
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">
+                    <i class="fas fa-shield-alt text-warning"></i>
+                    Role Aktif
+                </div>
+                <div class="info-value">
+                    <span class="status-online">
+                        <span class="status-indicator"></span>
+                        {{ Auth::user()->role ?? 'User' }}
+                    </span>
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">
+                    <i class="fas fa-clock text-info"></i>
+                    Sesi Aktif
+                </div>
+                <div class="info-value">
+                    {{ now()->format('H:i:s') }} WIB
                 </div>
             </div>
         </div>
     </div>
-    <script src="{{ asset('assets-admin/libs/jquery/dist/jquery.min.js') }}"></script>
-    <script src="{{ asset('assets-admin/libs/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ asset('assets-admin/js/sidebarmenu.js') }}"></script>
-    <script src="{{ asset('assets-admin/js/app.min.js') }}"></script>
-    <script src="{{ asset('assets-admin/libs/apexcharts/dist/apexcharts.min.js') }}"></script>
-    <script src="{{ asset('assets-admin/libs/simplebar/dist/simplebar.js') }}"></script>
-    <script src="{{ asset('assets-admin/js/dashboard.js') }}"></script>
-    <!-- solar icons -->
-    <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.8/dist/iconify-icon.min.js"></script>
-</body>
 
-</html>
+    <!-- System Status Card -->
+    <div class="info-card system-status-card">
+        <div class="info-card-header">
+            <h3 class="info-card-title">
+                <i class="fas fa-server"></i>
+                Status Sistem
+            </h3>
+        </div>
+        <div class="info-card-body">
+            <div class="info-item">
+                <div class="info-label">
+                    <i class="fas fa-database text-success"></i>
+                    Database
+                </div>
+                <div class="info-value">
+                    <span class="status-online">
+                        <span class="status-indicator"></span>
+                        Online
+                    </span>
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">
+                    <i class="fas fa-code text-primary"></i>
+                    Laravel Version
+                </div>
+                <div class="info-value">
+                    {{ app()->version() }}
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">
+                    <i class="fas fa-php text-warning"></i>
+                    PHP Version
+                </div>
+                <div class="info-value">
+                    {{ PHP_VERSION }}
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">
+                    <i class="fas fa-memory text-info"></i>
+                    Memory Usage
+                </div>
+                <div class="info-value">
+                    {{ round(memory_get_usage(true) / 1024 / 1024, 2) }} MB
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Server Information Card -->
+    <div class="info-card server-info-card">
+        <div class="info-card-header">
+            <h3 class="info-card-title">
+                <i class="fas fa-info-circle"></i>
+                Informasi Server
+            </h3>
+        </div>
+        <div class="info-card-body">
+            <div class="info-item">
+                <div class="info-label">
+                    <i class="fas fa-globe text-success"></i>
+                    Environment
+                </div>
+                <div class="info-value">
+                    {{ app()->environment() }}
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">
+                    <i class="fas fa-calendar text-primary"></i>
+                    Tanggal Server
+                </div>
+                <div class="info-value">
+                    {{ now()->format('d F Y') }}
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">
+                    <i class="fas fa-clock text-warning"></i>
+                    Waktu Server
+                </div>
+                <div class="info-value">
+                    {{ now()->format('H:i:s T') }}
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">
+                    <i class="fas fa-map-marker-alt text-info"></i>
+                    Timezone
+                </div>
+                <div class="info-value">
+                    {{ config('app.timezone') }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Update waktu real-time
+    function updateTime() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString('id-ID', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            timeZone: 'Asia/Jakarta'
+        }) + ' WIB';
+        
+        const sessionTimeElement = document.querySelector('.info-item:nth-child(4) .info-value');
+        if (sessionTimeElement) {
+            sessionTimeElement.textContent = timeString;
+        }
+    }
+
+    // Update setiap detik
+    setInterval(updateTime, 1000);
+    
+    // Update saat halaman dimuat
+    document.addEventListener('DOMContentLoaded', updateTime);
+</script>
+
+@endsection

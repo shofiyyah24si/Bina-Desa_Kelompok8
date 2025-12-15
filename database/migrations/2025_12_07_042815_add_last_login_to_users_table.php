@@ -10,20 +10,20 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up()
-{
-    Schema::table('users', function (Blueprint $table) {
-        $table->dateTime('last_login')->nullable()->after('avatar');
-    });
-}
+    {
+        Schema::table('users', function (Blueprint $table) {
+            if (!Schema::hasColumn('users', 'last_login')) {
+                $table->dateTime('last_login')->nullable()->after('avatar');
+            }
+        });
+    }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down()
-{
-    Schema::table('users', function (Blueprint $table) {
-        $table->dropColumn('last_login');
-    });
-}
-
+    {
+        Schema::table('users', function (Blueprint $table) {
+            if (Schema::hasColumn('users', 'last_login')) {
+                $table->dropColumn('last_login');
+            }
+        });
+    }
 };

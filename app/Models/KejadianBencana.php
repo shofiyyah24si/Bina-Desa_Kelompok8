@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\HasMedia;
 
 class KejadianBencana extends Model
 {
+    use HasMedia;
+
     protected $table = 'kejadian_bencana';
     protected $primaryKey = 'kejadian_id';
 
@@ -18,10 +21,5 @@ class KejadianBencana extends Model
         'dampak',
         'status_kejadian',
         'keterangan',
-        'foto',
-    ];
-
-    protected $casts = [
-        'foto' => 'array',
     ];
 }

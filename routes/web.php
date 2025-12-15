@@ -5,8 +5,14 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\WargaController;
 use App\Http\Controllers\KejadianBencanaController;
+use App\Http\Controllers\PoskoBencanaController;
+use App\Http\Controllers\DonasiBencanaController;
+use App\Http\Controllers\LogistikBencanaController;
+use App\Http\Controllers\DistribusiLogistikController;
 use App\Http\Controllers\UserController;
 
+Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
+Route::post('/register', [AuthController::class, 'register'])->name('register.post');
 
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
@@ -42,7 +48,16 @@ Route::middleware('check.login')->group(function () {
         Route::resource('kejadian', KejadianBencanaController::class)
             ->only(['index', 'show']);
     });
-    
+
     // Logout untuk semua role
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+    Route::resource('posko', PoskoBencanaController::class);
+
+    Route::resource('donasi', DonasiBencanaController::class);
+
+    Route::resource('logistik', LogistikBencanaController::class);
+
+    Route::resource('distribusi', DistribusiLogistikController::class);
+
 });

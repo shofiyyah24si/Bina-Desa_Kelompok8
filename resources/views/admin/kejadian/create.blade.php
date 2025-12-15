@@ -2,122 +2,120 @@
 @section('title', 'Tambah Kejadian Bencana')
 
 @section('content')
-<div class="card shadow-sm border-0">
-    <div class="card-body">
 
-        <h4 class="card-title mb-4">Tambah Kejadian Bencana</h4>
+<style>
+    .form-card {
+        background: #ffffff;
+        border-radius: 14px;
+        padding: 25px;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    }
 
-        <!-- wajib untuk upload file -->
-        <form action="{{ route('kejadian.store') }}" method="POST" enctype="multipart/form-data">
-            @csrf
+    .preview-img {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 2px solid #ddd;
+        margin-right: 10px;
+    }
+</style>
 
-            <div class="row">
-                <div class="col-md-6">
+<div class="form-card">
 
-                    <div class="mb-3">
-                        <label class="form-label">Jenis Bencana <span class="text-danger">*</span></label>
-                        <input type="text" name="jenis_bencana" class="form-control" required
-                               placeholder="Contoh: Banjir, Kebakaran, Tanah Longsor">
-                        <small class="text-muted">Isi jenis bencana yang terjadi.</small>
-                    </div>
+    <h4 class="fw-bold mb-4">📝 Tambah Kejadian Bencana</h4>
 
-                    <div class="mb-3">
-                        <label class="form-label">Tanggal <span class="text-danger">*</span></label>
-                        <input type="date" name="tanggal" class="form-control" required>
-                        <small class="text-muted">Pilih tanggal kejadian berlangsung.</small>
-                    </div>
+    <form action="{{ route('kejadian.store') }}" method="POST" enctype="multipart/form-data">
+        @csrf
 
-                    <div class="mb-3">
-                        <label class="form-label">Lokasi</label>
-                        <textarea name="lokasi_text" class="form-control" placeholder="Contoh: Jl. Melati No. 12, dekat jembatan..."></textarea>
-                        <small class="text-muted">Tuliskan deskripsi lokasi dengan jelas.</small>
-                    </div>
-                </div>
+        <div class="row g-3">
 
-                <div class="col-md-6">
-
-                    <div class="mb-3">
-                        <label class="form-label">RT</label>
-                        <input type="text" name="rt" class="form-control" placeholder="Contoh: 01">
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">RW</label>
-                        <input type="text" name="rw" class="form-control" placeholder="Contoh: 05">
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Dampak</label>
-                        <textarea name="dampak" class="form-control"
-                                  placeholder="Contoh: 3 rumah rusak ringan, 1 korban luka ringan"></textarea>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Status <span class="text-danger">*</span></label>
-                        <select name="status_kejadian" class="form-select" required>
-                            <option value="Dilaporkan">Dilaporkan</option>
-                            <option value="Verifikasi">Verifikasi</option>
-                            <option value="Selesai">Selesai</option>
-                        </select>
-                    </div>
-
-                </div>
+            {{-- Jenis Bencana --}}
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Jenis Bencana</label>
+                <input type="text" name="jenis_bencana" class="form-control" required>
             </div>
 
-            <div class="mb-3">
-                <label class="form-label">Keterangan</label>
-                <textarea name="keterangan" class="form-control"
-                          placeholder="Catatan tambahan mengenai kejadian"></textarea>
+            {{-- Tanggal --}}
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Tanggal Kejadian</label>
+                <input type="date" name="tanggal" class="form-control" required>
             </div>
 
-            <!-- FOTO UPLOAD MULTIPLE -->
-            <div class="mb-3">
-                <label class="form-label">Foto Kejadian (Multiple Files)</label>
-                <input type="file" 
-                       name="foto[]" 
-                       id="foto" 
-                       multiple
-                       class="form-control @error('foto.*') is-invalid @enderror"
-                       accept="image/*">
-                <small class="form-text text-muted">Pilih beberapa file gambar sekaligus sebagai bukti kejadian. Format: JPG, PNG. Maksimal 2MB per file.</small>
-                @error('foto.*') 
-                    <div class="invalid-feedback">{{ $message }}</div> 
-                @enderror
+            {{-- Lokasi --}}
+            <div class="col-12">
+                <label class="form-label fw-semibold">Lokasi Kejadian</label>
+                <textarea name="lokasi_text" class="form-control" rows="2"></textarea>
             </div>
 
-            <div id="foto-preview" class="mb-3 row g-2"></div>
-
-            <div class="text-end">
-                <a href="{{ route('kejadian.index') }}" class="btn btn-light">Batal</a>
-                <button type="submit" class="btn btn-primary">Simpan</button>
+            {{-- RT RW --}}
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">RT</label>
+                <input type="text" name="rt" class="form-control">
             </div>
 
-        </form>
-    </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">RW</label>
+                <input type="text" name="rw" class="form-control">
+            </div>
+
+            {{-- Dampak --}}
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Dampak Singkat</label>
+                <input type="text" name="dampak" class="form-control">
+            </div>
+
+            {{-- Status --}}
+            <div class="col-md-6">
+                <label class="form-label fw-semibold">Status Kejadian</label>
+                <select name="status_kejadian" class="form-select" required>
+                    <option value="Dilaporkan">Dilaporkan</option>
+                    <option value="Verifikasi">Verifikasi</option>
+                    <option value="Selesai">Selesai</option>
+                </select>
+            </div>
+
+            {{-- Keterangan --}}
+            <div class="col-12">
+                <label class="form-label fw-semibold">Keterangan Tambahan</label>
+                <textarea name="keterangan" class="form-control" rows="3"></textarea>
+            </div>
+
+            {{-- FOTO UPLOAD --}}
+            <div class="col-12">
+                <label class="form-label fw-semibold">Upload Foto Kejadian</label>
+                <input type="file" name="foto[]" class="form-control" multiple accept="image/*" id="fotoInput">
+            </div>
+
+            {{-- PREVIEW --}}
+            <div class="col-12 mt-3" id="previewContainer"></div>
+
+        </div>
+
+        <div class="mt-4 d-flex justify-content-end">
+            <a href="{{ route('kejadian.index') }}" class="btn btn-secondary me-2">Batal</a>
+            <button type="submit" class="btn btn-primary">Simpan Data</button>
+        </div>
+
+    </form>
 </div>
 
+@endsection
+
+@section('script')
 <script>
-    // Preview multiple images
-    document.getElementById('foto').addEventListener('change', function(e) {
-        const preview = document.getElementById('foto-preview');
-        preview.innerHTML = '';
-        
-        if (this.files.length > 0) {
-            preview.innerHTML = '<label class="form-label mb-2">Preview Foto:</label>';
-        }
-        
-        Array.from(this.files).forEach((file, index) => {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const col = document.createElement('div');
-                col.className = 'col-md-3 col-sm-4 col-6';
-                col.innerHTML = `
-                    <img src="${e.target.result}" 
-                         alt="Preview ${index + 1}" 
-                         class="img-thumbnail w-100" 
-                         style="height: 120px; object-fit: cover;">
-                `;
-                preview.appendChild(col);
+    // Preview foto sebelum upload
+    document.getElementById('fotoInput').addEventListener('change', function(e) {
+        let container = document.getElementById('previewContainer');
+        container.innerHTML = ""; // clear preview
+
+        Array.from(e.target.files).forEach(file => {
+            let reader = new FileReader();
+            reader.onload = event => {
+                let img = document.createElement('img');
+                img.src = event.target.result;
+                img.className = "preview-img";
+                container.appendChild(img);
             };
             reader.readAsDataURL(file);
         });

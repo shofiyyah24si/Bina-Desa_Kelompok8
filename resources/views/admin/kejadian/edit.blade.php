@@ -16,21 +16,20 @@
                 <div class="col-md-6">
 
                     <div class="mb-3">
-                        <label class="form-label">Jenis Bencana <span class="text-danger">*</span></label>
+                        <label class="form-label">Jenis Bencana *</label>
                         <input type="text" name="jenis_bencana" class="form-control"
                                value="{{ $kejadian->jenis_bencana }}" required>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Tanggal <span class="text-danger">*</span></label>
+                        <label class="form-label">Tanggal *</label>
                         <input type="date" name="tanggal" class="form-control"
                                value="{{ $kejadian->tanggal }}" required>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Lokasi</label>
-                        <textarea name="lokasi_text" class="form-control"
-                                  rows="3">{{ $kejadian->lokasi_text }}</textarea>
+                        <textarea name="lokasi_text" class="form-control">{{ $kejadian->lokasi_text }}</textarea>
                     </div>
 
                 </div>
@@ -51,12 +50,11 @@
 
                     <div class="mb-3">
                         <label class="form-label">Dampak</label>
-                        <textarea name="dampak" class="form-control"
-                                  rows="3">{{ $kejadian->dampak }}</textarea>
+                        <textarea name="dampak" class="form-control">{{ $kejadian->dampak }}</textarea>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Status <span class="text-danger">*</span></label>
+                        <label class="form-label">Status *</label>
                         <select name="status_kejadian" class="form-select">
                             <option value="Dilaporkan" {{ $kejadian->status_kejadian == 'Dilaporkan' ? 'selected' : '' }}>Dilaporkan</option>
                             <option value="Verifikasi" {{ $kejadian->status_kejadian == 'Verifikasi' ? 'selected' : '' }}>Verifikasi</option>
@@ -69,61 +67,41 @@
 
             <div class="mb-3">
                 <label class="form-label">Keterangan</label>
-                <textarea name="keterangan" class="form-control"
-                          rows="3">{{ $kejadian->keterangan }}</textarea>
+                <textarea name="keterangan" class="form-control">{{ $kejadian->keterangan }}</textarea>
             </div>
 
             {{-- FOTO LAMA --}}
-            @php
-                $fotos = is_array($kejadian->foto) ? $kejadian->foto : (!empty($kejadian->foto) ? [$kejadian->foto] : []);
-            @endphp
-            @if(!empty($fotos))
-                <div class="mb-3">
-                    <label class="form-label d-block mb-2">Foto Saat Ini:</label>
-                    <div class="row g-2">
-                        @foreach($fotos as $index => $fotoFile)
-                            <div class="col-md-3 col-sm-4 col-6">
-                                <div class="position-relative">
-                                    <img src="{{ asset('uploads/kejadian/' . $fotoFile) }}"
-                                         alt="Foto {{ $index + 1 }}" 
-                                         class="img-thumbnail w-100"
-                                         style="height: 120px; object-fit: cover;">
-                                    <div class="form-check position-absolute top-0 end-0 m-1">
-                                        <input class="form-check-input" 
-                                               type="checkbox" 
-                                               name="delete_foto[]" 
-                                               value="{{ $fotoFile }}" 
-                                               id="delete_foto_{{ $index }}">
-                                        <label class="form-check-label text-white bg-danger rounded-circle p-1" 
-                                               for="delete_foto_{{ $index }}" 
-                                               style="font-size: 10px;">
-                                            <i class="fa fa-times"></i>
-                                        </label>
-                                    </div>
-                                </div>
-                                <small class="d-block text-center mt-1">Hapus</small>
+            @if($kejadian->media->count() > 0)
+            <div class="mb-3">
+                <label class="form-label">Foto Saat Ini:</label>
+
+                <div class="row g-2">
+                    @foreach($kejadian->media as $m)
+                        <div class="col-md-3 col-6">
+                            <div class="position-relative">
+                                <img src="{{ asset('uploads/' . $m->file_url) }}"
+                                     class="img-thumbnail w-100"
+                                     style="height:120px;object-fit:cover;">
+
+                                <input type="checkbox" 
+                                       name="delete_foto[]" 
+                                       value="{{ $m->media_id }}"
+                                       class="form-check-input position-absolute top-0 end-0 m-1"
+                                       style="width:18px;height:18px;">
                             </div>
-                        @endforeach
-                    </div>
+                        </div>
+                    @endforeach
                 </div>
+            </div>
             @endif
 
             {{-- FOTO BARU --}}
             <div class="mb-3">
-                <label class="form-label">Tambah Foto (Multiple Files)</label>
-                <input type="file" 
-                       name="foto[]" 
-                       id="foto" 
-                       multiple
-                       class="form-control @error('foto.*') is-invalid @enderror"
-                       accept="image/*">
-                <small class="form-text text-muted">Pilih beberapa file gambar sekaligus. Format: JPG, PNG. Maksimal 2MB per file.</small>
-                @error('foto.*') 
-                    <div class="invalid-feedback">{{ $message }}</div> 
-                @enderror
+                <label class="form-label">Tambah Foto Baru</label>
+                <input type="file" name="foto[]" id="foto" multiple class="form-control" accept="image/*">
             </div>
 
-            <div id="foto-preview" class="mb-3 row g-2"></div>
+            <div id="foto-preview" class="row g-2 mb-3"></div>
 
             <div class="text-end">
                 <a href="{{ route('kejadian.index') }}" class="btn btn-light">Batal</a>
@@ -131,35 +109,27 @@
             </div>
 
         </form>
-
     </div>
 </div>
 
 <script>
-    // Preview multiple images
-    document.getElementById('foto').addEventListener('change', function(e) {
-        const preview = document.getElementById('foto-preview');
-        preview.innerHTML = '';
-        
-        if (this.files.length > 0) {
-            preview.innerHTML = '<label class="form-label mb-2">Preview Foto Baru:</label>';
-        }
-        
-        Array.from(this.files).forEach((file, index) => {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const col = document.createElement('div');
-                col.className = 'col-md-3 col-sm-4 col-6';
-                col.innerHTML = `
-                    <img src="${e.target.result}" 
-                         alt="Preview ${index + 1}" 
-                         class="img-thumbnail w-100" 
-                         style="height: 120px; object-fit: cover;">
-                `;
-                preview.appendChild(col);
-            };
-            reader.readAsDataURL(file);
-        });
+document.getElementById('foto').addEventListener('change', function () {
+    const preview = document.getElementById('foto-preview');
+    preview.innerHTML = '';
+
+    Array.from(this.files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = e => {
+            preview.innerHTML += `
+                <div class="col-md-3 col-6">
+                    <img src="${e.target.result}"
+                         class="img-thumbnail"
+                         style="height:120px;object-fit:cover;">
+                </div>`;
+        };
+        reader.readAsDataURL(file);
     });
+});
 </script>
+
 @endsection

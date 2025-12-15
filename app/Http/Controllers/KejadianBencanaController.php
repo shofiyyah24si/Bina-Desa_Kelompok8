@@ -7,17 +7,42 @@ use Illuminate\Http\Request;
 
 class KejadianBencanaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $data['kejadian'] = KejadianBencana::orderBy('tanggal', 'desc')->get();
-        return view('admin.kejadian.index', $data);
+        $query = KejadianBencana::with('media')->orderBy('tanggal', 'desc');
+
+        // Search
+        if ($request->search) {
+            $query->where(function ($q) use ($request) {
+                $q->where('jenis_bencana', 'like', "%{$request->search}%")
+                    ->orWhere('lokasi_text', 'like', "%{$request->search}%")
+                    ->orWhere('rt', 'like', "%{$request->search}%")
+                    ->orWhere('rw', 'like', "%{$request->search}%");
+            });
+        }
+
+        // Filter status
+        if ($request->status && $request->status !== 'Semua') {
+            $query->where('status_kejadian', $request->status);
+        }
+
+        // Pagination
+        $kejadian = $query->paginate(10);
+
+        return view('admin.kejadian.index', compact('kejadian')); // FIXED VIEW PATH
     }
 
+    // ===========================
+    // CREATE PAGE
+    // ===========================
     public function create()
     {
-        return view('admin.kejadian.create');
+        return view('admin.kejadian.create'); // FIXED VIEW PATH
     }
 
+    // ===========================
+    // STORE DATA
+    // ===========================
     public function store(Request $request)
     {
         $request->validate([
@@ -27,48 +52,45 @@ class KejadianBencanaController extends Controller
             'rt'             => 'nullable|string|max:5',
             'rw'             => 'nullable|string|max:5',
             'dampak'         => 'nullable|string|max:150',
-            'status_kejadian'=> 'required|in:Dilaporkan,Verifikasi,Selesai',
+            'status_kejadian' => 'required|in:Dilaporkan,Verifikasi,Selesai',
             'keterangan'     => 'nullable|string',
             'foto.*'         => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        // Ambil data kecuali file
-        $data = $request->except('foto');
+        $kejadian = KejadianBencana::create($request->except('foto'));
 
-        // Buat folder kalau belum ada
-        if (!file_exists(public_path('uploads/kejadian'))) {
-            mkdir(public_path('uploads/kejadian'), 0777, true);
-        }
-
-        // Handle multiple file uploads
+        // Upload multi foto
         if ($request->hasFile('foto')) {
-            $fotoArray = [];
             foreach ($request->file('foto') as $file) {
-                $filename = time() . '_' . uniqid() . '_' . $file->getClientOriginalName();
-                $file->move(public_path('uploads/kejadian'), $filename);
-                $fotoArray[] = $filename;
+                $kejadian->addMedia($file, 'kejadian_bencana');
             }
-            $data['foto'] = $fotoArray;
         }
-
-        KejadianBencana::create($data);
 
         return redirect()->route('kejadian.index')
             ->with('success', 'Kejadian bencana berhasil ditambahkan!');
     }
 
+    // ===========================
+    // SHOW
+    // ===========================
     public function show($id)
     {
-        $data['kejadian'] = KejadianBencana::findOrFail($id);
-        return view('admin.kejadian.show', $data);
+        $kejadian = KejadianBencana::findOrFail($id);
+        return view('admin.kejadian.show', compact('kejadian')); // FIX VIEW PATH
     }
 
+    // ===========================
+    // EDIT PAGE
+    // ===========================
     public function edit($id)
     {
-        $data['kejadian'] = KejadianBencana::findOrFail($id);
-        return view('admin.kejadian.edit', $data);
+        $kejadian = KejadianBencana::findOrFail($id);
+        return view('admin.kejadian.edit', compact('kejadian')); // FIX VIEW PATH
     }
 
+    // ===========================
+    // UPDATE DATA
+    // ===========================
     public function update(Request $request, $id)
     {
         $kejadian = KejadianBencana::findOrFail($id);
@@ -80,73 +102,43 @@ class KejadianBencanaController extends Controller
             'rt'             => 'nullable|string|max:5',
             'rw'             => 'nullable|string|max:5',
             'dampak'         => 'nullable|string|max:150',
-            'status_kejadian'=> 'required|in:Dilaporkan,Verifikasi,Selesai',
+            'status_kejadian' => 'required|in:Dilaporkan,Verifikasi,Selesai',
             'keterangan'     => 'nullable|string',
             'foto.*'         => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'delete_foto'    => 'nullable|array',
         ]);
 
-        $data = $request->except('foto', 'delete_foto');
+        // Update data utama
+        $kejadian->update($request->except('foto', 'delete_foto'));
 
-        // Buat folder jika belum ada
-        if (!file_exists(public_path('uploads/kejadian'))) {
-            mkdir(public_path('uploads/kejadian'), 0777, true);
-        }
-
-        // Handle deletion of existing foto
-        $currentFoto = $kejadian->foto ?? [];
-        // Convert string to array if needed (for old data)
-        if (is_string($currentFoto) && !empty($currentFoto)) {
-            $currentFoto = [$currentFoto];
-        }
-        if (!is_array($currentFoto)) {
-            $currentFoto = [];
-        }
-        
-        if ($request->has('delete_foto')) {
-            foreach ($request->delete_foto as $fotoToDelete) {
-                if (in_array($fotoToDelete, $currentFoto)) {
-                    // Delete file from storage
-                    if (file_exists(public_path('uploads/kejadian/' . $fotoToDelete))) {
-                        unlink(public_path('uploads/kejadian/' . $fotoToDelete));
-                    }
-                    // Remove from array
-                    $currentFoto = array_diff($currentFoto, [$fotoToDelete]);
-                }
+        // Hapus foto yang dipilih
+        if ($request->delete_foto) {
+            foreach ($request->delete_foto as $mediaId) {
+                $kejadian->deleteMedia($mediaId);
             }
-            $currentFoto = array_values($currentFoto);
         }
 
-        // Handle new file uploads
+        // Upload foto baru
         if ($request->hasFile('foto')) {
             foreach ($request->file('foto') as $file) {
-                $filename = time() . '_' . uniqid() . '_' . $file->getClientOriginalName();
-                $file->move(public_path('uploads/kejadian'), $filename);
-                $currentFoto[] = $filename;
+                $kejadian->addMedia($file, 'kejadian_bencana');
             }
         }
-
-        $data['foto'] = $currentFoto;
-        $kejadian->update($data);
 
         return redirect()->route('kejadian.index')
             ->with('success', 'Kejadian bencana berhasil diperbarui!');
     }
 
+    // ===========================
+    // DELETE
+    // ===========================
     public function destroy($id)
     {
         $kejadian = KejadianBencana::findOrFail($id);
 
         // Hapus semua foto
-        if ($kejadian->foto && is_array($kejadian->foto)) {
-            foreach ($kejadian->foto as $fotoFile) {
-                if (file_exists(public_path('uploads/kejadian/' . $fotoFile))) {
-                    unlink(public_path('uploads/kejadian/' . $fotoFile));
-                }
-            }
-        } elseif ($kejadian->foto && file_exists(public_path('uploads/kejadian/' . $kejadian->foto))) {
-            // Fallback for old single foto format
-            unlink(public_path('uploads/kejadian/' . $kejadian->foto));
+        foreach ($kejadian->media as $m) {
+            $kejadian->deleteMedia($m->media_id);
         }
 
         $kejadian->delete();
