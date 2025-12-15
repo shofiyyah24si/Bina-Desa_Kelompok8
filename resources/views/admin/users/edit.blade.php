@@ -334,7 +334,7 @@
                     <div class="preview-card">
                         <div class="position-relative d-inline-block">
                             @if($user->foto_profil)
-                                <img src="{{ asset('storage/' . $user->foto_profil) }}" 
+                                <img src="{{ \App\Helpers\ImageHelper::getImageWithFallback($user->foto_profil, 'assets-admin/images/profile/sofia.png') }}" 
                                      alt="Foto Profil" 
                                      id="preview-foto" 
                                      class="preview-image">

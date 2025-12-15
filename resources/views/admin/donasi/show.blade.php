@@ -21,10 +21,10 @@
         <div class="row g-3">
             @forelse($donasi->media as $m)
                 <div class="col-md-3">
-                    <img src="{{ asset('uploads/' . $m->file_url) }}"
+                    <img src="{{ \App\Helpers\ImageHelper::getImageUrl($m->file_url) }}"
                         class="img-fluid rounded"
                         style="height:200px; object-fit:cover; cursor:pointer;"
-                        onclick="openModal('{{ asset('uploads/' . $m->file_url) }}')">
+                        onclick="openModal('{{ \App\Helpers\ImageHelper::getImageUrl($m->file_url) }}')">
                 </div>
             @empty
                 <p class="text-muted">Tidak ada bukti donasi</p>

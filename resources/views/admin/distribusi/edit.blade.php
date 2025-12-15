@@ -69,7 +69,7 @@
                     @foreach($item->media as $m)
                         <div class="col-md-3 col-sm-4 col-6">
                             <div class="position-relative">
-                                <img src="{{ asset('uploads/' . $m->file_url) }}"
+                                <img src="{{ \App\Helpers\ImageHelper::getImageUrl($m->file_url) }}"
                                      class="img-thumbnail w-100"
                                      style="height:130px; object-fit:cover;">
                                 <div class="form-check position-absolute top-0 end-0 m-1">

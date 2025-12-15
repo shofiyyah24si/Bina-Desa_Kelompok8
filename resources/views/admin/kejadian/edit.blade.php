@@ -79,7 +79,7 @@
                     @foreach($kejadian->media as $m)
                         <div class="col-md-3 col-6">
                             <div class="position-relative">
-                                <img src="{{ asset('uploads/' . $m->file_url) }}"
+                                <img src="{{ \App\Helpers\ImageHelper::getImageUrl($m->file_url) }}"
                                      class="img-thumbnail w-100"
                                      style="height:120px;object-fit:cover;">
 

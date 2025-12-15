@@ -54,7 +54,7 @@
         <div class="row g-2 mb-3">
             @foreach($posko->media as $m)
             <div class="col-md-3 position-relative">
-                <img src="{{ asset('uploads/' . $m->file_url) }}" class="img-thumbnail" style="height:120px; object-fit:cover;">
+                <img src="{{ \App\Helpers\ImageHelper::getImageUrl($m->file_url) }}" class="img-thumbnail" style="height:120px; object-fit:cover;">
                 <div class="form-check position-absolute top-0 end-0 m-1">
                     <input type="checkbox" name="delete_foto[]" value="{{ $m->media_id }}">
                 </div>

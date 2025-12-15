@@ -499,9 +499,10 @@
                         <td><strong>{{ $users->firstItem() + $i }}</strong></td>
                         <td>
                             @if ($user->foto_profil)
-                                <img src="{{ asset('storage/' . $user->foto_profil) }}" 
+                                <img src="{{ \App\Helpers\ImageHelper::getImageWithFallback($user->foto_profil, 'assets-admin/images/profile/sofia.png') }}" 
                                      alt="Foto Profil" 
-                                     class="profile-img">
+                                     class="profile-img"
+                                     onerror="this.src='{{ asset('assets-admin/images/profile/sofia.png') }}'">
                             @else
                                 <div class="profile-placeholder">
                                     <i class="fas fa-user"></i>

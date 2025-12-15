@@ -267,7 +267,7 @@
         <!-- Profile Section -->
         <div class="profile-section">
             @if($warga->foto_profil)
-                <img src="{{ asset('storage/' . $warga->foto_profil) }}" 
+                <img src="{{ \App\Helpers\ImageHelper::getImageWithFallback($warga->foto_profil, 'assets-admin/images/profile/sofia.png') }}" 
                      alt="Foto Profil {{ $warga->nama }}" 
                      class="profile-image">
             @else

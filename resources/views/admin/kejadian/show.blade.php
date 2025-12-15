@@ -72,11 +72,11 @@
                     @foreach($kejadian->media as $m)
                         <div class="col-md-3 col-sm-4 col-6">
                             <div class="card shadow-sm">
-                                <img src="{{ asset('uploads/' . $m->file_url) }}"
+                                <img src="{{ \App\Helpers\ImageHelper::getImageUrl($m->file_url) }}"
                                      alt="Foto"
                                      class="card-img-top"
                                      style="height:200px; object-fit:cover; cursor:pointer;"
-                                     onclick="openImageModal('{{ asset('uploads/' . $m->file_url) }}')">
+                                     onclick="openImageModal('{{ \App\Helpers\ImageHelper::getImageUrl($m->file_url) }}')">
                             </div>
                         </div>
                     @endforeach

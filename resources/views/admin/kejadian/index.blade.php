@@ -600,9 +600,10 @@
                     <td>
                         <div class="photo-gallery">
                             @foreach($row->media->take(3) as $m)
-                                <img src="{{ asset('uploads/' . $m->file_url) }}"
+                                <img src="{{ \App\Helpers\ImageHelper::getImageUrl($m->file_url) }}"
                                      class="photo-item"
-                                     alt="Foto Kejadian">
+                                     alt="Foto Kejadian"
+                                     onerror="this.style.display='none'">
                             @endforeach
 
                             @if($row->media->count() > 3)

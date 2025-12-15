@@ -46,7 +46,7 @@
             <div class="row g-3 mb-3">
                 @foreach($donasi->media as $m)
                     <div class="col-3 text-center">
-                        <img src="{{ asset('uploads/' . $m->file_url) }}"
+                        <img src="{{ \App\Helpers\ImageHelper::getImageUrl($m->file_url) }}"
                              class="img-thumbnail" style="height:120px; object-fit:cover;">
                         <div>
                             <input type="checkbox" name="delete_foto[]" value="{{ $m->media_id }}">

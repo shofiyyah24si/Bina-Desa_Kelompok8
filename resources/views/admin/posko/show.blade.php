@@ -47,10 +47,10 @@
     <div class="row g-3 mt-2">
         @foreach($posko->media as $m)
             <div class="col-md-3">
-                <img src="{{ asset('uploads/' . $m->file_url) }}"
+                <img src="{{ \App\Helpers\ImageHelper::getImageUrl($m->file_url) }}"
                      class="img-thumbnail"
                      style="height:180px; object-fit:cover; cursor:pointer;"
-                     onclick="openImageModal('{{ asset('uploads/' . $m->file_url) }}')">
+                     onclick="openImageModal('{{ \App\Helpers\ImageHelper::getImageUrl($m->file_url) }}')">
             </div>
         @endforeach
     </div>

@@ -276,8 +276,9 @@
                     <tr>
                         <td>
                             @if($d->media->count() > 0)
-                                <img src="{{ asset('uploads/' . $d->media->first()->file_url) }}"
+                                <img src="{{ \App\Helpers\ImageHelper::getImageUrl($d->media->first()->file_url) }}"
                                      style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 2px solid #F6CFB5; transition: all .3s;"
+                                     onerror="this.style.display='none'"
                                      onmouseover="this.style.transform='scale(1.1)'"
                                      onmouseout="this.style.transform='scale(1)'">
                             @else

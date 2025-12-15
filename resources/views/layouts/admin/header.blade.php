@@ -40,10 +40,9 @@
                     <strong class="text-dark">{{ Auth::user()->role }}</strong>
                 </span>
 
-                <img src="{{ Auth::user()->foto_profil
-                    ? asset('storage/'.Auth::user()->foto_profil)
-                    : asset('assets-admin/images/profile/sofia.png') }}"
-                    class="user-avatar rounded-circle">
+                <img src="{{ \App\Helpers\ImageHelper::getImageWithFallback(Auth::user()->foto_profil, 'assets-admin/images/profile/sofia.png') }}"
+                    class="user-avatar rounded-circle"
+                    onerror="this.src='{{ asset('assets-admin/images/profile/sofia.png') }}'">
             </div>
 
             <ul class="dropdown-menu dropdown-menu-end rounded-3 shadow-lg p-2">

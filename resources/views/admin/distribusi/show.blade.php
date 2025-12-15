@@ -39,10 +39,10 @@
             <div class="row g-3">
                 @foreach($item->media as $m)
                     <div class="col-md-3 col-sm-4 col-6">
-                        <img src="{{ asset('uploads/'.$m->file_url) }}"
+                        <img src="{{ \App\Helpers\ImageHelper::getImageUrl($m->file_url) }}"
                              class="img-thumbnail w-100"
                              style="height:200px; object-fit:cover; cursor:pointer;"
-                             onclick="openImageModal('{{ asset('uploads/'.$m->file_url) }}')">
+                             onclick="openImageModal('{{ \App\Helpers\ImageHelper::getImageUrl($m->file_url) }}')">
                     </div>
                 @endforeach
             </div>

@@ -736,11 +736,10 @@
         </p>
     </div>
     
-    <img src="{{ Auth::user()->foto_profil 
-        ? asset('storage/'.Auth::user()->foto_profil) 
-        : asset('assets-admin/images/profile/sofia.png') }}" 
+    <img src="{{ \App\Helpers\ImageHelper::getImageWithFallback(Auth::user()->foto_profil, 'assets-admin/images/profile/sofia.png') }}" 
         class="hero-profile" 
-        alt="Foto Profil {{ Auth::user()->name }}">
+        alt="Foto Profil {{ Auth::user()->name }}"
+        onerror="this.src='{{ asset('assets-admin/images/profile/sofia.png') }}'">
 </div>
 
 <!-- Statistics Cards -->
@@ -818,10 +817,11 @@
         <div class="section-content">
             <div class="photo-gallery">
                 @forelse ($fotoKejadian as $foto)
-                    <img src="{{ asset('uploads/'.$foto->file_url) }}" 
+                    <img src="{{ \App\Helpers\ImageHelper::getImageUrl($foto->file_url) }}" 
                          class="photo-item" 
                          alt="Dokumentasi Kejadian"
-                         loading="lazy">
+                         loading="lazy"
+                         onerror="this.style.display='none'">
                 @empty
                     <div class="photo-placeholder">
                         <i class="fas fa-camera"></i>

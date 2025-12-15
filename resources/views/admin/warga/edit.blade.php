@@ -372,7 +372,7 @@
                     <div class="preview-card">
                         <div class="position-relative d-inline-block">
                             @if($warga->foto_profil)
-                                <img src="{{ asset('storage/' . $warga->foto_profil) }}" 
+                                <img src="{{ \App\Helpers\ImageHelper::getImageWithFallback($warga->foto_profil, 'assets-admin/images/profile/sofia.png') }}" 
                                      alt="Foto Profil" 
                                      id="preview-foto" 
                                      class="preview-image">

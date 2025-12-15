@@ -404,7 +404,7 @@
                             @php $fotos = $row->media->take(3); @endphp
                             <div class="photo-gallery">
                                 @foreach($fotos as $foto)
-                                    <img src="{{ asset('uploads/' . $foto->file_url) }}"
+                                    <img src="{{ \App\Helpers\ImageHelper::getImageUrl($foto->file_url) }}"
                                          class="photo-item"
                                          alt="Foto Posko">
                                 @endforeach
