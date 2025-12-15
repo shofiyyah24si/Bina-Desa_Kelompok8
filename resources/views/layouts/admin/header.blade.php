@@ -89,7 +89,7 @@
         backdrop-filter: blur(8px);
         padding-left: 65px !important; 
         padding-right: 20px !important;
-        overflow: hidden;
+        overflow: visible; /* Allow dropdown to show */
         min-width: 0; /* Allow flex items to shrink */
     }
 
@@ -105,6 +105,37 @@
     .cursor-pointer img:hover {
         transform: scale(1.07);
         transition: .2s;
+    }
+
+    /* Dropdown improvements */
+    .dropdown-menu {
+        border: none;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        border-radius: 12px;
+        overflow: hidden;
+        margin-top: 10px;
+        z-index: 9999;
+    }
+
+    .dropdown-item {
+        padding: 12px 20px;
+        transition: all 0.2s ease;
+        border: none;
+        background: none;
+        width: 100%;
+        text-align: left;
+        display: flex;
+        align-items: center;
+    }
+
+    .dropdown-item:hover {
+        background: #f8fafc;
+        color: #191B47;
+    }
+
+    .dropdown-item.text-danger:hover {
+        background: rgba(220, 38, 38, 0.1);
+        color: #dc2626;
     }
 
     .header-logo {
@@ -198,6 +229,14 @@
         /* Adjust dropdown positioning */
         .dropdown-menu {
             font-size: 14px;
+            min-width: 200px;
+            margin-top: 8px !important;
+        }
+
+        /* Ensure dropdown is visible on mobile */
+        .dropdown-menu-end {
+            right: 0 !important;
+            left: auto !important;
         }
     }
 
@@ -238,6 +277,40 @@
 
         .btn-info-terkini::after {
             content: "Info";
+        }
+
+        /* Improve dropdown on very small screens */
+        .dropdown-menu {
+            font-size: 13px;
+            min-width: 180px;
+            margin-top: 5px !important;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+        }
+
+        .dropdown-item {
+            padding: 10px 15px;
+        }
+    }
+
+    /* Fix dropdown z-index and positioning issues */
+    .dropdown {
+        position: relative;
+    }
+
+    .dropdown-toggle::after {
+        display: none; /* Hide default bootstrap arrow */
+    }
+
+    /* Ensure dropdown stays within viewport on mobile */
+    @media (max-width: 768px) {
+        .dropdown-menu-end {
+            right: 0 !important;
+            left: auto !important;
+            transform: none !important;
+        }
+        
+        .topbar {
+            overflow: visible !important;
         }
     }
 

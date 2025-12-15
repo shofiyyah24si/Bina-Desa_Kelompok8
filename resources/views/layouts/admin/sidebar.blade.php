@@ -84,6 +84,17 @@
                 </a>
             </li>
 
+            <!-- LOGOUT -->
+            <li class="sidebar-item logout-item">
+                <form action="{{ route('logout') }}" method="POST" class="logout-form">
+                    @csrf
+                    <button type="submit" class="sidebar-link logout-btn" onclick="return confirm('Yakin ingin logout?')">
+                        <i class="fas fa-sign-out-alt" style="width: 22px; font-size: 18px; text-align: center;"></i>
+                        <span>Logout</span>
+                    </button>
+                </form>
+            </li>
+
         </ul>
 
     </nav>
@@ -173,5 +184,72 @@
     /* MOBILE CLOSE BUTTON */
     .close-sidebar {
         cursor: pointer;
+    }
+
+    /* ====================== LOGOUT MENU ITEM ====================== */
+    .logout-item {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .logout-form {
+        margin: 0;
+        width: 100%;
+    }
+
+    .logout-btn {
+        background: none;
+        border: none;
+        width: 100%;
+        text-align: left;
+        color: #dc2626 !important;
+        font-family: inherit;
+        margin-bottom: 0;
+        border-radius: 12px;
+        transition: 0.25s ease;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 18px;
+        font-weight: 600;
+        font-size: 15px;
+    }
+
+    .logout-btn:hover {
+        background: rgba(220, 38, 38, 0.1);
+        transform: translateX(5px);
+        color: #dc2626 !important;
+        text-decoration: none;
+    }
+
+    .logout-btn i {
+        color: #dc2626 !important;
+        transition: 0.3s;
+    }
+
+    .logout-btn:hover i {
+        transform: scale(1.15);
+        color: #dc2626 !important;
+    }
+
+    /* Adjust sidebar nav */
+    .sidebar-nav {
+        height: calc(100vh - 140px);
+        padding-bottom: 20px;
+        overflow-y: auto;
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 768px) {
+        .logout-item {
+            margin-top: 12px;
+            padding-top: 12px;
+        }
+        
+        .sidebar-nav {
+            height: calc(100vh - 120px);
+            padding-bottom: 15px;
+        }
     }
 </style>
