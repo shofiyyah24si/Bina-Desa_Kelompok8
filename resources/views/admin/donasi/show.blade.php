@@ -11,7 +11,7 @@
         </div>
 
         <table class="table table-bordered">
-            <tr><th>Kejadian</th><td>{{ $donasi->kejadian->jenis_bencana }}</td></tr>
+            <tr><th>Kejadian</th><td>{{ $donasi->kejadian->jenis_bencana ?? 'Tidak ada kejadian terkait' }}</td></tr>
             <tr><th>Nama Donatur</th><td>{{ $donasi->donatur_nama ?? '-' }}</td></tr>
             <tr><th>Jenis</th><td>{{ ucfirst($donasi->jenis) }}</td></tr>
             <tr><th>Nilai</th><td>{{ number_format($donasi->nilai, 0, ',', '.') }}</td></tr>

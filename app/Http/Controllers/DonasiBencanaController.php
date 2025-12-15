@@ -50,6 +50,12 @@ class DonasiBencanaController extends Controller
         return redirect()->route('donasi.index')->with('success', 'Data donasi berhasil ditambahkan!');
     }
 
+    public function show($id)
+    {
+        $donasi = DonasiBencana::with(['kejadian', 'media'])->findOrFail($id);
+        return view('admin.donasi.show', compact('donasi'));
+    }
+
     public function edit($id)
     {
         $donasi = DonasiBencana::findOrFail($id);

@@ -80,16 +80,18 @@ class ImageHelper
         }
 
         // For Laravel storage paths (stored as uploads/users/filename.jpg)
-        // These are actually stored in storage/app/public/uploads/users/filename.jpg
-        // and should be accessed via storage/uploads/users/filename.jpg
+        // These are stored in storage/app/public/uploads/users/filename.jpg
+        // and accessed via storage/uploads/users/filename.jpg
         if (str_starts_with($path, 'uploads/')) {
-            // Check if file exists in storage/app/public
-            if (file_exists(storage_path('app/public/' . $path))) {
+            // Check if file exists in storage
+            $storagePath = storage_path('app/public/' . $path);
+            if (file_exists($storagePath)) {
                 return asset('storage/' . $path);
             }
             
-            // Fallback: check if file exists in public/uploads
-            if (file_exists(public_path($path))) {
+            // Check if file exists in public uploads (backup location)
+            $publicPath = public_path($path);
+            if (file_exists($publicPath)) {
                 return asset($path);
             }
         }
@@ -99,29 +101,7 @@ class ImageHelper
             return asset($path);
         }
 
-        // Try different path combinations for backward compatibility
-        $possiblePaths = [
-            storage_path('app/public/' . $path),
-            storage_path('app/public/uploads/users/' . basename($path)),
-            storage_path('app/public/uploads/warga/' . basename($path)),
-            public_path('uploads/' . $path),
-            public_path('uploads/users/' . basename($path)),
-            public_path('uploads/warga/' . basename($path)),
-        ];
-
-        foreach ($possiblePaths as $fullPath) {
-            if (file_exists($fullPath)) {
-                // Convert back to web accessible path
-                if (strpos($fullPath, 'storage/app/public') !== false) {
-                    $relativePath = str_replace(storage_path('app/public'), '', $fullPath);
-                    return asset('storage' . $relativePath);
-                } elseif (strpos($fullPath, public_path()) !== false) {
-                    $relativePath = str_replace(public_path(), '', $fullPath);
-                    return asset(ltrim($relativePath, '/\\'));
-                }
-            }
-        }
-
+        // If no file found, return fallback
         return asset($fallback);
     }
 
