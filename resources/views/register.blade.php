@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
     <title>Kebencanaan & Tanggap Darurat — Register</title>
     <!-- Favicon -->
@@ -119,7 +119,9 @@
             border: none;
             outline: none;
             color: #fff;
-            font-size: 15px;
+            font-size: 16px; /* Prevent zoom on iOS */
+            -webkit-appearance: none;
+            border-radius: 0;
         }
 
         .input-box input::placeholder {
@@ -180,10 +182,17 @@
             color: #191B47;
             font-size: 16px;
             transition: .25s;
+            cursor: pointer;
+            min-height: 44px; /* Touch-friendly minimum */
         }
 
         .btn-register:hover {
             background: #ffe3cf;
+        }
+
+        .btn-register:active {
+            transform: translateY(1px);
+            background: #f0c4a0;
         }
 
         /* Error text */
@@ -211,6 +220,213 @@
             margin-top: -5px;
             margin-bottom: 22px;
             text-shadow: 0 0 6px rgba(246, 207, 181, 0.3);
+        }
+
+        /* ======================================================
+   MOBILE RESPONSIVENESS
+====================================================== */
+        @media (max-width: 768px) {
+            body {
+                padding: 20px;
+                align-items: flex-start;
+                padding-top: 30px;
+            }
+
+            .card {
+                width: 100%;
+                max-width: 420px;
+                padding: 30px 25px;
+                margin: 0 auto;
+            }
+
+            .card img {
+                width: 180px !important;
+                margin-bottom: 15px !important;
+            }
+
+            h2 {
+                font-size: 24px;
+                margin-bottom: 8px;
+            }
+
+            .subtitle {
+                font-size: 14px;
+                margin-bottom: 25px;
+            }
+
+            .tagline {
+                font-size: 16px;
+                margin-bottom: 20px;
+            }
+
+            .input-group {
+                margin-bottom: 18px;
+            }
+
+            label {
+                font-size: 14px;
+                margin-bottom: 8px;
+            }
+
+            .input-box input,
+            .input-box select {
+                padding: 12px 16px;
+                font-size: 14px;
+            }
+
+            .input-box input[type="file"] {
+                padding: 10px 16px;
+                font-size: 13px;
+            }
+
+            .btn-register {
+                padding: 12px;
+                font-size: 15px;
+                margin-top: 15px;
+            }
+
+            .login-text {
+                font-size: 14px;
+                margin-top: 20px;
+            }
+
+            .eye {
+                font-size: 20px;
+                right: 16px;
+            }
+
+            .preview-img {
+                width: 70px;
+                height: 70px;
+            }
+
+            .error-text {
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 15px;
+                padding-top: 25px;
+            }
+
+            .card {
+                padding: 25px 20px;
+                border-radius: 20px;
+            }
+
+            .card img {
+                width: 160px !important;
+            }
+
+            h2 {
+                font-size: 22px;
+            }
+
+            .subtitle {
+                font-size: 13px;
+            }
+
+            .tagline {
+                font-size: 15px;
+            }
+
+            .input-box input,
+            .input-box select {
+                padding: 11px 14px;
+                font-size: 14px;
+            }
+
+            .btn-register {
+                padding: 11px;
+                font-size: 14px;
+            }
+
+            .eye {
+                font-size: 18px;
+                right: 14px;
+            }
+
+            .preview-img {
+                width: 60px;
+                height: 60px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .card {
+                padding: 20px 15px;
+            }
+
+            .card img {
+                width: 140px !important;
+            }
+
+            h2 {
+                font-size: 20px;
+            }
+
+            .tagline {
+                font-size: 14px;
+            }
+
+            .input-box input,
+            .input-box select {
+                padding: 10px 12px;
+            }
+
+            .btn-register {
+                padding: 10px;
+            }
+
+            .preview-img {
+                width: 50px;
+                height: 50px;
+            }
+        }
+
+        /* Landscape mobile optimization */
+        @media (max-height: 600px) and (orientation: landscape) {
+            body {
+                padding-top: 15px;
+                padding-bottom: 15px;
+            }
+
+            .card {
+                padding: 20px 25px;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+
+            .card img {
+                width: 120px !important;
+                margin-bottom: 8px !important;
+            }
+
+            .tagline {
+                font-size: 14px;
+                margin-bottom: 12px;
+            }
+
+            h2 {
+                font-size: 18px;
+                margin-bottom: 5px;
+            }
+
+            .subtitle {
+                font-size: 12px;
+                margin-bottom: 18px;
+            }
+
+            .input-group {
+                margin-bottom: 12px;
+            }
+
+            .preview-img {
+                width: 50px;
+                height: 50px;
+            }
         }
     </style>
 </head>

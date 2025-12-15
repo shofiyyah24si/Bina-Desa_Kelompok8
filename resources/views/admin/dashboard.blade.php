@@ -29,25 +29,31 @@
         padding: 40px;
         box-shadow: var(--shadow-medium);
         position: relative;
-        overflow: hidden;
+        overflow: visible;
         margin-bottom: 30px;
         animation: fadeInUp 0.8s ease-out;
+        min-height: 180px;
+        display: flex;
+        align-items: center;
     }
 
     .hero-section::before {
         content: '';
         position: absolute;
         top: -50%;
-        right: -20%;
-        width: 200px;
-        height: 200px;
+        right: -10%;
+        width: 150px;
+        height: 150px;
         background: rgba(255,255,255,0.1);
         border-radius: 50%;
+        z-index: 1;
     }
 
     .hero-content {
         position: relative;
         z-index: 2;
+        max-width: calc(100% - 180px);
+        flex: 1;
     }
 
     .hero-title {
@@ -69,9 +75,10 @@
     .hero-profile {
         position: absolute;
         right: 40px;
-        bottom: 20px;
-        width: 160px;
-        height: 160px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 140px;
+        height: 140px;
         border-radius: 50%;
         object-fit: cover;
         object-position: center;
@@ -79,6 +86,15 @@
         box-shadow: 0 8px 20px rgba(0,0,0,0.18);
         animation: fadeInProfile 0.8s ease-out;
         z-index: 3;
+        background: white;
+        flex-shrink: 0;
+    }
+    
+    /* Fallback untuk foto profil yang tidak ada */
+    .hero-profile[src*="sofia.png"] {
+        object-fit: contain;
+        background: linear-gradient(135deg, var(--astral-blue), var(--astral-blue-light));
+        padding: 8px;
     }
 
     /* ================================ */
@@ -88,13 +104,22 @@
         .hero-section {
             padding: 25px 20px;
             margin-bottom: 20px;
+            flex-direction: column;
+            text-align: center;
+            min-height: auto;
+        }
+        
+        .hero-content {
+            max-width: 100%;
+            margin-bottom: 20px;
         }
         
         .hero-profile {
             position: static;
-            width: 100px;
-            height: 100px;
-            margin: 15px auto 0;
+            transform: none;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto;
             display: block;
         }
         
@@ -203,6 +228,39 @@
         }
     }
     
+    @media (max-width: 992px) {
+        .hero-section {
+            flex-direction: column;
+            text-align: center;
+            min-height: auto;
+            padding: 30px 25px;
+        }
+        
+        .hero-content {
+            max-width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .hero-profile {
+            position: static;
+            transform: none;
+            width: 130px;
+            height: 130px;
+            margin: 0 auto;
+            display: block;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+        
+        .system-info-grid {
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+    }
+    
     @media (max-width: 480px) {
         .hero-section {
             padding: 20px 15px;
@@ -210,6 +268,11 @@
         
         .hero-title {
             font-size: 20px;
+        }
+        
+        .hero-profile {
+            width: 100px;
+            height: 100px;
         }
         
         .stats-grid {
@@ -266,7 +329,7 @@
     /* ================================ */
     .stats-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
         gap: 20px;
         margin-bottom: 40px;
     }
@@ -551,6 +614,8 @@
     .stat-card:nth-child(2) { animation-delay: 0.2s; }
     .stat-card:nth-child(3) { animation-delay: 0.3s; }
     .stat-card:nth-child(4) { animation-delay: 0.4s; }
+    .stat-card:nth-child(5) { animation-delay: 0.5s; }
+    .stat-card:nth-child(6) { animation-delay: 0.6s; }
 
     /* ================================ */
     /* SYSTEM INFO SECTION */
@@ -711,6 +776,22 @@
             <div class="stat-value">{{ number_format($totalPosko) }}</div>
         </div>
     </div>
+
+    <div class="stat-card">
+        <i class="fas fa-hand-holding-heart stat-icon"></i>
+        <div class="stat-content">
+            <div class="stat-title">Total Donasi</div>
+            <div class="stat-value">{{ number_format($totalDonasi) }}</div>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <i class="fas fa-boxes stat-icon"></i>
+        <div class="stat-content">
+            <div class="stat-title">Item Logistik</div>
+            <div class="stat-value">{{ number_format($totalLogistik) }}</div>
+        </div>
+    </div>
 </div>
 
 <!-- Content Grid: Calendar & Photos -->
@@ -818,9 +899,9 @@
     </div>
 </div>
 
-<!-- System Information Section -->
+<!-- Informasi Dashboard -->
 <div class="system-info-grid">
-    <!-- User Activity Card -->
+    <!-- Aktivitas Pengguna -->
     <div class="info-card user-activity-card">
         <div class="info-card-header">
             <h3 class="info-card-title">
@@ -864,115 +945,114 @@
                     <i class="fas fa-clock text-info"></i>
                     Sesi Aktif
                 </div>
-                <div class="info-value">
+                <div class="info-value" id="current-time">
                     {{ now()->format('H:i:s') }} WIB
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- System Status Card -->
+    <!-- Informasi Donasi -->
     <div class="info-card system-status-card">
         <div class="info-card-header">
             <h3 class="info-card-title">
-                <i class="fas fa-server"></i>
-                Status Sistem
+                <i class="fas fa-hand-holding-heart"></i>
+                Informasi Donasi
             </h3>
         </div>
         <div class="info-card-body">
             <div class="info-item">
                 <div class="info-label">
-                    <i class="fas fa-database text-success"></i>
-                    Database
+                    <i class="fas fa-money-bill-wave text-success"></i>
+                    Total Donasi Uang
                 </div>
                 <div class="info-value">
-                    <span class="status-online">
-                        <span class="status-indicator"></span>
-                        Online
-                    </span>
+                    Rp {{ number_format($totalDonasiUang, 0, ',', '.') }}
                 </div>
             </div>
             <div class="info-item">
                 <div class="info-label">
-                    <i class="fas fa-code text-primary"></i>
-                    Laravel Version
+                    <i class="fas fa-box text-primary"></i>
+                    Donasi Barang
                 </div>
                 <div class="info-value">
-                    {{ app()->version() }}
+                    {{ number_format($totalDonasiBarang) }} Item
                 </div>
             </div>
             <div class="info-item">
                 <div class="info-label">
-                    <i class="fas fa-php text-warning"></i>
-                    PHP Version
+                    <i class="fas fa-users text-warning"></i>
+                    Total Donatur
                 </div>
                 <div class="info-value">
-                    {{ PHP_VERSION }}
+                    {{ number_format($totalDonatur) }} Orang
                 </div>
             </div>
             <div class="info-item">
                 <div class="info-label">
-                    <i class="fas fa-memory text-info"></i>
-                    Memory Usage
+                    <i class="fas fa-calendar text-info"></i>
+                    Donasi Bulan Ini
                 </div>
                 <div class="info-value">
-                    {{ round(memory_get_usage(true) / 1024 / 1024, 2) }} MB
+                    {{ number_format($donasiBulanIni) }} Donasi
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Server Information Card -->
+    <!-- Informasi Logistik -->
     <div class="info-card server-info-card">
         <div class="info-card-header">
             <h3 class="info-card-title">
-                <i class="fas fa-info-circle"></i>
-                Informasi Server
+                <i class="fas fa-boxes"></i>
+                Informasi Logistik
             </h3>
         </div>
         <div class="info-card-body">
             <div class="info-item">
                 <div class="info-label">
-                    <i class="fas fa-globe text-success"></i>
-                    Environment
+                    <i class="fas fa-warehouse text-success"></i>
+                    Total Stok Tersedia
                 </div>
                 <div class="info-value">
-                    {{ app()->environment() }}
+                    {{ number_format($totalStokLogistik) }} Unit
                 </div>
             </div>
             <div class="info-item">
                 <div class="info-label">
-                    <i class="fas fa-calendar text-primary"></i>
-                    Tanggal Server
+                    <i class="fas fa-truck text-primary"></i>
+                    Total Distribusi
                 </div>
                 <div class="info-value">
-                    {{ now()->format('d F Y') }}
+                    {{ number_format($totalDistribusi) }} Kali
                 </div>
             </div>
             <div class="info-item">
                 <div class="info-label">
-                    <i class="fas fa-clock text-warning"></i>
-                    Waktu Server
+                    <i class="fas fa-exclamation-triangle text-warning"></i>
+                    Stok Menipis
                 </div>
                 <div class="info-value">
-                    {{ now()->format('H:i:s T') }}
+                    {{ number_format($stokMenipis) }} Item
                 </div>
             </div>
             <div class="info-item">
                 <div class="info-label">
-                    <i class="fas fa-map-marker-alt text-info"></i>
-                    Timezone
+                    <i class="fas fa-chart-line text-info"></i>
+                    Distribusi Bulan Ini
                 </div>
                 <div class="info-value">
-                    {{ config('app.timezone') }}
+                    {{ number_format($distribusiBulanIni) }} Unit
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+
+
 <script>
-    // Update waktu real-time
+    // Update waktu real-time untuk sesi aktif
     function updateTime() {
         const now = new Date();
         const timeString = now.toLocaleTimeString('id-ID', {
@@ -982,9 +1062,9 @@
             timeZone: 'Asia/Jakarta'
         }) + ' WIB';
         
-        const sessionTimeElement = document.querySelector('.info-item:nth-child(4) .info-value');
-        if (sessionTimeElement) {
-            sessionTimeElement.textContent = timeString;
+        const timeElement = document.getElementById('current-time');
+        if (timeElement) {
+            timeElement.textContent = timeString;
         }
     }
 

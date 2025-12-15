@@ -35,8 +35,16 @@ class PoskoBencanaController extends Controller
         $posko = PoskoBencana::create($request->except('foto'));
 
         if ($request->hasFile('foto')) {
-            foreach ($request->file('foto') as $file) {
-                $posko->addMedia($file, 'posko_bencana');
+            try {
+                foreach ($request->file('foto') as $file) {
+                    if ($file->isValid()) {
+                        $posko->addMedia($file, 'posko_bencana');
+                    }
+                }
+            } catch (\Exception $e) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Gagal mengupload foto: ' . $e->getMessage());
             }
         }
 
@@ -80,8 +88,16 @@ class PoskoBencanaController extends Controller
         }
 
         if ($request->hasFile('foto')) {
-            foreach ($request->file('foto') as $file) {
-                $posko->addMedia($file, 'posko_bencana');
+            try {
+                foreach ($request->file('foto') as $file) {
+                    if ($file->isValid()) {
+                        $posko->addMedia($file, 'posko_bencana');
+                    }
+                }
+            } catch (\Exception $e) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Gagal mengupload foto: ' . $e->getMessage());
             }
         }
 

@@ -7,72 +7,93 @@ use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        // Step 1: Create temporary column for JSON
+        // --- Step 1: Tambah kolom foto_temp jika belum ada ---
         Schema::table('kejadian_bencana', function (Blueprint $table) {
-            $table->json('foto_temp')->nullable()->after('keterangan');
-        });
-        
-        // Step 2: Migrate existing foto data to foto_temp array
-        DB::table('kejadian_bencana')->whereNotNull('foto')->get()->each(function ($kejadian) {
-            $fotoData = $kejadian->foto;
-            if (!empty($fotoData)) {
-                // Check if already JSON
-                $decoded = json_decode($fotoData, true);
-                if (json_last_error() !== JSON_ERROR_NONE) {
-                    // It's a string, convert to array
-                    DB::table('kejadian_bencana')
-                        ->where('kejadian_id', $kejadian->kejadian_id)
-                        ->update(['foto_temp' => json_encode([$fotoData])]);
-                } else {
-                    // Already JSON
-                    DB::table('kejadian_bencana')
-                        ->where('kejadian_id', $kejadian->kejadian_id)
-                        ->update(['foto_temp' => $fotoData]);
-                }
+            if (!Schema::hasColumn('kejadian_bencana', 'foto_temp')) {
+                $table->json('foto_temp')->nullable()->after('keterangan');
             }
         });
-        
-        // Step 3: Drop old foto column
-        Schema::table('kejadian_bencana', function (Blueprint $table) {
-            $table->dropColumn('foto');
-        });
-        
-        // Step 4: Rename foto_temp to foto
-        DB::statement('ALTER TABLE kejadian_bencana CHANGE foto_temp foto JSON NULL');
-    }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        // Create temporary string column
-        Schema::table('kejadian_bencana', function (Blueprint $table) {
-            $table->string('foto_temp')->nullable()->after('keterangan');
-        });
-        
-        // Migrate back: take first element from JSON array
-        DB::table('kejadian_bencana')->whereNotNull('foto')->get()->each(function ($kejadian) {
-            $fotoArray = json_decode($kejadian->foto, true);
-            if (!empty($fotoArray) && is_array($fotoArray)) {
+        // --- Step 2: Pindahkan data foto lama jika kolom foto masih ada ---
+        if (Schema::hasColumn('kejadian_bencana', 'foto')) {
+
+            $kejadians = DB::table('kejadian_bencana')
+                ->whereNotNull('foto')
+                ->get();
+
+            foreach ($kejadians as $kejadian) {
+
+                $fotoData = $kejadian->foto;
+
+                if (empty($fotoData)) {
+                    continue;
+                }
+
+                // Cek apakah sudah JSON
+                $decoded = json_decode($fotoData, true);
+
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    // sudah JSON
+                    $newValue = $decoded;
+                } else {
+                    // bukan JSON, jadikan array
+                    $newValue = [$fotoData];
+                }
+
                 DB::table('kejadian_bencana')
                     ->where('kejadian_id', $kejadian->kejadian_id)
-                    ->update(['foto_temp' => $fotoArray[0] ?? null]);
+                    ->update(['foto_temp' => json_encode($newValue)]);
+            }
+
+            // --- Step 3: Hapus kolom foto lama ---
+            Schema::table('kejadian_bencana', function (Blueprint $table) {
+                if (Schema::hasColumn('kejadian_bencana', 'foto')) {
+                    $table->dropColumn('foto');
+                }
+            });
+        }
+
+        // --- Step 4: Rename foto_temp menjadi foto (jika belum diganti) ---
+        if (Schema::hasColumn('kejadian_bencana', 'foto_temp') &&
+            !Schema::hasColumn('kejadian_bencana', 'foto')) {
+
+            DB::statement(
+                "ALTER TABLE kejadian_bencana CHANGE foto_temp foto JSON NULL"
+            );
+        }
+    }
+
+    public function down(): void
+    {
+        // --- Rollback aman ---
+        Schema::table('kejadian_bencana', function (Blueprint $table) {
+            if (!Schema::hasColumn('kejadian_bencana', 'foto_temp')) {
+                $table->string('foto_temp')->nullable();
             }
         });
-        
-        // Drop JSON column
-        Schema::table('kejadian_bencana', function (Blueprint $table) {
-            $table->dropColumn('foto');
-        });
-        
-        // Rename back
-        DB::statement('ALTER TABLE kejadian_bencana CHANGE foto_temp foto VARCHAR(255) NULL');
+
+        if (Schema::hasColumn('kejadian_bencana', 'foto')) {
+            $kejadians = DB::table('kejadian_bencana')
+                ->whereNotNull('foto')->get();
+
+            foreach ($kejadians as $kejadian) {
+                $arr = json_decode($kejadian->foto, true);
+                $first = is_array($arr) ? ($arr[0] ?? null) : null;
+
+                DB::table('kejadian_bencana')
+                    ->where('kejadian_id', $kejadian->kejadian_id)
+                    ->update(['foto_temp' => $first]);
+            }
+
+            Schema::table('kejadian_bencana', function (Blueprint $table) {
+                $table->dropColumn('foto');
+            });
+
+            DB::statement(
+                "ALTER TABLE kejadian_bencana CHANGE foto_temp foto VARCHAR(255) NULL"
+            );
+        }
     }
 };
-

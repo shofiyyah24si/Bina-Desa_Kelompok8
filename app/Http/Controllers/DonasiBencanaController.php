@@ -34,8 +34,16 @@ class DonasiBencanaController extends Controller
 
         // Upload bukti donasi
         if ($request->hasFile('foto')) {
-            foreach ($request->file('foto') as $file) {
-                $donasi->addMedia($file, 'donasi_bencana');
+            try {
+                foreach ($request->file('foto') as $file) {
+                    if ($file->isValid()) {
+                        $donasi->addMedia($file, 'donasi_bencana');
+                    }
+                }
+            } catch (\Exception $e) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Gagal mengupload foto: ' . $e->getMessage());
             }
         }
 
@@ -71,8 +79,16 @@ class DonasiBencanaController extends Controller
         }
 
         if ($request->hasFile('foto')) {
-            foreach ($request->file('foto') as $file) {
-                $donasi->addMedia($file, 'donasi_bencana');
+            try {
+                foreach ($request->file('foto') as $file) {
+                    if ($file->isValid()) {
+                        $donasi->addMedia($file, 'donasi_bencana');
+                    }
+                }
+            } catch (\Exception $e) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Gagal mengupload foto: ' . $e->getMessage());
             }
         }
 

@@ -20,22 +20,32 @@ trait HasMedia
             $folder = $this->getTable();
         }
 
-        $filename = time() . '_' . uniqid() . '.' . $file->extension();
-        $path = "uploads/$folder/$filename";
-
-        // Buat folder kalau belum ada
-        if (!file_exists(public_path("uploads/$folder"))) {
-            mkdir(public_path("uploads/$folder"), 0777, true);
+        // Generate unique filename
+        $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+        $uploadPath = "uploads/$folder";
+        
+        // Ensure directory exists
+        $fullPath = public_path($uploadPath);
+        if (!file_exists($fullPath)) {
+            mkdir($fullPath, 0755, true);
         }
 
-        $file->move(public_path("uploads/$folder"), $filename);
-
-        return $this->media()->create([
-            'ref_table' => $this->getTable(),
-            'ref_id'    => $this->getKey(),
-            'file_url'  => "$folder/$filename",
-            'mime_type' => $file->getClientMimeType(),
-        ]);
+        try {
+            // Move uploaded file
+            $file->move($fullPath, $filename);
+            
+            // Create media record
+            return $this->media()->create([
+                'ref_table' => $this->getTable(),
+                'ref_id'    => $this->getKey(),
+                'file_url'  => "$folder/$filename",
+                'mime_type' => $file->getClientMimeType() ?? 'image/jpeg',
+            ]);
+        } catch (\Exception $e) {
+            // Log error and throw exception
+            \Log::error('File upload failed: ' . $e->getMessage());
+            throw new \Exception('Gagal mengupload file: ' . $e->getMessage());
+        }
     }
 
     public function deleteMedia($mediaId)
@@ -43,7 +53,13 @@ trait HasMedia
         $media = $this->media()->where('media_id', $mediaId)->first();
         if ($media) {
             $filePath = public_path('uploads/' . $media->file_url);
-            if (file_exists($filePath)) unlink($filePath);
+            if (file_exists($filePath)) {
+                try {
+                    unlink($filePath);
+                } catch (\Exception $e) {
+                    \Log::warning('Failed to delete file: ' . $filePath . ' - ' . $e->getMessage());
+                }
+            }
             $media->delete();
         }
     }

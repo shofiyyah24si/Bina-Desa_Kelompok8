@@ -18,31 +18,64 @@ class DashboardController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-{
-    return view('admin.dashboard', [
-        'totalWarga'      => Warga::count(),
-        'totalUser'       => User::count(),
-        'totalKejadian'   => KejadianBencana::count(),
-        'totalPosko'      => PoskoBencana::count(),
+    {
+        // Data untuk statistics cards
+        $totalWarga = Warga::count();
+        $totalUser = User::count();
+        $totalKejadian = KejadianBencana::count();
+        $totalPosko = PoskoBencana::count();
+        $totalDonasi = DonasiBencana::count();
+        $totalLogistik = LogistikBencana::count();
 
-        'totalDonasiNominal' => DonasiBencana::sum('nilai'),
-        'totalDonasiJumlah'  => DonasiBencana::count(),
+        // Data untuk informasi donasi
+        $totalDonasiUang = DonasiBencana::where('jenis', 'uang')->sum('nilai') ?? 0;
+        $totalDonasiBarang = DonasiBencana::where('jenis', 'barang')->count();
+        $totalDonatur = DonasiBencana::distinct('donatur_nama')->count('donatur_nama');
+        $donasiBulanIni = DonasiBencana::whereMonth('created_at', now()->month)
+                                      ->whereYear('created_at', now()->year)
+                                      ->count();
 
-        'totalLogistik'      => LogistikBencana::sum('stok'),
-        'totalDistribusi'    => DistribusiLogistik::sum('jumlah'),
+        // Data untuk informasi logistik
+        $totalStokLogistik = LogistikBencana::sum('stok') ?? 0;
+        $totalDistribusi = DistribusiLogistik::count();
+        $stokMenipis = LogistikBencana::where('stok', '<=', 10)->count();
+        $distribusiBulanIni = DistribusiLogistik::whereMonth('created_at', now()->month)
+                                               ->whereYear('created_at', now()->year)
+                                               ->sum('jumlah') ?? 0;
 
-        // FOTO SLIDER
-        'fotoKejadian' => Media::where('ref_table', 'kejadian_bencana')
-                               ->orderBy('created_at', 'desc')
-                               ->take(8)
-                               ->get(),
+        return view('admin.dashboard', [
+            // Statistics cards
+            'totalWarga' => $totalWarga,
+            'totalUser' => $totalUser,
+            'totalKejadian' => $totalKejadian,
+            'totalPosko' => $totalPosko,
+            'totalDonasi' => $totalDonasi,
+            'totalLogistik' => $totalLogistik,
 
-        // DATA KEJADIAN TERBARU
-        'kejadianTerbaru' => KejadianBencana::orderBy('created_at', 'desc')
-                                            ->take(5)
-                                            ->get(),
-    ]);
-}
+            // Informasi donasi
+            'totalDonasiUang' => $totalDonasiUang,
+            'totalDonasiBarang' => $totalDonasiBarang,
+            'totalDonatur' => $totalDonatur,
+            'donasiBulanIni' => $donasiBulanIni,
+
+            // Informasi logistik
+            'totalStokLogistik' => $totalStokLogistik,
+            'totalDistribusi' => $totalDistribusi,
+            'stokMenipis' => $stokMenipis,
+            'distribusiBulanIni' => $distribusiBulanIni,
+
+            // FOTO SLIDER
+            'fotoKejadian' => Media::where('ref_table', 'kejadian_bencana')
+                                   ->orderBy('created_at', 'desc')
+                                   ->take(8)
+                                   ->get(),
+
+            // DATA KEJADIAN TERBARU
+            'kejadianTerbaru' => KejadianBencana::orderBy('created_at', 'desc')
+                                                ->take(5)
+                                                ->get(),
+        ]);
+    }
 
     /**
      * Show the form for creating a new resource.

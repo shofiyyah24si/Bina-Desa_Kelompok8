@@ -61,8 +61,16 @@ class KejadianBencanaController extends Controller
 
         // Upload multi foto
         if ($request->hasFile('foto')) {
-            foreach ($request->file('foto') as $file) {
-                $kejadian->addMedia($file, 'kejadian_bencana');
+            try {
+                foreach ($request->file('foto') as $file) {
+                    if ($file->isValid()) {
+                        $kejadian->addMedia($file, 'kejadian_bencana');
+                    }
+                }
+            } catch (\Exception $e) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Gagal mengupload foto: ' . $e->getMessage());
             }
         }
 
@@ -120,8 +128,16 @@ class KejadianBencanaController extends Controller
 
         // Upload foto baru
         if ($request->hasFile('foto')) {
-            foreach ($request->file('foto') as $file) {
-                $kejadian->addMedia($file, 'kejadian_bencana');
+            try {
+                foreach ($request->file('foto') as $file) {
+                    if ($file->isValid()) {
+                        $kejadian->addMedia($file, 'kejadian_bencana');
+                    }
+                }
+            } catch (\Exception $e) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Gagal mengupload foto: ' . $e->getMessage());
             }
         }
 

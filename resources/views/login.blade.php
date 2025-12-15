@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
     <title>Kebencanaan & Tanggap Darurat — Login</title>
     <!-- Favicon -->
@@ -116,7 +116,9 @@
             border: none;
             outline: none;
             color: #ffffff;
-            font-size: 15px;
+            font-size: 16px; /* Prevent zoom on iOS */
+            -webkit-appearance: none;
+            border-radius: 0;
         }
 
         .input-box input::placeholder {
@@ -155,10 +157,17 @@
             font-size: 16px;
             margin-top: 10px;
             transition: .25s ease;
+            cursor: pointer;
+            min-height: 44px; /* Touch-friendly minimum */
         }
 
         .btn-login:hover {
             background: #ffe3cf;
+        }
+
+        .btn-login:active {
+            transform: translateY(1px);
+            background: #f0c4a0;
         }
 
         /* ======================================================
@@ -192,6 +201,175 @@
             margin-top: -5px;
             margin-bottom: 22px;
             text-shadow: 0 0 6px rgba(246, 207, 181, 0.3);
+        }
+
+        /* ======================================================
+   MOBILE RESPONSIVENESS
+====================================================== */
+        @media (max-width: 768px) {
+            body {
+                padding: 20px;
+                align-items: flex-start;
+                padding-top: 40px;
+            }
+
+            .card {
+                width: 100%;
+                max-width: 400px;
+                padding: 30px 25px;
+                margin: 0 auto;
+            }
+
+            .card img {
+                width: 180px !important;
+                margin-bottom: 15px !important;
+            }
+
+            h2 {
+                font-size: 24px;
+                margin-bottom: 8px;
+            }
+
+            .subtitle {
+                font-size: 14px;
+                margin-bottom: 25px;
+            }
+
+            .tagline {
+                font-size: 16px;
+                margin-bottom: 20px;
+            }
+
+            .input-group {
+                margin-bottom: 18px;
+            }
+
+            label {
+                font-size: 14px;
+                margin-bottom: 8px;
+            }
+
+            .input-box input {
+                padding: 12px 16px;
+                font-size: 14px;
+            }
+
+            .btn-login {
+                padding: 12px;
+                font-size: 15px;
+                margin-top: 15px;
+            }
+
+            .signup-text {
+                font-size: 14px;
+                margin-top: 20px;
+            }
+
+            .eye {
+                font-size: 20px;
+                right: 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 15px;
+                padding-top: 30px;
+            }
+
+            .card {
+                padding: 25px 20px;
+                border-radius: 20px;
+            }
+
+            .card img {
+                width: 160px !important;
+            }
+
+            h2 {
+                font-size: 22px;
+            }
+
+            .subtitle {
+                font-size: 13px;
+            }
+
+            .tagline {
+                font-size: 15px;
+            }
+
+            .input-box input {
+                padding: 11px 14px;
+                font-size: 14px;
+            }
+
+            .btn-login {
+                padding: 11px;
+                font-size: 14px;
+            }
+
+            .eye {
+                font-size: 18px;
+                right: 14px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .card {
+                padding: 20px 15px;
+            }
+
+            .card img {
+                width: 140px !important;
+            }
+
+            h2 {
+                font-size: 20px;
+            }
+
+            .input-box input {
+                padding: 10px 12px;
+            }
+
+            .btn-login {
+                padding: 10px;
+            }
+        }
+
+        /* Landscape mobile optimization */
+        @media (max-height: 600px) and (orientation: landscape) {
+            body {
+                padding-top: 20px;
+                padding-bottom: 20px;
+            }
+
+            .card {
+                padding: 20px 25px;
+            }
+
+            .card img {
+                width: 120px !important;
+                margin-bottom: 10px !important;
+            }
+
+            .tagline {
+                font-size: 14px;
+                margin-bottom: 15px;
+            }
+
+            h2 {
+                font-size: 20px;
+                margin-bottom: 5px;
+            }
+
+            .subtitle {
+                font-size: 12px;
+                margin-bottom: 20px;
+            }
+
+            .input-group {
+                margin-bottom: 15px;
+            }
         }
     </style>
 </head>
