@@ -60,9 +60,22 @@ class UserController extends Controller
         // Hash password
         $data['password'] = bcrypt($data['password']);
 
-        // Handle foto profil upload
+        // Handle foto profil upload (sama seperti kejadian bencana)
         if ($request->hasFile('foto_profil') && $request->file('foto_profil')->isValid()) {
-            $data['foto_profil'] = $request->file('foto_profil')->store('uploads/users', 'public');
+            // Generate unique filename
+            $file = $request->file('foto_profil');
+            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $uploadPath = "uploads/users";
+            
+            // Ensure directory exists
+            $fullPath = public_path($uploadPath);
+            if (!file_exists($fullPath)) {
+                mkdir($fullPath, 0755, true);
+            }
+            
+            // Move uploaded file to public/uploads
+            $file->move($fullPath, $filename);
+            $data['foto_profil'] = "users/$filename";
             
             // Debug: Log successful upload
             \Log::info('New user photo uploaded successfully', [
@@ -103,21 +116,35 @@ class UserController extends Controller
             unset($data['password']);
         }
 
-        // Handle foto profil upload
+        // Handle foto profil upload (sama seperti kejadian bencana)
         if ($request->hasFile('foto_profil') && $request->file('foto_profil')->isValid()) {
             // Delete old foto if exists
             if ($user->foto_profil) {
-                Storage::disk('public')->delete($user->foto_profil);
+                $oldPath = public_path('uploads/' . $user->foto_profil);
+                if (file_exists($oldPath)) {
+                    unlink($oldPath);
+                }
             }
             
-            // Store new photo
-            $photoPath = $request->file('foto_profil')->store('uploads/users', 'public');
-            $user->foto_profil = $photoPath;
+            // Generate unique filename
+            $file = $request->file('foto_profil');
+            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $uploadPath = "uploads/users";
+            
+            // Ensure directory exists
+            $fullPath = public_path($uploadPath);
+            if (!file_exists($fullPath)) {
+                mkdir($fullPath, 0755, true);
+            }
+            
+            // Move uploaded file to public/uploads
+            $file->move($fullPath, $filename);
+            $user->foto_profil = "users/$filename";
             
             // Debug: Log successful upload
             \Log::info('User photo uploaded successfully', [
                 'user_id' => $user->id,
-                'file_path' => $photoPath
+                'file_path' => $user->foto_profil
             ]);
         }
 

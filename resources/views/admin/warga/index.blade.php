@@ -515,7 +515,7 @@
                         <td><strong>{{ $dataWarga->firstItem() + $i }}</strong></td>
                         <td>
                             @if($item->foto_profil)
-                                <img src="{{ asset('storage/' . $item->foto_profil) }}" 
+                                <img src="{{ asset('uploads/' . $item->foto_profil) }}" 
                                      alt="Foto Profil {{ $item->nama }}" 
                                      class="profile-img"
                                      data-path="{{ $item->foto_profil }}"

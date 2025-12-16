@@ -40,7 +40,7 @@
                     <strong class="text-dark">{{ Auth::user()->role }}</strong>
                 </span>
 
-                <img src="{{ Auth::user()->foto_profil ? asset('storage/' . Auth::user()->foto_profil) : asset('assets-admin/images/profile/sofia.png') }}"
+                <img src="{{ Auth::user()->foto_profil ? asset('uploads/' . Auth::user()->foto_profil) : asset('assets-admin/images/profile/sofia.png') }}"
                     class="user-avatar rounded-circle"
                     data-path="{{ Auth::user()->foto_profil }}"
                     onerror="this.src='{{ asset('assets-admin/images/profile/sofia.png') }}'">

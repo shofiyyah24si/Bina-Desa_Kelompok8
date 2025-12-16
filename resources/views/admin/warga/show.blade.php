@@ -267,9 +267,10 @@
         <!-- Profile Section -->
         <div class="profile-section">
             @if($warga->foto_profil)
-                <img src="{{ \App\Helpers\ImageHelper::getImageWithFallback($warga->foto_profil, 'assets-admin/images/profile/sofia.png') }}" 
+                <img src="{{ asset('uploads/' . $warga->foto_profil) }}" 
                      alt="Foto Profil {{ $warga->nama }}" 
-                     class="profile-image">
+                     class="profile-image"
+                     onerror="this.src='{{ asset('assets-admin/images/profile/sofia.png') }}'">
             @else
                 <div class="profile-placeholder">
                     <i class="fas fa-user"></i>

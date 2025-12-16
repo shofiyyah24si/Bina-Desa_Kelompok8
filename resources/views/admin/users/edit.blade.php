@@ -334,10 +334,11 @@
                     <div class="preview-card">
                         <div class="position-relative d-inline-block">
                             @if($user->foto_profil)
-                                <img src="{{ \App\Helpers\ImageHelper::getImageWithFallback($user->foto_profil, 'assets-admin/images/profile/sofia.png') }}" 
+                                <img src="{{ asset('uploads/' . $user->foto_profil) }}" 
                                      alt="Foto Profil" 
                                      id="preview-foto" 
-                                     class="preview-image">
+                                     class="preview-image"
+                                     onerror="this.src='{{ asset('assets-admin/images/profile/sofia.png') }}'">
                                 <div class="current-photo-badge">
                                     <i class="fas fa-check"></i>
                                 </div>

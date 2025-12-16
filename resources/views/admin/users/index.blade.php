@@ -499,7 +499,7 @@
                         <td><strong>{{ $users->firstItem() + $i }}</strong></td>
                         <td>
                             @if ($user->foto_profil)
-                                <img src="{{ asset('storage/' . $user->foto_profil) }}" 
+                                <img src="{{ asset('uploads/' . $user->foto_profil) }}" 
                                      alt="Foto Profil {{ $user->name }}" 
                                      class="profile-img"
                                      data-user-id="{{ $user->id }}"

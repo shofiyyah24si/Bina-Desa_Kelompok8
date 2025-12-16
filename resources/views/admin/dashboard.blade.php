@@ -736,7 +736,7 @@
         </p>
     </div>
     
-    <img src="{{ Auth::user()->foto_profil ? asset('storage/' . Auth::user()->foto_profil) : asset('assets-admin/images/profile/sofia.png') }}" 
+    <img src="{{ Auth::user()->foto_profil ? asset('uploads/' . Auth::user()->foto_profil) : asset('assets-admin/images/profile/sofia.png') }}" 
         class="hero-profile" 
         alt="Foto Profil {{ Auth::user()->name }}"
         data-path="{{ Auth::user()->foto_profil }}"
