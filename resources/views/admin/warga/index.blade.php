@@ -213,6 +213,8 @@
         justify-content: center;
         color: white;
         font-size: 18px;
+        flex-shrink: 0; /* Prevent shrinking in mobile */
+        border: 2px solid var(--soft-melon);
     }
 
     .btn-action {
@@ -341,9 +343,20 @@
             white-space: nowrap;
         }
         
+        /* Ensure photo column has enough space */
+        .table th:nth-child(2),
+        .table td:nth-child(2) {
+            min-width: 60px;
+            text-align: center;
+        }
+        
         .profile-img, .profile-placeholder {
             width: 40px;
             height: 40px;
+        }
+        
+        .profile-placeholder {
+            font-size: 16px;
         }
         
         .btn-action {
@@ -402,6 +415,10 @@
         .profile-img, .profile-placeholder {
             width: 35px;
             height: 35px;
+        }
+        
+        .profile-placeholder {
+            font-size: 14px;
         }
         
         .btn-action {
