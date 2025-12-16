@@ -329,7 +329,7 @@
         
         .table {
             font-size: 13px;
-            min-width: 700px; /* Warga table has more columns */
+            min-width: 900px; /* Warga table has more columns - need more space */
         }
         
         .table thead th {
@@ -348,6 +348,7 @@
         .table td:nth-child(2) {
             min-width: 60px;
             text-align: center;
+            padding: 8px !important;
         }
         
         .profile-img, .profile-placeholder {
@@ -371,15 +372,8 @@
             gap: 10px;
         }
         
-        /* Hide less important columns on mobile */
-        .table th:nth-child(3),
-        .table td:nth-child(3),
-        .table th:nth-child(6),
-        .table td:nth-child(6),
-        .table th:nth-child(7),
-        .table td:nth-child(7) {
-            display: none;
-        }
+        /* Don't hide columns - let horizontal scroll handle it */
+        /* All columns remain visible for better UX */
     }
     
     @media (max-width: 480px) {
@@ -401,6 +395,7 @@
         
         .table {
             font-size: 12px;
+            min-width: 800px; /* Ensure all columns including photo are visible */
         }
         
         .table thead th {
@@ -427,14 +422,13 @@
             padding: 4px 8px;
         }
         
-        /* Hide even more columns on very small screens */
+        /* Don't hide columns - let horizontal scroll handle it */
+        /* Keep photo column visible and properly sized */
         .table th:nth-child(2),
-        .table td:nth-child(2),
-        .table th:nth-child(8),
-        .table td:nth-child(8),
-        .table th:nth-child(9),
-        .table td:nth-child(9) {
-            display: none;
+        .table td:nth-child(2) {
+            min-width: 50px;
+            text-align: center;
+            padding: 6px !important;
         }
     }
 </style>
