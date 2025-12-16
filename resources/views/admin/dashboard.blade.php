@@ -736,9 +736,10 @@
         </p>
     </div>
     
-    <img src="{{ \App\Helpers\ImageHelper::getImageWithFallback(Auth::user()->foto_profil, 'assets-admin/images/profile/sofia.png') }}" 
+    <img src="{{ Auth::user()->foto_profil ? asset('storage/' . Auth::user()->foto_profil) : asset('assets-admin/images/profile/sofia.png') }}" 
         class="hero-profile" 
         alt="Foto Profil {{ Auth::user()->name }}"
+        data-path="{{ Auth::user()->foto_profil }}"
         onerror="this.src='{{ asset('assets-admin/images/profile/sofia.png') }}'">
 </div>
 

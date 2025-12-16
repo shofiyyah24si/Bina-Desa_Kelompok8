@@ -499,10 +499,11 @@
                         <td><strong>{{ $users->firstItem() + $i }}</strong></td>
                         <td>
                             @if ($user->foto_profil)
-                                <img src="{{ \App\Helpers\ImageHelper::getImageWithFallback($user->foto_profil, 'assets-admin/images/profile/sofia.png') }}" 
+                                <img src="{{ asset('storage/' . $user->foto_profil) }}" 
                                      alt="Foto Profil {{ $user->name }}" 
                                      class="profile-img"
                                      data-user-id="{{ $user->id }}"
+                                     data-path="{{ $user->foto_profil }}"
                                      onerror="console.log('Image failed to load for user {{ $user->id }}:', this.src); this.src='{{ asset('assets-admin/images/profile/sofia.png') }}'">
                             @else
                                 <div class="profile-placeholder">

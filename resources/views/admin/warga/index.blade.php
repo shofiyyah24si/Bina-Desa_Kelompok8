@@ -515,9 +515,10 @@
                         <td><strong>{{ $dataWarga->firstItem() + $i }}</strong></td>
                         <td>
                             @if($item->foto_profil)
-                                <img src="{{ \App\Helpers\ImageHelper::getImageWithFallback($item->foto_profil, 'assets-admin/images/profile/sofia.png') }}" 
-                                     alt="Foto Profil" 
+                                <img src="{{ asset('storage/' . $item->foto_profil) }}" 
+                                     alt="Foto Profil {{ $item->nama }}" 
                                      class="profile-img"
+                                     data-path="{{ $item->foto_profil }}"
                                      onerror="this.src='{{ asset('assets-admin/images/profile/sofia.png') }}'">
                             @else
                                 <div class="profile-placeholder">
