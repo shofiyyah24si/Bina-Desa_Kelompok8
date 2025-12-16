@@ -266,7 +266,7 @@
                     <th>Bukti</th>
                     <th>Nama Donatur</th>
                     <th>Jenis</th>
-                    <th>Nilai</th>
+                    <th>Detail Donasi</th>
                     <th>Kejadian</th>
                     <th class="text-center">Aksi</th>
                 </tr>
@@ -302,10 +302,15 @@
                         </td>
 
                         <td>
-                            @if($d->nilai)
+                            @if($d->jenis == 'uang' && $d->nilai)
                                 <div style="display: flex; align-items: center; gap: 8px;">
                                     <i class="fas fa-coins text-warning"></i>
                                     <strong style="color: #191B47;">Rp {{ number_format($d->nilai, 0, ',', '.') }}</strong>
+                                </div>
+                            @elseif($d->jenis == 'barang' && $d->keterangan_barang)
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-box text-info"></i>
+                                    <span style="color: #191B47; font-size: 13px;">{{ Str::limit($d->keterangan_barang, 30) }}</span>
                                 </div>
                             @else
                                 <span style="color: #64748b;">-</span>

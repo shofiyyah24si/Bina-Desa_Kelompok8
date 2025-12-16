@@ -25,12 +25,34 @@ class DonasiBencanaController extends Controller
         $request->validate([
             'kejadian_id' => 'required|integer',
             'donatur_nama' => 'nullable|string|max:150',
-            'jenis' => 'required|string',
-            'nilai' => 'nullable|numeric',
+            'jenis' => 'required|string|in:uang,barang',
+            'nilai' => 'nullable|numeric|min:0',
+            'keterangan_barang' => 'nullable|string|max:1000',
             'foto.*' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        $donasi = DonasiBencana::create($request->except('foto'));
+        // Additional validation based on jenis
+        if ($request->jenis === 'uang' && !$request->nilai) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['nilai' => 'Nominal uang harus diisi untuk donasi uang.']);
+        }
+        
+        if ($request->jenis === 'barang' && !$request->keterangan_barang) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['keterangan_barang' => 'Keterangan barang harus diisi untuk donasi barang.']);
+        }
+
+        // Clean data based on jenis
+        $data = $request->except('foto');
+        if ($request->jenis === 'uang') {
+            $data['keterangan_barang'] = null;
+        } else {
+            $data['nilai'] = null;
+        }
+        
+        $donasi = DonasiBencana::create($data);
 
         // Upload bukti donasi
         if ($request->hasFile('foto')) {
@@ -70,13 +92,35 @@ class DonasiBencanaController extends Controller
         $request->validate([
             'kejadian_id' => 'required|integer',
             'donatur_nama' => 'nullable|string|max:150',
-            'jenis' => 'required|string',
-            'nilai' => 'nullable|numeric',
+            'jenis' => 'required|string|in:uang,barang',
+            'nilai' => 'nullable|numeric|min:0',
+            'keterangan_barang' => 'nullable|string|max:1000',
             'delete_foto' => 'nullable|array',
             'foto.*' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        $donasi->update($request->except('foto','delete_foto'));
+        // Additional validation based on jenis
+        if ($request->jenis === 'uang' && !$request->nilai) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['nilai' => 'Nominal uang harus diisi untuk donasi uang.']);
+        }
+        
+        if ($request->jenis === 'barang' && !$request->keterangan_barang) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['keterangan_barang' => 'Keterangan barang harus diisi untuk donasi barang.']);
+        }
+
+        // Clean data based on jenis
+        $data = $request->except('foto','delete_foto');
+        if ($request->jenis === 'uang') {
+            $data['keterangan_barang'] = null;
+        } else {
+            $data['nilai'] = null;
+        }
+        
+        $donasi->update($data);
 
         if ($request->delete_foto) {
             foreach ($request->delete_foto as $mediaId) {

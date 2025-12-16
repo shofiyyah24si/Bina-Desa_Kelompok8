@@ -27,15 +27,28 @@
 
             <div class="mb-3">
                 <label class="form-label">Jenis Donasi</label>
-                <select name="jenis" class="form-select" required>
+                <select name="jenis" id="jenis_donasi" class="form-select" required>
+                    <option value="">-- Pilih Jenis Donasi --</option>
                     <option value="uang">Uang</option>
                     <option value="barang">Barang</option>
                 </select>
             </div>
 
-            <div class="mb-3">
-                <label class="form-label">Nilai (angka nominal)</label>
-                <input type="number" step="0.01" name="nilai" class="form-control">
+            <!-- Field untuk Donasi Uang -->
+            <div class="mb-3" id="field_uang" style="display: none;">
+                <label class="form-label">💰 Nominal Uang Donasi</label>
+                <div class="input-group">
+                    <span class="input-group-text">Rp</span>
+                    <input type="number" step="1000" name="nilai" class="form-control" placeholder="Masukkan nominal donasi">
+                </div>
+                <small class="form-text text-muted">Contoh: 100000 untuk Rp 100.000</small>
+            </div>
+
+            <!-- Field untuk Donasi Barang -->
+            <div class="mb-3" id="field_barang" style="display: none;">
+                <label class="form-label">📦 Keterangan Barang Donasi</label>
+                <textarea name="keterangan_barang" class="form-control" rows="3" placeholder="Jelaskan barang yang didonasikan...&#10;Contoh: Beras 10kg, Mie instan 2 dus, Selimut 5 buah"></textarea>
+                <small class="form-text text-muted">Sebutkan jenis dan jumlah barang yang didonasikan</small>
             </div>
 
             <div class="mb-3">
@@ -49,4 +62,40 @@
 
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const jenisSelect = document.getElementById('jenis_donasi');
+    const fieldUang = document.getElementById('field_uang');
+    const fieldBarang = document.getElementById('field_barang');
+    const inputNilai = document.querySelector('input[name="nilai"]');
+    const inputKeterangan = document.querySelector('textarea[name="keterangan_barang"]');
+
+    jenisSelect.addEventListener('change', function() {
+        const jenis = this.value;
+        
+        // Hide all fields first
+        fieldUang.style.display = 'none';
+        fieldBarang.style.display = 'none';
+        
+        // Clear inputs
+        inputNilai.value = '';
+        inputKeterangan.value = '';
+        
+        // Remove required attributes
+        inputNilai.removeAttribute('required');
+        inputKeterangan.removeAttribute('required');
+        
+        // Show appropriate field
+        if (jenis === 'uang') {
+            fieldUang.style.display = 'block';
+            inputNilai.setAttribute('required', 'required');
+        } else if (jenis === 'barang') {
+            fieldBarang.style.display = 'block';
+            inputKeterangan.setAttribute('required', 'required');
+        }
+    });
+});
+</script>
+
 @endsection

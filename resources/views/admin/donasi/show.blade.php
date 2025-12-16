@@ -14,7 +14,11 @@
             <tr><th>Kejadian</th><td>{{ $donasi->kejadian->jenis_bencana ?? 'Tidak ada kejadian terkait' }}</td></tr>
             <tr><th>Nama Donatur</th><td>{{ $donasi->donatur_nama ?? '-' }}</td></tr>
             <tr><th>Jenis</th><td>{{ ucfirst($donasi->jenis) }}</td></tr>
-            <tr><th>Nilai</th><td>{{ number_format($donasi->nilai, 0, ',', '.') }}</td></tr>
+            @if($donasi->jenis == 'uang')
+                <tr><th>💰 Nominal Uang</th><td>Rp {{ number_format($donasi->nilai, 0, ',', '.') }}</td></tr>
+            @elseif($donasi->jenis == 'barang')
+                <tr><th>📦 Keterangan Barang</th><td>{{ $donasi->keterangan_barang ?? '-' }}</td></tr>
+            @endif
         </table>
 
         <h5 class="mt-4">Bukti Donasi</h5>

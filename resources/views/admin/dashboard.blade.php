@@ -910,56 +910,7 @@
 
 <!-- Informasi Dashboard -->
 <div class="system-info-grid">
-    <!-- Aktivitas Pengguna -->
-    <div class="info-card user-activity-card">
-        <div class="info-card-header">
-            <h3 class="info-card-title">
-                <i class="fas fa-user-clock"></i>
-                Aktivitas Pengguna
-            </h3>
-        </div>
-        <div class="info-card-body">
-            <div class="info-item">
-                <div class="info-label">
-                    <i class="fas fa-sign-in-alt text-success"></i>
-                    Login Terakhir
-                </div>
-                <div class="info-value">
-                    {{ Auth::user()->last_login_at ? Auth::user()->last_login_at->diffForHumans() : 'Belum pernah login' }}
-                </div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">
-                    <i class="fas fa-calendar-check text-primary"></i>
-                    Bergabung Sejak
-                </div>
-                <div class="info-value">
-                    {{ Auth::user()->created_at->format('d M Y') }}
-                </div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">
-                    <i class="fas fa-shield-alt text-warning"></i>
-                    Role Aktif
-                </div>
-                <div class="info-value">
-                    <span class="status-online">
-                        <span class="status-indicator"></span>
-                        {{ Auth::user()->role ?? 'User' }}
-                    </span>
-                </div>
-            </div>
-            <div class="info-item">
-                <div class="info-label">
-                    <i class="fas fa-clock text-info"></i>
-                    Sesi Aktif
-                </div>
-                <div class="info-value" id="current-time">
-                    {{ now()->format('H:i:s') }} WIB
-                </div>
-            </div>
-        </div>
-    </div>
+    
 
     <!-- Informasi Donasi -->
     <div class="info-card system-status-card">
@@ -1056,6 +1007,58 @@
             </div>
         </div>
     </div>
+
+    <!-- Aktivitas Pengguna -->
+    <div class="info-card user-activity-card">
+        <div class="info-card-header">
+            <h3 class="info-card-title">
+                <i class="fas fa-user-clock"></i>
+                Aktivitas Pengguna
+            </h3>
+        </div>
+        <div class="info-card-body">
+            <div class="info-item">
+                <div class="info-label">
+                    <i class="fas fa-sign-in-alt text-success"></i>
+                    Login Terakhir
+                </div>
+                <div class="info-value">
+                    {{ Auth::user()->last_login_at ? Auth::user()->last_login_at->diffForHumans() : 'Belum pernah login' }}
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">
+                    <i class="fas fa-calendar-check text-primary"></i>
+                    Bergabung Sejak
+                </div>
+                <div class="info-value">
+                    {{ Auth::user()->created_at->format('d M Y') }}
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">
+                    <i class="fas fa-shield-alt text-warning"></i>
+                    Role Aktif
+                </div>
+                <div class="info-value">
+                    <span class="status-online">
+                        <span class="status-indicator"></span>
+                        {{ Auth::user()->role ?? 'User' }}
+                    </span>
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">
+                    <i class="fas fa-clock text-info"></i>
+                    Sesi Aktif
+                </div>
+                <div class="info-value" id="current-time">
+                    {{ now()->format('H:i:s') }} WIB
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 

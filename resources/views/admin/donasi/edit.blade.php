@@ -29,15 +29,27 @@
 
             <div class="mb-3">
                 <label class="form-label">Jenis Donasi</label>
-                <select name="jenis" class="form-select">
+                <select name="jenis" id="jenis_donasi" class="form-select" required>
                     <option value="uang" {{ $donasi->jenis == 'uang' ? 'selected' : '' }}>Uang</option>
                     <option value="barang" {{ $donasi->jenis == 'barang' ? 'selected' : '' }}>Barang</option>
                 </select>
             </div>
 
-            <div class="mb-3">
-                <label class="form-label">Nilai</label>
-                <input type="number" step="0.01" name="nilai" value="{{ $donasi->nilai }}" class="form-control">
+            <!-- Field untuk Donasi Uang -->
+            <div class="mb-3" id="field_uang" style="display: {{ $donasi->jenis == 'uang' ? 'block' : 'none' }};">
+                <label class="form-label">💰 Nominal Uang Donasi</label>
+                <div class="input-group">
+                    <span class="input-group-text">Rp</span>
+                    <input type="number" step="1000" name="nilai" value="{{ $donasi->jenis == 'uang' ? $donasi->nilai : '' }}" class="form-control" placeholder="Masukkan nominal donasi">
+                </div>
+                <small class="form-text text-muted">Contoh: 100000 untuk Rp 100.000</small>
+            </div>
+
+            <!-- Field untuk Donasi Barang -->
+            <div class="mb-3" id="field_barang" style="display: {{ $donasi->jenis == 'barang' ? 'block' : 'none' }};">
+                <label class="form-label">📦 Keterangan Barang Donasi</label>
+                <textarea name="keterangan_barang" class="form-control" rows="3" placeholder="Jelaskan barang yang didonasikan...">{{ $donasi->jenis == 'barang' ? $donasi->keterangan_barang : '' }}</textarea>
+                <small class="form-text text-muted">Sebutkan jenis dan jumlah barang yang didonasikan</small>
             </div>
 
             <hr>
@@ -68,3 +80,37 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const jenisSelect = document.getElementById('jenis_donasi');
+    const fieldUang = document.getElementById('field_uang');
+    const fieldBarang = document.getElementById('field_barang');
+    
+    function toggleFields() {
+        const selectedValue = jenisSelect.value;
+        
+        if (selectedValue === 'uang') {
+            fieldUang.style.display = 'block';
+            fieldBarang.style.display = 'none';
+            
+            // Clear barang field when switching to uang
+            document.querySelector('textarea[name="keterangan_barang"]').value = '';
+        } else if (selectedValue === 'barang') {
+            fieldUang.style.display = 'none';
+            fieldBarang.style.display = 'block';
+            
+            // Clear nilai field when switching to barang
+            document.querySelector('input[name="nilai"]').value = '';
+        }
+    }
+    
+    // Listen for changes
+    jenisSelect.addEventListener('change', toggleFields);
+    
+    // Set initial state
+    toggleFields();
+});
+</script>
+@endpush
