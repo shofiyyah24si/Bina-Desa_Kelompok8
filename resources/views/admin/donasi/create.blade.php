@@ -44,11 +44,13 @@
                 <small class="form-text text-muted">Contoh: 100000 untuk Rp 100.000</small>
             </div>
 
-            <!-- Field untuk Donasi Barang -->
+            <!-- Field untuk Donasi Barang - Temporarily disabled -->
             <div class="mb-3" id="field_barang" style="display: none;">
-                <label class="form-label">📦 Keterangan Barang Donasi</label>
-                <textarea name="keterangan_barang" class="form-control" rows="3" placeholder="Jelaskan barang yang didonasikan...&#10;Contoh: Beras 10kg, Mie instan 2 dus, Selimut 5 buah"></textarea>
-                <small class="form-text text-muted">Sebutkan jenis dan jumlah barang yang didonasikan</small>
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Donasi Barang</strong><br>
+                    Untuk sementara, detail barang akan dicatat melalui foto bukti donasi.
+                </div>
             </div>
 
             <div class="mb-3">
@@ -92,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function() {
             inputNilai.setAttribute('required', 'required');
         } else if (jenis === 'barang') {
             fieldBarang.style.display = 'block';
-            inputKeterangan.setAttribute('required', 'required');
+            // inputKeterangan.setAttribute('required', 'required'); // Temporarily disabled
         }
     });
 });

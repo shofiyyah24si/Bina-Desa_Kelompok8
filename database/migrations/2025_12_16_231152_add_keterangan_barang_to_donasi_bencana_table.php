@@ -9,20 +9,21 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
         Schema::table('donasi_bencana', function (Blueprint $table) {
-            $table->text('keterangan_barang')->nullable()->after('nilai');
+            if (!Schema::hasColumn('donasi_bencana', 'keterangan_barang')) {
+                $table->string('keterangan_barang')->nullable()->after('nilai');
+            }
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+    public function down()
     {
         Schema::table('donasi_bencana', function (Blueprint $table) {
-            $table->dropColumn('keterangan_barang');
+            if (Schema::hasColumn('donasi_bencana', 'keterangan_barang')) {
+                $table->dropColumn('keterangan_barang');
+            }
         });
     }
 };

@@ -307,10 +307,10 @@
                                     <i class="fas fa-coins text-warning"></i>
                                     <strong style="color: #191B47;">Rp {{ number_format($d->nilai, 0, ',', '.') }}</strong>
                                 </div>
-                            @elseif($d->jenis == 'barang' && $d->keterangan_barang)
+                            @elseif($d->jenis == 'barang')
                                 <div style="display: flex; align-items: center; gap: 8px;">
                                     <i class="fas fa-box text-info"></i>
-                                    <span style="color: #191B47; font-size: 13px;">{{ Str::limit($d->keterangan_barang, 30) }}</span>
+                                    <span style="color: #191B47; font-size: 13px;">Donasi Barang</span>
                                 </div>
                             @else
                                 <span style="color: #64748b;">-</span>
