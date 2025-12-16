@@ -29,20 +29,14 @@ class KejadianBencanaController extends Controller
         // Pagination
         $kejadian = $query->paginate(10);
 
-        return view('admin.kejadian.index', compact('kejadian')); // FIXED VIEW PATH
+        return view('admin.kejadian.index', compact('kejadian')); 
     }
 
-    // ===========================
-    // CREATE PAGE
-    // ===========================
     public function create()
     {
-        return view('admin.kejadian.create'); // FIXED VIEW PATH
+        return view('admin.kejadian.create'); 
     }
-
-    // ===========================
-    // STORE DATA
-    // ===========================
+    
     public function store(Request $request)
     {
         $request->validate([
@@ -78,27 +72,18 @@ class KejadianBencanaController extends Controller
             ->with('success', 'Kejadian bencana berhasil ditambahkan!');
     }
 
-    // ===========================
-    // SHOW
-    // ===========================
     public function show($id)
     {
         $kejadian = KejadianBencana::findOrFail($id);
-        return view('admin.kejadian.show', compact('kejadian')); // FIX VIEW PATH
+        return view('admin.kejadian.show', compact('kejadian')); 
     }
 
-    // ===========================
-    // EDIT PAGE
-    // ===========================
     public function edit($id)
     {
         $kejadian = KejadianBencana::findOrFail($id);
-        return view('admin.kejadian.edit', compact('kejadian')); // FIX VIEW PATH
+        return view('admin.kejadian.edit', compact('kejadian')); 
     }
 
-    // ===========================
-    // UPDATE DATA
-    // ===========================
     public function update(Request $request, $id)
     {
         $kejadian = KejadianBencana::findOrFail($id);
@@ -145,9 +130,6 @@ class KejadianBencanaController extends Controller
             ->with('success', 'Kejadian bencana berhasil diperbarui!');
     }
 
-    // ===========================
-    // DELETE
-    // ===========================
     public function destroy($id)
     {
         $kejadian = KejadianBencana::findOrFail($id);

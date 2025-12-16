@@ -27,7 +27,7 @@ class DonasiBencanaController extends Controller
             'donatur_nama' => 'nullable|string|max:150',
             'jenis' => 'required|string|in:uang,barang',
             'nilai' => 'nullable|numeric|min:0',
-            // 'keterangan_barang' => 'nullable|string|max:1000', // Temporarily disabled
+            // 'keterangan_barang' => 'nullable|string|max:1000', 
             'foto.*' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
@@ -45,7 +45,7 @@ class DonasiBencanaController extends Controller
         //         ->withErrors(['keterangan_barang' => 'Keterangan barang harus diisi untuk donasi barang.']);
         // }
 
-        // Clean data based on jenis (temporarily simplified)
+        
         $data = $request->except(['foto', 'keterangan_barang']);
         if ($request->jenis === 'barang') {
             $data['nilai'] = null;
@@ -112,7 +112,7 @@ class DonasiBencanaController extends Controller
         //         ->withErrors(['keterangan_barang' => 'Keterangan barang harus diisi untuk donasi barang.']);
         // }
 
-        // Clean data based on jenis (temporarily simplified)
+      
         $data = $request->except(['foto', 'delete_foto', 'keterangan_barang']);
         if ($request->jenis === 'barang') {
             $data['nilai'] = null;

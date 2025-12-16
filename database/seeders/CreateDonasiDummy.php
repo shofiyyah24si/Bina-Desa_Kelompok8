@@ -20,7 +20,7 @@ class CreateDonasiDummy extends Seeder
 
         foreach (range(1, 20) as $i) {
             DB::table('donasi_bencana')->insert([
-                'kejadian_id'   => $faker->randomElement($kejadianIds),  // <- AMAN
+                'kejadian_id'   => $faker->randomElement($kejadianIds),  
                 'donatur_nama'  => $faker->name,
                 'jenis'         => $faker->randomElement($jenisList),
                 'nilai'         => $faker->randomFloat(2, 50000, 3000000),

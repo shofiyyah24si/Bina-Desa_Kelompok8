@@ -72,7 +72,7 @@ class WargaController extends Controller
      */
     public function store(Request $request)
     {
-        // ✅ Tambahkan validasi lengkap (termasuk unik email)
+
         $request->validate([
             'no_ktp'        => 'required|numeric|unique:warga,no_ktp',
             'nama'          => 'required|string|max:255',
@@ -97,20 +97,17 @@ class WargaController extends Controller
         $data['telp']          = $request->telp;
         $data['email']         = $request->email;
 
-        // Handle foto profil upload (sama seperti kejadian bencana)
         if ($request->hasFile('foto_profil') && $request->file('foto_profil')->isValid()) {
-            // Generate unique filename
+
             $file = $request->file('foto_profil');
             $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
             $uploadPath = "uploads/warga";
             
-            // Ensure directory exists
             $fullPath = public_path($uploadPath);
             if (!file_exists($fullPath)) {
                 mkdir($fullPath, 0755, true);
             }
             
-            // Move uploaded file to public/uploads
             $file->move($fullPath, $filename);
             $data['foto_profil'] = "warga/$filename";
         }
@@ -136,7 +133,6 @@ class WargaController extends Controller
     {
         $warga = Warga::findOrFail($id);
 
-        // ✅ Validasi update (abaikan email dan no_ktp milik dirinya sendiri)
         $request->validate([
             'no_ktp'        => 'required|numeric|unique:warga,no_ktp,' . $warga->warga_id . ',warga_id',
             'nama'          => 'required|string|max:255',
@@ -159,9 +155,8 @@ class WargaController extends Controller
         $warga->telp          = $request->telp;
         $warga->email         = $request->email;
 
-        // Handle foto profil upload (sama seperti kejadian bencana)
         if ($request->hasFile('foto_profil') && $request->file('foto_profil')->isValid()) {
-            // Delete old foto if exists
+
             if ($warga->foto_profil) {
                 $oldPath = public_path('uploads/' . $warga->foto_profil);
                 if (file_exists($oldPath)) {
@@ -169,22 +164,18 @@ class WargaController extends Controller
                 }
             }
             
-            // Generate unique filename
             $file = $request->file('foto_profil');
             $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
             $uploadPath = "uploads/warga";
             
-            // Ensure directory exists
             $fullPath = public_path($uploadPath);
             if (!file_exists($fullPath)) {
                 mkdir($fullPath, 0755, true);
             }
             
-            // Move uploaded file to public/uploads
             $file->move($fullPath, $filename);
             $warga->foto_profil = "warga/$filename";
             
-            // Debug: Log successful upload
             \Log::info('Warga photo uploaded successfully', [
                 'warga_id' => $warga->warga_id,
                 'file_path' => $warga->foto_profil

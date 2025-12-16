@@ -9,14 +9,10 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource with pagination.
-     */
     public function index(Request $request)
     {
         $query = User::query();
 
-        // Search functionality
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
@@ -36,17 +32,11 @@ class UserController extends Controller
         return view('admin.users.index', compact('users', 'perPageOptions'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         return view('admin.users.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -60,20 +50,18 @@ class UserController extends Controller
         // Hash password
         $data['password'] = bcrypt($data['password']);
 
-        // Handle foto profil upload (sama seperti kejadian bencana)
+        // Handle foto profil upload 
         if ($request->hasFile('foto_profil') && $request->file('foto_profil')->isValid()) {
-            // Generate unique filename
+
             $file = $request->file('foto_profil');
             $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
             $uploadPath = "uploads/users";
-            
-            // Ensure directory exists
+  
             $fullPath = public_path($uploadPath);
             if (!file_exists($fullPath)) {
                 mkdir($fullPath, 0755, true);
             }
             
-            // Move uploaded file to public/uploads
             $file->move($fullPath, $filename);
             $data['foto_profil'] = "users/$filename";
             
@@ -116,9 +104,8 @@ class UserController extends Controller
             unset($data['password']);
         }
 
-        // Handle foto profil upload (sama seperti kejadian bencana)
         if ($request->hasFile('foto_profil') && $request->file('foto_profil')->isValid()) {
-            // Delete old foto if exists
+    
             if ($user->foto_profil) {
                 $oldPath = public_path('uploads/' . $user->foto_profil);
                 if (file_exists($oldPath)) {
@@ -126,22 +113,18 @@ class UserController extends Controller
                 }
             }
             
-            // Generate unique filename
             $file = $request->file('foto_profil');
             $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
             $uploadPath = "uploads/users";
             
-            // Ensure directory exists
             $fullPath = public_path($uploadPath);
             if (!file_exists($fullPath)) {
                 mkdir($fullPath, 0755, true);
             }
             
-            // Move uploaded file to public/uploads
             $file->move($fullPath, $filename);
             $user->foto_profil = "users/$filename";
             
-            // Debug: Log successful upload
             \Log::info('User photo uploaded successfully', [
                 'user_id' => $user->id,
                 'file_path' => $user->foto_profil
@@ -167,12 +150,10 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
-        // Jangan hapus user yang sedang login
         if (auth()->id() === $user->id) {
             return redirect()->route('users.index')->with('error', 'Tidak dapat menghapus user yang sedang login!');
         }
 
-        // Hapus foto profil jika ada
         if ($user->foto_profil) {
             Storage::disk('public')->delete($user->foto_profil);
         }
