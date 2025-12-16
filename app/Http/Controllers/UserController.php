@@ -61,8 +61,13 @@ class UserController extends Controller
         $data['password'] = bcrypt($data['password']);
 
         // Handle foto profil upload
-        if ($request->hasFile('foto_profil')) {
+        if ($request->hasFile('foto_profil') && $request->file('foto_profil')->isValid()) {
             $data['foto_profil'] = $request->file('foto_profil')->store('uploads/users', 'public');
+            
+            // Debug: Log successful upload
+            \Log::info('New user photo uploaded successfully', [
+                'file_path' => $data['foto_profil']
+            ]);
         }
 
         User::create($data);
@@ -99,18 +104,33 @@ class UserController extends Controller
         }
 
         // Handle foto profil upload
-        if ($request->hasFile('foto_profil')) {
+        if ($request->hasFile('foto_profil') && $request->file('foto_profil')->isValid()) {
             // Delete old foto if exists
             if ($user->foto_profil) {
                 Storage::disk('public')->delete($user->foto_profil);
             }
-            $data['foto_profil'] = $request->file('foto_profil')->store('uploads/users', 'public');
-        } else {
-            // Keep existing foto_profil if no new file uploaded
-            unset($data['foto_profil']);
+            
+            // Store new photo
+            $photoPath = $request->file('foto_profil')->store('uploads/users', 'public');
+            $user->foto_profil = $photoPath;
+            
+            // Debug: Log successful upload
+            \Log::info('User photo uploaded successfully', [
+                'user_id' => $user->id,
+                'file_path' => $photoPath
+            ]);
         }
 
-        $user->update($data);
+        // Update other fields
+        $user->name = $data['name'];
+        $user->email = $data['email'];
+        $user->role = $data['role'];
+        
+        if (!empty($data['password'])) {
+            $user->password = $data['password'];
+        }
+        
+        $user->save();
 
         return redirect()->route('users.index')->with('success', 'Data user berhasil diperbarui!');
     }

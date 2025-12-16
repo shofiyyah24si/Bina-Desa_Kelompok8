@@ -98,7 +98,7 @@ class WargaController extends Controller
         $data['email']         = $request->email;
 
         // Handle foto profil upload
-        if ($request->hasFile('foto_profil')) {
+        if ($request->hasFile('foto_profil') && $request->file('foto_profil')->isValid()) {
             $data['foto_profil'] = $request->file('foto_profil')->store('uploads/warga', 'public');
         }
 
@@ -147,12 +147,21 @@ class WargaController extends Controller
         $warga->email         = $request->email;
 
         // Handle foto profil upload
-        if ($request->hasFile('foto_profil')) {
+        if ($request->hasFile('foto_profil') && $request->file('foto_profil')->isValid()) {
             // Delete old foto if exists
             if ($warga->foto_profil) {
                 Storage::disk('public')->delete($warga->foto_profil);
             }
-            $warga->foto_profil = $request->file('foto_profil')->store('uploads/warga', 'public');
+            
+            // Store new photo
+            $photoPath = $request->file('foto_profil')->store('uploads/warga', 'public');
+            $warga->foto_profil = $photoPath;
+            
+            // Debug: Log successful upload
+            \Log::info('Warga photo uploaded successfully', [
+                'warga_id' => $warga->warga_id,
+                'file_path' => $photoPath
+            ]);
         }
 
         $warga->save();
