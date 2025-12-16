@@ -86,13 +86,22 @@ class ImageHelper
             // Check if file exists in storage
             $storagePath = storage_path('app/public/' . $path);
             if (file_exists($storagePath)) {
-                return asset('storage/' . $path);
+                $url = asset('storage/' . $path);
+                
+                // Add cache busting parameter based on file modification time
+                $timestamp = filemtime($storagePath);
+                $url .= '?v=' . $timestamp;
+                
+                return $url;
             }
             
             // Check if file exists in public uploads (backup location)
             $publicPath = public_path($path);
             if (file_exists($publicPath)) {
-                return asset($path);
+                $url = asset($path);
+                $timestamp = filemtime($publicPath);
+                $url .= '?v=' . $timestamp;
+                return $url;
             }
         }
 
