@@ -345,19 +345,24 @@
         
         .table-container {
             margin-top: 15px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
         
         .table {
             font-size: 13px;
+            min-width: 600px; /* Minimum width to enable horizontal scroll */
         }
         
         .table thead th {
             padding: 12px 8px;
             font-size: 11px;
+            white-space: nowrap;
         }
         
         .table tbody td {
             padding: 12px 8px;
+            white-space: nowrap;
         }
         
         .profile-img, .profile-placeholder {
@@ -402,15 +407,18 @@
         
         .table {
             font-size: 12px;
+            min-width: 500px; /* Smaller minimum width for very small screens */
         }
         
         .table thead th {
             padding: 10px 6px;
             font-size: 10px;
+            white-space: nowrap;
         }
         
         .table tbody td {
             padding: 10px 6px;
+            white-space: nowrap;
         }
         
         .profile-img, .profile-placeholder {
@@ -422,12 +430,6 @@
             min-width: 28px;
             min-height: 28px;
             padding: 4px 8px;
-        }
-        
-        /* Hide profile image column on very small screens */
-        .table th:nth-child(2),
-        .table td:nth-child(2) {
-            display: none;
         }
     }
 </style>

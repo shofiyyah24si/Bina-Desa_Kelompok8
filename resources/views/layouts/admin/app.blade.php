@@ -18,6 +18,59 @@
 
 <style>
 /* =============================== */
+/* GLOBAL MOBILE TABLE STYLES */
+/* =============================== */
+@media (max-width: 768px) {
+    .table-responsive {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        border-radius: 8px;
+    }
+    
+    .table-responsive .table {
+        min-width: 600px !important;
+        margin-bottom: 0;
+    }
+    
+    .table-responsive .table th,
+    .table-responsive .table td {
+        white-space: nowrap !important;
+        padding: 8px 12px !important;
+    }
+    
+    /* Scrollbar styling for mobile */
+    .table-responsive::-webkit-scrollbar {
+        height: 6px;
+    }
+    
+    .table-responsive::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+    }
+    
+    .table-responsive::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 3px;
+    }
+    
+    .table-responsive::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+}
+
+@media (max-width: 480px) {
+    .table-responsive .table {
+        min-width: 500px !important;
+        font-size: 12px !important;
+    }
+    
+    .table-responsive .table th,
+    .table-responsive .table td {
+        padding: 6px 8px !important;
+        font-size: 11px !important;
+    }
+}
+/* =============================== */
 /* GLASSMORPHISM SIDEBAR */
 /* =============================== */
 

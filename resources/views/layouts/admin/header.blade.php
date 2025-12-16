@@ -183,18 +183,18 @@
     /* ================================ */
     @media (max-width: 768px) {
         .topbar {
-            padding-left: 15px !important;
+            padding-left: 70px !important; /* Space for hamburger menu */
             padding-right: 15px !important;
             height: 65px !important;
         }
 
         .header-logo {
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
         }
 
         .header-title {
-            font-size: 15px;
+            font-size: 14px;
         }
 
         .header-subtitle {
@@ -205,7 +205,7 @@
         .topbar > div:first-child {
             flex: 0 1 auto;
             min-width: 0;
-            max-width: 60%;
+            max-width: 55%;
         }
 
         .topbar > div:last-child {
@@ -242,22 +242,22 @@
 
     @media (max-width: 480px) {
         .topbar {
-            padding-left: 10px !important;
+            padding-left: 65px !important; /* Space for hamburger menu */
             padding-right: 10px !important;
             height: 60px !important;
         }
 
         .header-logo {
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
         }
 
         .header-title {
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .header-subtitle {
-            font-size: 10px;
+            font-size: 9px;
         }
 
         .btn-info-terkini {

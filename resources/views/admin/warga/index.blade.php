@@ -321,19 +321,24 @@
         
         .table-container {
             margin-top: 15px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
         }
         
         .table {
             font-size: 13px;
+            min-width: 700px; /* Warga table has more columns */
         }
         
         .table thead th {
             padding: 12px 8px;
             font-size: 11px;
+            white-space: nowrap;
         }
         
         .table tbody td {
             padding: 12px 8px;
+            white-space: nowrap;
         }
         
         .profile-img, .profile-placeholder {

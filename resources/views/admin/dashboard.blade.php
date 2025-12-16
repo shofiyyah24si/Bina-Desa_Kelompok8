@@ -216,15 +216,23 @@
         
         .table-responsive {
             font-size: 14px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        .table {
+            min-width: 600px;
         }
         
         .table thead th {
             padding: 12px 8px;
             font-size: 11px;
+            white-space: nowrap;
         }
         
         .table tbody td {
             padding: 12px 8px;
+            white-space: nowrap;
         }
     }
     
