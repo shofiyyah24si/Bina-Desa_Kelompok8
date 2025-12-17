@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Media;
 use App\Models\KejadianBencana;
@@ -12,7 +13,7 @@ use App\Models\DistribusiLogistik;
 use App\Models\Warga;
 use App\Models\User;
 
-class DashboardController extends Controller
+class DashboardAdminController extends Controller
 {
     /**
      * Display a listing of the resource.

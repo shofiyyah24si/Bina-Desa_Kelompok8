@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -97,7 +98,7 @@ class UserController extends Controller
             'foto_profil' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
 
-        // Hash password jika diisi
+        // Hash password
         if (!empty($data['password'])) {
             $data['password'] = bcrypt($data['password']);
         } else {

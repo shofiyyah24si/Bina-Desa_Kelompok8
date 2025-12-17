@@ -1,15 +1,15 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\WargaController;
-use App\Http\Controllers\KejadianBencanaController;
-use App\Http\Controllers\PoskoBencanaController;
-use App\Http\Controllers\DonasiBencanaController;
-use App\Http\Controllers\LogistikBencanaController;
-use App\Http\Controllers\DistribusiLogistikController;
-use App\Http\Controllers\UserController;
+use App\Http\Controllers\Admin\DashboardAdminController;
+use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\WargaController;
+use App\Http\Controllers\Admin\KejadianBencanaController;
+use App\Http\Controllers\Admin\PoskoBencanaController;
+use App\Http\Controllers\Admin\DonasiBencanaController;
+use App\Http\Controllers\Admin\LogistikBencanaController;
+use App\Http\Controllers\Admin\DistribusiLogistikController;
+use App\Http\Controllers\Admin\UserController;
 
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [AuthController::class, 'register'])->name('register.post');
@@ -25,7 +25,7 @@ Route::get('/', function () {
 Route::middleware('check.login')->group(function () {
 
     // Dashboard bisa diakses semua role (Admin, Warga, Mitra)
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/dashboard', [DashboardAdminController::class, 'index'])->name('dashboard');
 
     /// ===================== ADMIN =====================
     Route::middleware('checkrole:Admin')->group(function () {
