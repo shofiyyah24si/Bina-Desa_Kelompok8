@@ -17,7 +17,7 @@
             @if($donasi->jenis == 'uang')
                 <tr><th>💰 Nominal Uang</th><td>Rp {{ number_format($donasi->nilai, 0, ',', '.') }}</td></tr>
             @elseif($donasi->jenis == 'barang')
-                <tr><th>📦 Jenis Donasi</th><td>Donasi Barang</td></tr>
+                <tr><th>📦 Keterangan Barang</th><td>{{ $donasi->keterangan_barang ?? '-' }}</td></tr>
             @endif
         </table>
 

@@ -124,24 +124,16 @@ class UserController extends Controller
             }
             
             $file->move($fullPath, $filename);
-            $user->foto_profil = "users/$filename";
+            $data['foto_profil'] = "users/$filename";
             
             \Log::info('User photo uploaded successfully', [
                 'user_id' => $user->id,
-                'file_path' => $user->foto_profil
+                'file_path' => $data['foto_profil']
             ]);
         }
 
-        // Update other fields
-        $user->name = $data['name'];
-        $user->email = $data['email'];
-        $user->role = $data['role'];
-        
-        if (!empty($data['password'])) {
-            $user->password = $data['password'];
-        }
-        
-        $user->save();
+        // Update all fields using the data array
+        $user->update($data);
 
         return redirect()->route('users.index')->with('success', 'Data user berhasil diperbarui!');
     }

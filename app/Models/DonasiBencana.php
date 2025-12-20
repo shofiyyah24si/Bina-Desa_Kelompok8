@@ -17,7 +17,7 @@ class DonasiBencana extends Model
         'donatur_nama',
         'jenis',
         'nilai',
-        // 'keterangan_barang', // Temporarily disabled until column is added
+        'keterangan_barang',
     ];
 
     public function kejadian()

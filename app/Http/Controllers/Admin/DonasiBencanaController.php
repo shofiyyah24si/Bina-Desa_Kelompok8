@@ -28,7 +28,7 @@ class DonasiBencanaController extends Controller
             'donatur_nama' => 'nullable|string|max:150',
             'jenis' => 'required|string|in:uang,barang',
             'nilai' => 'nullable|numeric|min:0',
-            // 'keterangan_barang' => 'nullable|string|max:1000', 
+            'keterangan_barang' => 'nullable|string|max:1000',
             'foto.*' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
@@ -39,16 +39,17 @@ class DonasiBencanaController extends Controller
                 ->withErrors(['nilai' => 'Nominal uang harus diisi untuk donasi uang.']);
         }
         
-        // Temporarily disabled until column is added
-        // if ($request->jenis === 'barang' && !$request->keterangan_barang) {
-        //     return redirect()->back()
-        //         ->withInput()
-        //         ->withErrors(['keterangan_barang' => 'Keterangan barang harus diisi untuk donasi barang.']);
-        // }
+        if ($request->jenis === 'barang' && !$request->keterangan_barang) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['keterangan_barang' => 'Keterangan barang harus diisi untuk donasi barang.']);
+        }
 
-        
-        $data = $request->except(['foto', 'keterangan_barang']);
-        if ($request->jenis === 'barang') {
+        // Clean data based on jenis
+        $data = $request->except('foto');
+        if ($request->jenis === 'uang') {
+            $data['keterangan_barang'] = null;
+        } else {
             $data['nilai'] = null;
         }
         
@@ -94,7 +95,7 @@ class DonasiBencanaController extends Controller
             'donatur_nama' => 'nullable|string|max:150',
             'jenis' => 'required|string|in:uang,barang',
             'nilai' => 'nullable|numeric|min:0',
-            // 'keterangan_barang' => 'nullable|string|max:1000', // Temporarily disabled
+            'keterangan_barang' => 'nullable|string|max:1000',
             'delete_foto' => 'nullable|array',
             'foto.*' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
@@ -106,16 +107,17 @@ class DonasiBencanaController extends Controller
                 ->withErrors(['nilai' => 'Nominal uang harus diisi untuk donasi uang.']);
         }
         
-        // Temporarily disabled until column is added
-        // if ($request->jenis === 'barang' && !$request->keterangan_barang) {
-        //     return redirect()->back()
-        //         ->withInput()
-        //         ->withErrors(['keterangan_barang' => 'Keterangan barang harus diisi untuk donasi barang.']);
-        // }
+        if ($request->jenis === 'barang' && !$request->keterangan_barang) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['keterangan_barang' => 'Keterangan barang harus diisi untuk donasi barang.']);
+        }
 
-      
-        $data = $request->except(['foto', 'delete_foto', 'keterangan_barang']);
-        if ($request->jenis === 'barang') {
+        // Clean data based on jenis
+        $data = $request->except(['foto','delete_foto']);
+        if ($request->jenis === 'uang') {
+            $data['keterangan_barang'] = null;
+        } else {
             $data['nilai'] = null;
         }
         

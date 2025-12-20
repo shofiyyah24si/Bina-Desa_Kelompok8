@@ -260,9 +260,8 @@
         {{-- Alerts --}}
         @foreach (['success'=>'success','update'=>'warning','error'=>'danger'] as $key => $type)
             @if(session($key))
-                <div class="alert alert-{{ $type }} alert-dismissible fade show mb-3">
+                <div class="alert alert-{{ $type }} fade show mb-3" id="alert-{{ $key }}-{{ time() }}">
                     {{ ucfirst($key) }}: {{ session($key) }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             @endif
         @endforeach
@@ -323,6 +322,39 @@ document.addEventListener("DOMContentLoaded", function () {
 
     overlay.addEventListener("click", closeSidebar);
 
+});
+
+// Auto-hide success messages after 4 seconds
+document.addEventListener('DOMContentLoaded', function() {
+    // Find all alert elements
+    const alerts = document.querySelectorAll('.alert[id^="alert-"]');
+    
+    alerts.forEach(function(alert) {
+        // Auto-hide after 4 seconds (4000ms) - not too fast, not too slow
+        setTimeout(function() {
+            // Fade out and remove the alert
+            if (alert.classList.contains('show')) {
+                alert.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out';
+                alert.style.opacity = '0';
+                alert.style.transform = 'translateY(-10px)';
+                
+                // Remove from DOM after animation
+                setTimeout(function() {
+                    if (alert.parentNode) {
+                        alert.parentNode.removeChild(alert);
+                    }
+                }, 500);
+            }
+        }, 4000);
+        
+        // Add a subtle animation to indicate it will auto-hide
+        setTimeout(function() {
+            if (alert.classList.contains('show')) {
+                alert.style.transition = 'opacity 0.3s ease-out';
+                alert.style.opacity = '0.8';
+            }
+        }, 3000);
+    });
 });
 </script>
 
