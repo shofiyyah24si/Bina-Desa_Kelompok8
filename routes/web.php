@@ -59,5 +59,8 @@ Route::middleware('check.login')->group(function () {
     Route::resource('logistik', LogistikBencanaController::class);
 
     Route::resource('distribusi', DistribusiLogistikController::class);
+    
+    // AJAX routes
+    Route::get('/api/logistik/{id?}', [DistribusiLogistikController::class, 'getLogistikData'])->name('api.logistik');
 
 });

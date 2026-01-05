@@ -67,7 +67,12 @@
                    min="1" 
                    value="{{ old('jumlah') }}"
                    placeholder="Masukkan jumlah"
+                   id="jumlahInput"
                    required>
+            <div id="stockWarning" class="form-text text-muted mt-2" style="display: none;">
+                <i class="fas fa-exclamation-triangle text-warning"></i>
+                <span id="stockMessage"></span>
+            </div>
             @error('jumlah')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
@@ -120,6 +125,83 @@
 </x-modern-form>
 
 <script>
+// Data logistik untuk validasi stok
+const logistikData = {
+    @foreach($logistik as $l)
+    {{ $l->logistik_id }}: {
+        nama: '{{ $l->nama_barang }}',
+        stok: {{ $l->stok }},
+        satuan: '{{ $l->satuan }}'
+    },
+    @endforeach
+};
+
+// Validasi stok real-time
+function validateStock() {
+    const logistikSelect = document.querySelector('select[name="logistik_id"]');
+    const jumlahInput = document.getElementById('jumlahInput');
+    const stockWarning = document.getElementById('stockWarning');
+    const stockMessage = document.getElementById('stockMessage');
+    const submitButton = document.querySelector('button[type="submit"]');
+    
+    const logistikId = logistikSelect.value;
+    const jumlah = parseInt(jumlahInput.value) || 0;
+    
+    if (logistikId && jumlah > 0) {
+        const logistik = logistikData[logistikId];
+        
+        if (logistik) {
+            if (jumlah > logistik.stok) {
+                // Stok tidak mencukupi
+                stockWarning.style.display = 'block';
+                stockWarning.className = 'form-text text-danger mt-2';
+                stockMessage.innerHTML = `Stok tidak mencukupi! Tersedia: <strong>${logistik.stok} ${logistik.satuan}</strong>, diminta: <strong>${jumlah} ${logistik.satuan}</strong>`;
+                jumlahInput.classList.add('is-invalid');
+                submitButton.disabled = true;
+            } else if (jumlah === logistik.stok) {
+                // Stok pas habis
+                stockWarning.style.display = 'block';
+                stockWarning.className = 'form-text text-warning mt-2';
+                stockMessage.innerHTML = `⚠️ Distribusi ini akan menghabiskan seluruh stok ${logistik.nama}`;
+                jumlahInput.classList.remove('is-invalid');
+                jumlahInput.classList.add('is-valid');
+                submitButton.disabled = false;
+            } else {
+                // Stok mencukupi
+                const sisaStok = logistik.stok - jumlah;
+                stockWarning.style.display = 'block';
+                stockWarning.className = 'form-text text-success mt-2';
+                stockMessage.innerHTML = `✅ Stok mencukupi. Sisa setelah distribusi: <strong>${sisaStok} ${logistik.satuan}</strong>`;
+                jumlahInput.classList.remove('is-invalid');
+                jumlahInput.classList.add('is-valid');
+                submitButton.disabled = false;
+            }
+        }
+    } else {
+        stockWarning.style.display = 'none';
+        jumlahInput.classList.remove('is-invalid', 'is-valid');
+        submitButton.disabled = false;
+    }
+}
+
+// Event listeners
+document.querySelector('select[name="logistik_id"]').addEventListener('change', validateStock);
+document.getElementById('jumlahInput').addEventListener('input', validateStock);
+
+// Update max value ketika logistik dipilih
+document.querySelector('select[name="logistik_id"]').addEventListener('change', function() {
+    const logistikId = this.value;
+    const jumlahInput = document.getElementById('jumlahInput');
+    
+    if (logistikId && logistikData[logistikId]) {
+        jumlahInput.max = logistikData[logistikId].stok;
+        jumlahInput.placeholder = `Maksimal: ${logistikData[logistikId].stok} ${logistikData[logistikId].satuan}`;
+    } else {
+        jumlahInput.removeAttribute('max');
+        jumlahInput.placeholder = 'Masukkan jumlah';
+    }
+});
+
 // Preview foto sebelum upload
 document.getElementById('buktiInput').addEventListener('change', function(e) {
     let container = document.getElementById('previewContainer');
