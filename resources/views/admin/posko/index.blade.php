@@ -384,6 +384,26 @@
     </div>
 </div>
 
+{{-- Filter and Search --}}
+@component('components.filter-search', [
+    'searchPlaceholder' => 'Cari nama posko, alamat, kontak, penanggung jawab...',
+    'filters' => $filters,
+    'perPageOptions' => $perPageOptions
+])
+    {{-- Filter Kejadian --}}
+    <div class="col-md-3">
+        <label class="form-label small fw-bold">🚨 Kejadian Bencana</label>
+        <select name="kejadian_id" class="form-select form-select-sm">
+            <option value="">Semua Kejadian</option>
+            @foreach($kejadian as $k)
+                <option value="{{ $k->kejadian_id }}" {{ ($filters['kejadian_id'] ?? '') == $k->kejadian_id ? 'selected' : '' }}>
+                    {{ $k->jenis_bencana }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+@endcomponent
+
 <div class="table-container">
     <div class="table-responsive">
         <table class="table align-middle">
@@ -484,4 +504,7 @@
         </table>
     </div>
 </div>
+
+{{-- Pagination --}}
+@include('components.pagination-info', ['data' => $posko])
 @endsection

@@ -258,6 +258,42 @@
         </div>
     </div>
 </div>
+
+{{-- Filter and Search --}}
+@component('components.filter-search', [
+    'searchPlaceholder' => 'Cari nama donatur, jenis donasi, keterangan barang...',
+    'filters' => $filters,
+    'perPageOptions' => $perPageOptions
+])
+    {{-- Filter Jenis Donasi --}}
+    <div class="col-md-2">
+        <label class="form-label small fw-bold">💰 Jenis Donasi</label>
+        <select name="jenis" class="form-select form-select-sm">
+            <option value="">Semua Jenis</option>
+            <option value="uang" {{ ($filters['jenis'] ?? '') == 'uang' ? 'selected' : '' }}>Uang</option>
+            <option value="barang" {{ ($filters['jenis'] ?? '') == 'barang' ? 'selected' : '' }}>Barang</option>
+        </select>
+    </div>
+
+    {{-- Filter Kejadian --}}
+    <div class="col-md-2">
+        <label class="form-label small fw-bold">🚨 Kejadian</label>
+        <select name="kejadian_id" class="form-select form-select-sm">
+            <option value="">Semua Kejadian</option>
+            @foreach($kejadian as $k)
+                <option value="{{ $k->kejadian_id }}" {{ ($filters['kejadian_id'] ?? '') == $k->kejadian_id ? 'selected' : '' }}>
+                    {{ Str::limit($k->jenis_bencana, 20) }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+
+    {{-- Filter Nominal Range (for uang) --}}
+    <div class="col-md-2">
+        <label class="form-label small fw-bold">💵 Min Nominal</label>
+        <input type="number" name="min_nilai" class="form-control form-control-sm" placeholder="0" value="{{ $filters['min_nilai'] ?? '' }}">
+    </div>
+@endcomponent
 <div class="table-container">
     <div class="table-responsive">
         <table class="table align-middle">
@@ -366,4 +402,7 @@
         </table>
     </div>
 </div>
+
+{{-- Pagination --}}
+@include('components.pagination-info', ['data' => $donasi])
 @endsection

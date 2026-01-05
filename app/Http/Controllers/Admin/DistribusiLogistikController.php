@@ -10,11 +10,66 @@ use Illuminate\Http\Request;
 
 class DistribusiLogistikController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return view('admin.distribusi.index', [
-            'data' => DistribusiLogistik::with(['logistik', 'posko'])->orderBy('distribusi_id','desc')->get()
-        ]);
+        $query = DistribusiLogistik::with(['logistik.kejadian', 'posko']);
+
+        // Search functionality
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('penerima', 'like', "%{$search}%")
+                    ->orWhereHas('logistik', function ($q) use ($search) {
+                        $q->where('nama_barang', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('posko', function ($q) use ($search) {
+                        $q->where('nama', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        // Filter by logistik
+        if ($logistik_id = $request->input('logistik_id')) {
+            $query->where('logistik_id', $logistik_id);
+        }
+
+        // Filter by posko
+        if ($posko_id = $request->input('posko_id')) {
+            $query->where('posko_id', $posko_id);
+        }
+
+        // Filter by date range
+        if ($start_date = $request->input('start_date')) {
+            $query->where('tanggal', '>=', $start_date);
+        }
+        if ($end_date = $request->input('end_date')) {
+            $query->where('tanggal', '<=', $end_date);
+        }
+
+        // Filter by jumlah range
+        if ($min_jumlah = $request->input('min_jumlah')) {
+            $query->where('jumlah', '>=', $min_jumlah);
+        }
+        if ($max_jumlah = $request->input('max_jumlah')) {
+            $query->where('jumlah', '<=', $max_jumlah);
+        }
+
+        // Pagination
+        $perPageOptions = [10, 25, 50];
+        $perPage = $request->integer('per_page', 10);
+        if (!in_array($perPage, $perPageOptions)) {
+            $perPage = 10;
+        }
+
+        $data = $query->orderBy('distribusi_id', 'desc')
+            ->paginate($perPage)
+            ->appends($request->query());
+
+        // Filter options
+        $logistik = LogistikBencana::orderBy('nama_barang')->get();
+        $posko = PoskoBencana::orderBy('nama')->get();
+        $filters = $request->only(['search', 'logistik_id', 'posko_id', 'start_date', 'end_date', 'min_jumlah', 'max_jumlah', 'per_page']);
+
+        return view('admin.distribusi.index', compact('data', 'logistik', 'posko', 'filters', 'perPageOptions'));
     }
 
     public function create()

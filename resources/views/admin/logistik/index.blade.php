@@ -196,6 +196,45 @@
         </div>
     </div>
 </div>
+
+{{-- Filter and Search --}}
+@component('components.filter-search', [
+    'searchPlaceholder' => 'Cari nama barang, satuan, sumber...',
+    'filters' => $filters,
+    'perPageOptions' => $perPageOptions
+])
+    {{-- Filter Kejadian --}}
+    <div class="col-md-2">
+        <label class="form-label small fw-bold">🚨 Kejadian</label>
+        <select name="kejadian_id" class="form-select form-select-sm">
+            <option value="">Semua Kejadian</option>
+            @foreach($kejadian as $k)
+                <option value="{{ $k->kejadian_id }}" {{ ($filters['kejadian_id'] ?? '') == $k->kejadian_id ? 'selected' : '' }}>
+                    {{ Str::limit($k->jenis_bencana, 20) }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+
+    {{-- Filter Satuan --}}
+    <div class="col-md-2">
+        <label class="form-label small fw-bold">📦 Satuan</label>
+        <select name="satuan" class="form-select form-select-sm">
+            <option value="">Semua Satuan</option>
+            @foreach($satuanOptions as $satuan)
+                <option value="{{ $satuan }}" {{ ($filters['satuan'] ?? '') == $satuan ? 'selected' : '' }}>
+                    {{ $satuan }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+
+    {{-- Filter Stok Range --}}
+    <div class="col-md-2">
+        <label class="form-label small fw-bold">📊 Min Stok</label>
+        <input type="number" name="min_stok" class="form-control form-control-sm" placeholder="0" value="{{ $filters['min_stok'] ?? '' }}">
+    </div>
+@endcomponent
 <div class="table-container" style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-top: 20px;">
     @if(session('success'))
         <div class="alert alert-success alert-dismissible fade show m-3" style="border-radius: 12px;">
@@ -282,4 +321,7 @@
         </table>
     </div>
 </div>
+
+{{-- Pagination --}}
+@include('components.pagination-info', ['data' => $logistik])
 @endsection

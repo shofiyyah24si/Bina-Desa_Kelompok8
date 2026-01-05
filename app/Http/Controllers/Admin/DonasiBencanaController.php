@@ -9,10 +9,56 @@ use Illuminate\Http\Request;
 
 class DonasiBencanaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $donasi = DonasiBencana::with('kejadian')->orderBy('donasi_id','desc')->get();
-        return view('admin.donasi.index', compact('donasi'));
+        $query = DonasiBencana::with('kejadian');
+
+        // Search functionality
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('donatur_nama', 'like', "%{$search}%")
+                    ->orWhere('jenis', 'like', "%{$search}%")
+                    ->orWhere('keterangan_barang', 'like', "%{$search}%")
+                    ->orWhereHas('kejadian', function ($q) use ($search) {
+                        $q->where('jenis_bencana', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        // Filter by jenis donasi
+        if ($jenis = $request->input('jenis')) {
+            $query->where('jenis', $jenis);
+        }
+
+        // Filter by kejadian
+        if ($kejadian_id = $request->input('kejadian_id')) {
+            $query->where('kejadian_id', $kejadian_id);
+        }
+
+        // Filter by nilai range (for uang donations)
+        if ($min_nilai = $request->input('min_nilai')) {
+            $query->where('nilai', '>=', $min_nilai);
+        }
+        if ($max_nilai = $request->input('max_nilai')) {
+            $query->where('nilai', '<=', $max_nilai);
+        }
+
+        // Pagination
+        $perPageOptions = [10, 25, 50];
+        $perPage = $request->integer('per_page', 10);
+        if (!in_array($perPage, $perPageOptions)) {
+            $perPage = 10;
+        }
+
+        $donasi = $query->orderBy('donasi_id', 'desc')
+            ->paginate($perPage)
+            ->appends($request->query());
+
+        // Filter options
+        $kejadian = KejadianBencana::orderBy('jenis_bencana')->get();
+        $filters = $request->only(['search', 'jenis', 'kejadian_id', 'min_nilai', 'max_nilai', 'per_page']);
+
+        return view('admin.donasi.index', compact('donasi', 'kejadian', 'filters', 'perPageOptions'));
     }
 
     public function create()

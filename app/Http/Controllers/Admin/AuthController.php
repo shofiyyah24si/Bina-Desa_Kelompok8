@@ -78,21 +78,37 @@ class AuthController extends Controller
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6',
             'role' => 'required|in:Admin,Warga,Mitra',
-            'foto_profil' => 'nullable|image|max:2048',
+            'foto_profil' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
 
-        $foto = null;
-        if ($request->hasFile('foto_profil')) {
-            $foto = $request->file('foto_profil')->store('uploads/users', 'public');
-        }
-
-        $user = User::create([
+        $data = [
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'role' => $request->role,
-            'foto_profil' => $foto,
-        ]);
+        ];
+
+        // Handle foto profil upload - konsisten dengan UserController
+        if ($request->hasFile('foto_profil') && $request->file('foto_profil')->isValid()) {
+            $file = $request->file('foto_profil');
+            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $uploadPath = "uploads/users";
+            
+            $fullPath = public_path($uploadPath);
+            if (!file_exists($fullPath)) {
+                mkdir($fullPath, 0755, true);
+            }
+            
+            $file->move($fullPath, $filename);
+            $data['foto_profil'] = "users/$filename";
+            
+            \Log::info('Register photo uploaded successfully', [
+                'filename' => $filename,
+                'file_path' => $data['foto_profil']
+            ]);
+        }
+
+        $user = User::create($data);
 
         Auth::login($user);
 

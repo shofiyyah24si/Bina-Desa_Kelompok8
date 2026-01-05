@@ -9,9 +9,44 @@ use Illuminate\Http\Request;
 
 class PoskoBencanaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $data['posko'] = PoskoBencana::with('kejadian')->latest()->get();
+        $query = PoskoBencana::with('kejadian');
+
+        // Search functionality
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                    ->orWhere('alamat', 'like', "%{$search}%")
+                    ->orWhere('kontak', 'like', "%{$search}%")
+                    ->orWhere('penanggung_jawab', 'like', "%{$search}%")
+                    ->orWhereHas('kejadian', function ($q) use ($search) {
+                        $q->where('jenis_bencana', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        // Filter by kejadian
+        if ($kejadian_id = $request->input('kejadian_id')) {
+            $query->where('kejadian_id', $kejadian_id);
+        }
+
+        // Pagination
+        $perPageOptions = [10, 25, 50];
+        $perPage = $request->integer('per_page', 10);
+        if (!in_array($perPage, $perPageOptions)) {
+            $perPage = 10;
+        }
+
+        $data['posko'] = $query->orderBy('created_at', 'desc')
+            ->paginate($perPage)
+            ->appends($request->query());
+
+        // Filter options
+        $data['kejadian'] = KejadianBencana::orderBy('jenis_bencana')->get();
+        $data['filters'] = $request->only(['search', 'kejadian_id', 'per_page']);
+        $data['perPageOptions'] = $perPageOptions;
+
         return view('admin.posko.index', $data);
     }
 

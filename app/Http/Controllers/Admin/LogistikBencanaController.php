@@ -9,9 +9,60 @@ use Illuminate\Http\Request;
 
 class LogistikBencanaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $data['logistik'] = LogistikBencana::with('kejadian')->orderBy('logistik_id', 'desc')->get();
+        $query = LogistikBencana::with('kejadian');
+
+        // Search functionality
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_barang', 'like', "%{$search}%")
+                    ->orWhere('satuan', 'like', "%{$search}%")
+                    ->orWhere('sumber', 'like', "%{$search}%")
+                    ->orWhereHas('kejadian', function ($q) use ($search) {
+                        $q->where('jenis_bencana', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        // Filter by kejadian
+        if ($kejadian_id = $request->input('kejadian_id')) {
+            $query->where('kejadian_id', $kejadian_id);
+        }
+
+        // Filter by stok range
+        if ($min_stok = $request->input('min_stok')) {
+            $query->where('stok', '>=', $min_stok);
+        }
+        if ($max_stok = $request->input('max_stok')) {
+            $query->where('stok', '<=', $max_stok);
+        }
+
+        // Filter by satuan
+        if ($satuan = $request->input('satuan')) {
+            $query->where('satuan', $satuan);
+        }
+
+        // Pagination
+        $perPageOptions = [10, 25, 50];
+        $perPage = $request->integer('per_page', 10);
+        if (!in_array($perPage, $perPageOptions)) {
+            $perPage = 10;
+        }
+
+        $data['logistik'] = $query->orderBy('logistik_id', 'desc')
+            ->paginate($perPage)
+            ->appends($request->query());
+
+        // Filter options
+        $data['kejadian'] = KejadianBencana::orderBy('jenis_bencana')->get();
+        $data['satuanOptions'] = LogistikBencana::select('satuan')
+            ->distinct()
+            ->whereNotNull('satuan')
+            ->pluck('satuan');
+        $data['filters'] = $request->only(['search', 'kejadian_id', 'min_stok', 'max_stok', 'satuan', 'per_page']);
+        $data['perPageOptions'] = $perPageOptions;
+
         return view('admin.logistik.index', $data);
     }
 

@@ -238,6 +238,50 @@
         </div>
     </div>
 </div>
+
+{{-- Filter and Search --}}
+@component('components.filter-search', [
+    'searchPlaceholder' => 'Cari penerima, nama barang, nama posko...',
+    'filters' => $filters,
+    'perPageOptions' => $perPageOptions
+])
+    {{-- Filter Logistik --}}
+    <div class="col-md-2">
+        <label class="form-label small fw-bold">📦 Barang</label>
+        <select name="logistik_id" class="form-select form-select-sm">
+            <option value="">Semua Barang</option>
+            @foreach($logistik as $l)
+                <option value="{{ $l->logistik_id }}" {{ ($filters['logistik_id'] ?? '') == $l->logistik_id ? 'selected' : '' }}>
+                    {{ Str::limit($l->nama_barang, 20) }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+
+    {{-- Filter Posko --}}
+    <div class="col-md-2">
+        <label class="form-label small fw-bold">🏠 Posko</label>
+        <select name="posko_id" class="form-select form-select-sm">
+            <option value="">Semua Posko</option>
+            @foreach($posko as $p)
+                <option value="{{ $p->posko_id }}" {{ ($filters['posko_id'] ?? '') == $p->posko_id ? 'selected' : '' }}>
+                    {{ Str::limit($p->nama, 20) }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+
+    {{-- Filter Tanggal --}}
+    <div class="col-md-2">
+        <label class="form-label small fw-bold">📅 Dari Tanggal</label>
+        <input type="date" name="start_date" class="form-control form-control-sm" value="{{ $filters['start_date'] ?? '' }}">
+    </div>
+
+    <div class="col-md-2">
+        <label class="form-label small fw-bold">📅 Sampai Tanggal</label>
+        <input type="date" name="end_date" class="form-control form-control-sm" value="{{ $filters['end_date'] ?? '' }}">
+    </div>
+@endcomponent
 <div class="table-container">
     <div class="table-responsive">
         <table class="table align-middle">
@@ -338,4 +382,7 @@
         </table>
     </div>
 </div>
+
+{{-- Pagination --}}
+@include('components.pagination-info', ['data' => $data])
 @endsection
