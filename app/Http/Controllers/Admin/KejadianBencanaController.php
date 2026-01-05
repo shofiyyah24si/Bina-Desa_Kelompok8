@@ -89,11 +89,15 @@ class KejadianBencanaController extends Controller
     {
         $kejadian = KejadianBencana::findOrFail($id);
 
-        // Debug: Log the request data
-        \Log::info('Kejadian update request', [
+        // Debug: Log semua data request
+        \Log::info('Kejadian update request - FULL DEBUG', [
+            'request_method' => $request->method(),
             'has_files' => $request->hasFile('foto'),
             'files_count' => $request->hasFile('foto') ? count($request->file('foto')) : 0,
-            'delete_foto' => $request->delete_foto
+            'all_files' => $request->allFiles(),
+            'delete_foto' => $request->delete_foto,
+            'content_type' => $request->header('Content-Type'),
+            'all_input' => $request->except(['foto', '_token'])
         ]);
 
         $request->validate([
@@ -122,20 +126,34 @@ class KejadianBencanaController extends Controller
 
         // Upload foto baru
         if ($request->hasFile('foto')) {
+            \Log::info('Processing file uploads', ['files_count' => count($request->file('foto'))]);
             try {
-                foreach ($request->file('foto') as $file) {
+                foreach ($request->file('foto') as $index => $file) {
+                    \Log::info('Processing file', [
+                        'index' => $index,
+                        'filename' => $file->getClientOriginalName(),
+                        'size' => $file->getSize(),
+                        'mime' => $file->getClientMimeType(),
+                        'is_valid' => $file->isValid(),
+                        'error' => $file->getError()
+                    ]);
+                    
                     if ($file->isValid()) {
                         \Log::info('Uploading new photo', ['filename' => $file->getClientOriginalName()]);
                         $media = $kejadian->addMedia($file, 'kejadian_bencana');
                         \Log::info('Photo uploaded successfully', ['media_id' => $media->media_id]);
+                    } else {
+                        \Log::error('Invalid file', ['filename' => $file->getClientOriginalName(), 'error' => $file->getError()]);
                     }
                 }
             } catch (\Exception $e) {
-                \Log::error('Photo upload failed', ['error' => $e->getMessage()]);
+                \Log::error('Photo upload failed', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
                 return redirect()->back()
                     ->withInput()
                     ->with('error', 'Gagal mengupload foto: ' . $e->getMessage());
             }
+        } else {
+            \Log::info('No files to upload');
         }
 
         return redirect()->route('kejadian.index')

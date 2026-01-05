@@ -203,7 +203,7 @@
     </div>
 
     <div class="form-section">
-        <form action="{{ $action }}" method="{{ $method }}" enctype="multipart/form-data">
+        <form action="{{ $action }}" method="POST" enctype="multipart/form-data">
             @csrf
             @if($method !== 'POST')
                 @method($method)

@@ -33,7 +33,6 @@ trait HasMedia
                 'ref_id'    => $this->getKey(),
                 'file_url'  => $cloudUrl,
                 'mime_type' => $file->getClientMimeType() ?? 'image/jpeg',
-                'is_cloud'  => true,
             ]);
         } else {
             // Local storage (existing code)
@@ -49,13 +48,20 @@ trait HasMedia
                 // Move uploaded file
                 $file->move($fullPath, $filename);
                 
+                // Log successful upload
+                \Log::info('Media uploaded successfully', [
+                    'ref_table' => $this->getTable(),
+                    'ref_id' => $this->getKey(),
+                    'filename' => $filename,
+                    'folder' => $folder
+                ]);
+                
                 // Create media record
                 return $this->media()->create([
                     'ref_table' => $this->getTable(),
                     'ref_id'    => $this->getKey(),
                     'file_url'  => "$folder/$filename",
                     'mime_type' => $file->getClientMimeType() ?? 'image/jpeg',
-                    'is_cloud'  => false,
                 ]);
             } catch (\Exception $e) {
                 // Log error and throw exception
