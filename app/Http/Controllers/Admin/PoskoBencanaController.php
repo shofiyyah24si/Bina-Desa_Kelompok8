@@ -105,6 +105,13 @@ class PoskoBencanaController extends Controller
     {
         $posko = PoskoBencana::findOrFail($id);
 
+        // Debug: Log the request data
+        \Log::info('Posko update request', [
+            'has_files' => $request->hasFile('foto'),
+            'files_count' => $request->hasFile('foto') ? count($request->file('foto')) : 0,
+            'delete_foto' => $request->delete_foto
+        ]);
+
         $request->validate([
             'kejadian_id' => 'required',
             'nama'        => 'required|string|max:150',
@@ -119,6 +126,7 @@ class PoskoBencanaController extends Controller
 
         if ($request->delete_foto) {
             foreach ($request->delete_foto as $m) {
+                \Log::info('Deleting posko media', ['media_id' => $m]);
                 $posko->deleteMedia($m);
             }
         }
@@ -127,10 +135,13 @@ class PoskoBencanaController extends Controller
             try {
                 foreach ($request->file('foto') as $file) {
                     if ($file->isValid()) {
-                        $posko->addMedia($file, 'posko_bencana');
+                        \Log::info('Uploading new posko photo', ['filename' => $file->getClientOriginalName()]);
+                        $media = $posko->addMedia($file, 'posko_bencana');
+                        \Log::info('Posko photo uploaded successfully', ['media_id' => $media->media_id]);
                     }
                 }
             } catch (\Exception $e) {
+                \Log::error('Posko photo upload failed', ['error' => $e->getMessage()]);
                 return redirect()->back()
                     ->withInput()
                     ->with('error', 'Gagal mengupload foto: ' . $e->getMessage());

@@ -13,7 +13,7 @@ class ImageHelper
             return $default ? asset($default) : asset('assets-admin/images/profile/sofia.png');
         }
 
-        // Check if it's already a full URL
+        // Check if it's already a full URL (cloud storage)
         if (filter_var($path, FILTER_VALIDATE_URL)) {
             return $path;
         }
@@ -37,6 +37,12 @@ class ImageHelper
         // Check if file exists in storage directory
         if (file_exists(storage_path('app/public/' . $path))) {
             return asset('storage/' . $path);
+        }
+
+        // Try shared storage URL for guest access (for AlwaysData hosting)
+        $sharedUrl = config('app.shared_storage_url');
+        if ($sharedUrl) {
+            return rtrim($sharedUrl, '/') . '/uploads/' . $path;
         }
 
         // Default: assume it's in uploads directory

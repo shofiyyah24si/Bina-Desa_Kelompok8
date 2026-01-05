@@ -22,30 +22,63 @@ trait HasMedia
 
         // Generate unique filename
         $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-        $uploadPath = "uploads/$folder";
         
-        // Ensure directory exists
-        $fullPath = public_path($uploadPath);
-        if (!file_exists($fullPath)) {
-            mkdir($fullPath, 0755, true);
-        }
-
-        try {
-            // Move uploaded file
-            $file->move($fullPath, $filename);
+        // Check if we should use cloud storage
+        if (config('app.use_cloud_storage', false)) {
+            // Upload to cloud storage (implement your preferred service)
+            $cloudUrl = $this->uploadToCloud($file, $folder, $filename);
             
-            // Create media record
             return $this->media()->create([
                 'ref_table' => $this->getTable(),
                 'ref_id'    => $this->getKey(),
-                'file_url'  => "$folder/$filename",
+                'file_url'  => $cloudUrl,
                 'mime_type' => $file->getClientMimeType() ?? 'image/jpeg',
+                'is_cloud'  => true,
             ]);
-        } catch (\Exception $e) {
-            // Log error and throw exception
-            \Log::error('File upload failed: ' . $e->getMessage());
-            throw new \Exception('Gagal mengupload file: ' . $e->getMessage());
+        } else {
+            // Local storage (existing code)
+            $uploadPath = "uploads/$folder";
+            
+            // Ensure directory exists
+            $fullPath = public_path($uploadPath);
+            if (!file_exists($fullPath)) {
+                mkdir($fullPath, 0755, true);
+            }
+
+            try {
+                // Move uploaded file
+                $file->move($fullPath, $filename);
+                
+                // Create media record
+                return $this->media()->create([
+                    'ref_table' => $this->getTable(),
+                    'ref_id'    => $this->getKey(),
+                    'file_url'  => "$folder/$filename",
+                    'mime_type' => $file->getClientMimeType() ?? 'image/jpeg',
+                    'is_cloud'  => false,
+                ]);
+            } catch (\Exception $e) {
+                // Log error and throw exception
+                \Log::error('File upload failed: ' . $e->getMessage());
+                throw new \Exception('Gagal mengupload file: ' . $e->getMessage());
+            }
         }
+    }
+
+    private function uploadToCloud($file, $folder, $filename)
+    {
+        // Example implementation for a simple cloud storage
+        // You can implement Google Drive API, AWS S3, etc.
+        
+        // For now, we'll use a shared hosting approach
+        // Upload to a shared URL that both admin and guest can access
+        
+        $sharedUploadPath = config('app.shared_upload_url', 'https://your-shared-storage.com/uploads/');
+        
+        // This is a placeholder - implement actual cloud upload logic
+        // For example, using Google Drive API, AWS S3, etc.
+        
+        return $sharedUploadPath . $folder . '/' . $filename;
     }
 
     public function deleteMedia($mediaId)

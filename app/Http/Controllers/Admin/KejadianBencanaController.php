@@ -89,6 +89,13 @@ class KejadianBencanaController extends Controller
     {
         $kejadian = KejadianBencana::findOrFail($id);
 
+        // Debug: Log the request data
+        \Log::info('Kejadian update request', [
+            'has_files' => $request->hasFile('foto'),
+            'files_count' => $request->hasFile('foto') ? count($request->file('foto')) : 0,
+            'delete_foto' => $request->delete_foto
+        ]);
+
         $request->validate([
             'jenis_bencana'  => 'required|string|max:100',
             'tanggal'        => 'required|date',
@@ -108,6 +115,7 @@ class KejadianBencanaController extends Controller
         // Hapus foto yang dipilih
         if ($request->delete_foto) {
             foreach ($request->delete_foto as $mediaId) {
+                \Log::info('Deleting media', ['media_id' => $mediaId]);
                 $kejadian->deleteMedia($mediaId);
             }
         }
@@ -117,10 +125,13 @@ class KejadianBencanaController extends Controller
             try {
                 foreach ($request->file('foto') as $file) {
                     if ($file->isValid()) {
-                        $kejadian->addMedia($file, 'kejadian_bencana');
+                        \Log::info('Uploading new photo', ['filename' => $file->getClientOriginalName()]);
+                        $media = $kejadian->addMedia($file, 'kejadian_bencana');
+                        \Log::info('Photo uploaded successfully', ['media_id' => $media->media_id]);
                     }
                 }
             } catch (\Exception $e) {
+                \Log::error('Photo upload failed', ['error' => $e->getMessage()]);
                 return redirect()->back()
                     ->withInput()
                     ->with('error', 'Gagal mengupload foto: ' . $e->getMessage());

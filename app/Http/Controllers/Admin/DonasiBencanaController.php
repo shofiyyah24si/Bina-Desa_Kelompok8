@@ -136,6 +136,13 @@ class DonasiBencanaController extends Controller
     {
         $donasi = DonasiBencana::findOrFail($id);
 
+        // Debug: Log the request data
+        \Log::info('Donasi update request', [
+            'has_files' => $request->hasFile('foto'),
+            'files_count' => $request->hasFile('foto') ? count($request->file('foto')) : 0,
+            'delete_foto' => $request->delete_foto
+        ]);
+
         $request->validate([
             'kejadian_id' => 'required|integer',
             'donatur_nama' => 'nullable|string|max:150',
@@ -171,6 +178,7 @@ class DonasiBencanaController extends Controller
 
         if ($request->delete_foto) {
             foreach ($request->delete_foto as $mediaId) {
+                \Log::info('Deleting donasi media', ['media_id' => $mediaId]);
                 $donasi->deleteMedia($mediaId);
             }
         }
@@ -179,10 +187,13 @@ class DonasiBencanaController extends Controller
             try {
                 foreach ($request->file('foto') as $file) {
                     if ($file->isValid()) {
-                        $donasi->addMedia($file, 'donasi_bencana');
+                        \Log::info('Uploading new donasi photo', ['filename' => $file->getClientOriginalName()]);
+                        $media = $donasi->addMedia($file, 'donasi_bencana');
+                        \Log::info('Donasi photo uploaded successfully', ['media_id' => $media->media_id]);
                     }
                 }
             } catch (\Exception $e) {
+                \Log::error('Donasi photo upload failed', ['error' => $e->getMessage()]);
                 return redirect()->back()
                     ->withInput()
                     ->with('error', 'Gagal mengupload foto: ' . $e->getMessage());

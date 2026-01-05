@@ -147,5 +147,16 @@ document.getElementById('fotoInput').addEventListener('change', function(e) {
                 col.appendChild(imgContainer);
                 row.appendChild(col);
             };
+            reader.readAsDataURL(file);
+        });
+    } else {
+        container.innerHTML = `
+            <i class="fas fa-images" style="font-size: 48px; color: #cbd5e1; margin-bottom: 10px;"></i>
+            <p class="text-muted mb-0">Preview foto akan muncul di sini</p>
+        `;
+    }
+});
+</script>
+
 @endsection
 

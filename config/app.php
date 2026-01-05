@@ -43,6 +43,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Shared Storage Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for shared storage between admin and guest applications.
+    | This is useful when using hosting services like AlwaysData where
+    | multiple applications need to access the same uploaded files.
+    |
+    */
+
+    'shared_storage_url' => env('SHARED_STORAGE_URL', null),
+    'use_cloud_storage' => env('USE_CLOUD_STORAGE', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application URL
     |--------------------------------------------------------------------------
     |

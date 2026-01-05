@@ -98,18 +98,22 @@
                 <div class="col-md-3 col-sm-4 col-6">
                     <div class="position-relative">
                         <img src="{{ \App\Helpers\ImageHelper::getImageUrl($media->file_url) }}" 
-                             class="img-fluid rounded shadow-sm" 
-                             style="height: 120px; width: 100%; object-fit: cover;">
+                             class="preview-img w-100" 
+                             style="height: 120px; object-fit: cover;">
                         <div class="form-check position-absolute top-0 end-0 m-2">
-                            <input class="form-check-input" type="checkbox" name="delete_foto[]" value="{{ $media->media_id }}" id="delete{{ $media->media_id }}">
-                            <label class="form-check-label bg-danger text-white px-2 py-1 rounded" for="delete{{ $media->media_id }}" style="font-size: 12px;">
-                                <i class="fas fa-trash"></i>
+                            <input class="form-check-input bg-danger border-danger" type="checkbox" name="delete_foto[]" value="{{ $media->media_id }}" id="delete{{ $media->media_id }}">
+                            <label class="form-check-label bg-danger text-white px-1 rounded" for="delete{{ $media->media_id }}" style="font-size: 10px;">
+                                Hapus
                             </label>
                         </div>
                     </div>
                 </div>
             @endforeach
         </div>
+        <small class="form-text text-muted mb-3">
+            <i class="fas fa-info-circle"></i>
+            Centang kotak untuk menghapus foto yang tidak diperlukan
+        </small>
     @endif
 
     <div class="row g-4">
@@ -160,10 +164,8 @@ document.getElementById('fotoInput').addEventListener('change', function(e) {
                 
                 let img = document.createElement('img');
                 img.src = event.target.result;
-                img.className = 'img-fluid rounded shadow-sm';
+                img.className = 'preview-img w-100';
                 img.style.height = '120px';
-                img.style.width = '100%';
-                img.style.objectFit = 'cover';
                 
                 let badge = document.createElement('span');
                 badge.className = 'position-absolute top-0 start-0 badge bg-success';
@@ -186,53 +188,4 @@ document.getElementById('fotoInput').addEventListener('change', function(e) {
 });
 </script>
 
-        {{-- FOTO LAMA --}}
-        <label class="form-label d-block">Foto Lama:</label>
-        <div class="row g-2 mb-3">
-            @foreach($posko->media as $m)
-            <div class="col-md-3 position-relative">
-                <img src="{{ \App\Helpers\ImageHelper::getImageUrl($m->file_url) }}" class="img-thumbnail" style="height:120px; object-fit:cover;">
-                <div class="form-check position-absolute top-0 end-0 m-1">
-                    <input type="checkbox" name="delete_foto[]" value="{{ $m->media_id }}">
-                </div>
-            </div>
-            @endforeach
-        </div>
-
-        {{-- FOTO BARU --}}
-        <div class="mb-3">
-            <label class="form-label">Tambah Foto Baru</label>
-            <input type="file" name="foto[]" id="foto" class="form-control" multiple>
-        </div>
-
-        <div id="preview" class="row g-2"></div>
-
-    </div>
-</div>
-
-<div class="text-end">
-    <a href="{{ route('posko.index') }}" class="btn btn-light">Batal</a>
-    <button type="submit" class="btn btn-primary">Update</button>
-</div>
-
-</form>
-</div></div>
-
-<script>
-document.getElementById('foto').addEventListener('change', function() {
-    const preview = document.getElementById('preview');
-    preview.innerHTML = "";
-
-    Array.from(this.files).forEach(f => {
-        let reader = new FileReader();
-        reader.onload = e => {
-            let col = document.createElement("div");
-            col.classList.add("col-md-3");
-            col.innerHTML = `<img src="${e.target.result}" class="img-thumbnail" style="height:120px; object-fit:cover;">`;
-            preview.appendChild(col);
-        };
-        reader.readAsDataURL(f);
-    });
-});
-</script>
 @endsection
