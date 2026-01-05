@@ -3,50 +3,86 @@
 
 @section('content')
 
-<div class="card shadow-sm border-0">
-    <div class="card-body">
+<x-modern-form 
+    title="Tambah Logistik Bencana"
+    subtitle="Tambahkan data logistik untuk mendukung penanganan bencana"
+    icon="fas fa-boxes"
+    action="{{ route('logistik.store') }}"
+    method="POST"
+    backUrl="{{ route('logistik.index') }}">
 
-        <h4 class="mb-4">Tambah Logistik</h4>
-
-        <form action="{{ route('logistik.store') }}" method="POST">
-            @csrf
-
-            <div class="mb-3">
-                <label class="form-label">Kejadian Bencana</label>
-                <select name="kejadian_id" class="form-select" required>
-                    <option value="">-- Pilih Kejadian --</option>
-                    @foreach($kejadian as $k)
-                        <option value="{{ $k->kejadian_id }}">{{ $k->jenis_bencana }} - {{ $k->lokasi_text }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Nama Barang</label>
-                <input type="text" name="nama_barang" class="form-control" required>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Satuan</label>
-                <input type="text" name="satuan" class="form-control">
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Stok</label>
-                <input type="number" name="stok" class="form-control" value="0" required>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Sumber</label>
-                <input type="text" name="sumber" class="form-control">
-            </div>
-
-            <button class="btn btn-primary">Simpan</button>
-            <a href="{{ route('logistik.index') }}" class="btn btn-secondary">Kembali</a>
-
-        </form>
-
+    <div class="section-title">
+        <i class="fas fa-info-circle"></i>
+        Informasi Logistik
     </div>
-</div>
+
+    <div class="row g-4">
+        <div class="col-md-6">
+            <label class="form-label">🚨 Kejadian Bencana</label>
+            <select name="kejadian_id" class="form-select @error('kejadian_id') is-invalid @enderror" required>
+                <option value="">-- Pilih Kejadian --</option>
+                @foreach($kejadian as $k)
+                    <option value="{{ $k->kejadian_id }}" {{ old('kejadian_id') == $k->kejadian_id ? 'selected' : '' }}>
+                        {{ $k->jenis_bencana }} - {{ $k->lokasi_text }}
+                    </option>
+                @endforeach
+            </select>
+            @error('kejadian_id')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">📦 Nama Barang</label>
+            <input type="text" 
+                   name="nama_barang" 
+                   class="form-control @error('nama_barang') is-invalid @enderror" 
+                   placeholder="Contoh: Beras, Air Mineral, Selimut"
+                   value="{{ old('nama_barang') }}" 
+                   required>
+            @error('nama_barang')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">📏 Satuan</label>
+            <input type="text" 
+                   name="satuan" 
+                   class="form-control @error('satuan') is-invalid @enderror" 
+                   placeholder="Contoh: Kg, Liter, Pcs, Dus"
+                   value="{{ old('satuan') }}">
+            @error('satuan')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">📊 Stok Awal</label>
+            <input type="number" 
+                   name="stok" 
+                   class="form-control @error('stok') is-invalid @enderror" 
+                   value="{{ old('stok', 0) }}" 
+                   min="0"
+                   required>
+            @error('stok')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label">🏢 Sumber</label>
+            <input type="text" 
+                   name="sumber" 
+                   class="form-control @error('sumber') is-invalid @enderror" 
+                   placeholder="Contoh: Donasi Masyarakat, BNPB, PMI"
+                   value="{{ old('sumber') }}">
+            @error('sumber')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+    </div>
+
+</x-modern-form>
 
 @endsection

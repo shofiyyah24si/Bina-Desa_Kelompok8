@@ -287,6 +287,7 @@
         <table class="table align-middle">
             <thead>
                 <tr>
+                    <th>Bukti</th>
                     <th>Logistik</th>
                     <th>Posko</th>
                     <th>Tanggal</th>
@@ -298,6 +299,29 @@
             <tbody>
                 @forelse ($data as $row)
                     <tr>
+                        <td>
+                            @php $fotos = $row->media->take(3); @endphp
+                            <div class="photo-gallery">
+                                @foreach($fotos as $foto)
+                                    <img src="{{ \App\Helpers\ImageHelper::getImageUrl($foto->file_url) }}"
+                                         class="photo-item"
+                                         alt="Bukti Distribusi"
+                                         style="width: 45px; height: 45px; object-fit: cover; border-radius: 8px; margin-right: 4px; border: 2px solid #F6CFB5;">
+                                @endforeach
+
+                                @if($row->media->count() > 3)
+                                    <div class="photo-counter" style="width: 45px; height: 45px; background: #191B47; color: white; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold;">
+                                        +{{ $row->media->count() - 3 }}
+                                    </div>
+                                @endif
+
+                                @if($row->media->count() == 0)
+                                    <div class="photo-placeholder" style="width: 45px; height: 45px; background: linear-gradient(135deg, #191B47, #242A61); color: white; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-camera"></i>
+                                    </div>
+                                @endif
+                            </div>
+                        </td>
                         <td>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <i class="fas fa-box text-primary"></i>

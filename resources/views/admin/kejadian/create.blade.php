@@ -3,122 +3,192 @@
 
 @section('content')
 
-<style>
-    .form-card {
-        background: #ffffff;
-        border-radius: 14px;
-        padding: 25px;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.06);
-    }
+<x-modern-form 
+    title="Tambah Kejadian Bencana"
+    subtitle="Tambahkan data kejadian bencana baru ke dalam sistem"
+    icon="fas fa-exclamation-triangle"
+    action="{{ route('kejadian.store') }}"
+    method="POST"
+    backUrl="{{ route('kejadian.index') }}">
 
-    .preview-img {
-        width: 120px;
-        height: 120px;
-        object-fit: cover;
-        border-radius: 10px;
-        border: 2px solid #ddd;
-        margin-right: 10px;
-    }
-</style>
+    <div class="section-title">
+        <i class="fas fa-info-circle"></i>
+        Informasi Kejadian
+    </div>
 
-<div class="form-card">
-
-    <h4 class="fw-bold mb-4">📝 Tambah Kejadian Bencana</h4>
-
-    <form action="{{ route('kejadian.store') }}" method="POST" enctype="multipart/form-data">
-        @csrf
-
-        <div class="row g-3">
-
-            {{-- Jenis Bencana --}}
-            <div class="col-md-6">
-                <label class="form-label fw-semibold">Jenis Bencana</label>
-                <input type="text" name="jenis_bencana" class="form-control" required>
-            </div>
-
-            {{-- Tanggal --}}
-            <div class="col-md-6">
-                <label class="form-label fw-semibold">Tanggal Kejadian</label>
-                <input type="date" name="tanggal" class="form-control" required>
-            </div>
-
-            {{-- Lokasi --}}
-            <div class="col-12">
-                <label class="form-label fw-semibold">Lokasi Kejadian</label>
-                <textarea name="lokasi_text" class="form-control" rows="2"></textarea>
-            </div>
-
-            {{-- RT RW --}}
-            <div class="col-md-3">
-                <label class="form-label fw-semibold">RT</label>
-                <input type="text" name="rt" class="form-control">
-            </div>
-
-            <div class="col-md-3">
-                <label class="form-label fw-semibold">RW</label>
-                <input type="text" name="rw" class="form-control">
-            </div>
-
-            {{-- Dampak --}}
-            <div class="col-md-6">
-                <label class="form-label fw-semibold">Dampak Singkat</label>
-                <input type="text" name="dampak" class="form-control">
-            </div>
-
-            {{-- Status --}}
-            <div class="col-md-6">
-                <label class="form-label fw-semibold">Status Kejadian</label>
-                <select name="status_kejadian" class="form-select" required>
-                    <option value="Dilaporkan">Dilaporkan</option>
-                    <option value="Verifikasi">Verifikasi</option>
-                    <option value="Selesai">Selesai</option>
-                </select>
-            </div>
-
-            {{-- Keterangan --}}
-            <div class="col-12">
-                <label class="form-label fw-semibold">Keterangan Tambahan</label>
-                <textarea name="keterangan" class="form-control" rows="3"></textarea>
-            </div>
-
-            {{-- FOTO UPLOAD --}}
-            <div class="col-12">
-                <label class="form-label fw-semibold">Upload Foto Kejadian</label>
-                <input type="file" name="foto[]" class="form-control" multiple accept="image/*" id="fotoInput">
-            </div>
-
-            {{-- PREVIEW --}}
-            <div class="col-12 mt-3" id="previewContainer"></div>
-
+    <div class="row g-4">
+        <div class="col-md-6">
+            <label class="form-label">🚨 Jenis Bencana</label>
+            <input type="text" 
+                   name="jenis_bencana" 
+                   class="form-control @error('jenis_bencana') is-invalid @enderror" 
+                   placeholder="Contoh: Banjir, Gempa Bumi, Kebakaran"
+                   value="{{ old('jenis_bencana') }}" 
+                   required>
+            @error('jenis_bencana')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
 
-        <div class="mt-4 d-flex justify-content-end">
-            <a href="{{ route('kejadian.index') }}" class="btn btn-secondary me-2">Batal</a>
-            <button type="submit" class="btn btn-primary">Simpan Data</button>
+        <div class="col-md-6">
+            <label class="form-label">📅 Tanggal Kejadian</label>
+            <input type="date" 
+                   name="tanggal" 
+                   class="form-control @error('tanggal') is-invalid @enderror" 
+                   value="{{ old('tanggal', date('Y-m-d')) }}" 
+                   required>
+            @error('tanggal')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
         </div>
 
-    </form>
-</div>
+        <div class="col-12">
+            <label class="form-label">📍 Lokasi Kejadian</label>
+            <textarea name="lokasi_text" 
+                      class="form-control @error('lokasi_text') is-invalid @enderror" 
+                      rows="3" 
+                      placeholder="Jelaskan lokasi kejadian secara detail...">{{ old('lokasi_text') }}</textarea>
+            @error('lokasi_text')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
 
-@endsection
+        <div class="col-md-3">
+            <label class="form-label">🏠 RT</label>
+            <input type="text" 
+                   name="rt" 
+                   class="form-control @error('rt') is-invalid @enderror" 
+                   placeholder="001"
+                   value="{{ old('rt') }}">
+            @error('rt')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
 
-@section('script')
+        <div class="col-md-3">
+            <label class="form-label">🏘️ RW</label>
+            <input type="text" 
+                   name="rw" 
+                   class="form-control @error('rw') is-invalid @enderror" 
+                   placeholder="001"
+                   value="{{ old('rw') }}">
+            @error('rw')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">💥 Dampak Singkat</label>
+            <input type="text" 
+                   name="dampak" 
+                   class="form-control @error('dampak') is-invalid @enderror" 
+                   placeholder="Contoh: 10 rumah rusak, 5 keluarga mengungsi"
+                   value="{{ old('dampak') }}">
+            @error('dampak')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="col-md-6">
+            <label class="form-label">📊 Status Kejadian</label>
+            <select name="status_kejadian" class="form-select @error('status_kejadian') is-invalid @enderror" required>
+                <option value="">-- Pilih Status --</option>
+                <option value="Dilaporkan" {{ old('status_kejadian') == 'Dilaporkan' ? 'selected' : '' }}>Dilaporkan</option>
+                <option value="Verifikasi" {{ old('status_kejadian') == 'Verifikasi' ? 'selected' : '' }}>Verifikasi</option>
+                <option value="Selesai" {{ old('status_kejadian') == 'Selesai' ? 'selected' : '' }}>Selesai</option>
+            </select>
+            @error('status_kejadian')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="col-12">
+            <label class="form-label">📝 Keterangan Tambahan</label>
+            <textarea name="keterangan" 
+                      class="form-control @error('keterangan') is-invalid @enderror" 
+                      rows="3" 
+                      placeholder="Tambahkan keterangan atau detail lainnya...">{{ old('keterangan') }}</textarea>
+            @error('keterangan')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+    </div>
+
+    <div class="section-title mt-4">
+        <i class="fas fa-camera"></i>
+        Dokumentasi Kejadian
+    </div>
+
+    <div class="row g-4">
+        <div class="col-12">
+            <label class="form-label">📸 Upload Foto Kejadian</label>
+            <input type="file" 
+                   name="foto[]" 
+                   class="form-control @error('foto.*') is-invalid @enderror" 
+                   multiple 
+                   accept="image/*" 
+                   id="fotoInput">
+            <small class="form-text text-muted mt-2">
+                <i class="fas fa-info-circle"></i>
+                Format: JPG, PNG, JPEG. Maksimal 2MB per file. Bisa upload multiple foto.
+            </small>
+            @error('foto.*')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="col-12">
+            <div class="preview-container" id="previewContainer">
+                <i class="fas fa-images" style="font-size: 48px; color: #cbd5e1; margin-bottom: 10px;"></i>
+                <p class="text-muted mb-0">Preview foto akan muncul di sini</p>
+            </div>
+        </div>
+    </div>
+
+</x-modern-form>
+
 <script>
-    // Preview foto sebelum upload
-    document.getElementById('fotoInput').addEventListener('change', function(e) {
-        let container = document.getElementById('previewContainer');
-        container.innerHTML = ""; // clear preview
-
-        Array.from(e.target.files).forEach(file => {
+// Preview foto sebelum upload dengan style yang lebih baik
+document.getElementById('fotoInput').addEventListener('change', function(e) {
+    let container = document.getElementById('previewContainer');
+    
+    if (e.target.files.length > 0) {
+        container.innerHTML = '<div class="row g-3"></div>';
+        let row = container.querySelector('.row');
+        
+        Array.from(e.target.files).forEach((file, index) => {
             let reader = new FileReader();
             reader.onload = event => {
+                let col = document.createElement('div');
+                col.className = 'col-md-3 col-sm-4 col-6';
+                
+                let imgContainer = document.createElement('div');
+                imgContainer.className = 'position-relative';
+                
                 let img = document.createElement('img');
                 img.src = event.target.result;
-                img.className = "preview-img";
-                container.appendChild(img);
+                img.className = 'preview-img w-100';
+                img.style.height = '120px';
+                
+                let badge = document.createElement('span');
+                badge.className = 'position-absolute top-0 start-0 badge bg-primary';
+                badge.style.margin = '5px';
+                badge.textContent = index + 1;
+                
+                imgContainer.appendChild(img);
+                imgContainer.appendChild(badge);
+                col.appendChild(imgContainer);
+                row.appendChild(col);
             };
             reader.readAsDataURL(file);
         });
-    });
+    } else {
+        container.innerHTML = `
+            <i class="fas fa-images" style="font-size: 48px; color: #cbd5e1; margin-bottom: 10px;"></i>
+            <p class="text-muted mb-0">Preview foto akan muncul di sini</p>
+        `;
+    }
+});
 </script>
+
 @endsection
