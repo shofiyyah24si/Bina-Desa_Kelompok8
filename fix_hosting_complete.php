@@ -119,9 +119,24 @@ try {
         echo "<p style='color: orange;'>⚠️ Adding columns: " . $e->getMessage() . "</p>";
     }
     
-    // 4. Create admin user if not exists
-    echo "<h2>4. Creating Admin User</h2>";
+    // 4. Create admin user if not exists and update existing users
+    echo "<h2>4. Managing Admin Users</h2>";
     try {
+        // First, check if there are any users without roles and update them
+        $stmt = $pdo->query("SELECT id, name, email FROM users WHERE role IS NULL OR role = ''");
+        $usersWithoutRole = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        if (!empty($usersWithoutRole)) {
+            echo "<h3>Updating Users Without Roles</h3>";
+            foreach ($usersWithoutRole as $user) {
+                // Set first user as Admin, others as Warga
+                $role = ($user['id'] == 1 || strpos(strtolower($user['email']), 'admin') !== false) ? 'Admin' : 'Warga';
+                $pdo->exec("UPDATE users SET role = '$role' WHERE id = " . $user['id']);
+                echo "<p style='color: green;'>✅ Updated user '{$user['name']}' ({$user['email']}) to role: $role</p>";
+            }
+        }
+        
+        // Check if admin user exists
         $stmt = $pdo->query("SELECT COUNT(*) FROM users WHERE email = 'admin@admin.com'");
         $adminExists = $stmt->fetchColumn();
         
@@ -153,8 +168,28 @@ try {
         } else {
             echo "<p style='color: blue;'>ℹ️ Admin user already exists</p>";
         }
+        
+        // Show current users and their roles
+        echo "<h3>Current Users and Roles</h3>";
+        $stmt = $pdo->query("SELECT id, name, email, role FROM users ORDER BY id");
+        $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        echo "<table style='width: 100%; border-collapse: collapse; margin: 10px 0;'>";
+        echo "<tr style='background: #f0f0f0;'><th style='border: 1px solid #ddd; padding: 8px;'>ID</th><th style='border: 1px solid #ddd; padding: 8px;'>Name</th><th style='border: 1px solid #ddd; padding: 8px;'>Email</th><th style='border: 1px solid #ddd; padding: 8px;'>Role</th></tr>";
+        
+        foreach ($users as $user) {
+            $roleColor = $user['role'] === 'Admin' ? 'color: red; font-weight: bold;' : 'color: blue;';
+            echo "<tr>";
+            echo "<td style='border: 1px solid #ddd; padding: 8px;'>{$user['id']}</td>";
+            echo "<td style='border: 1px solid #ddd; padding: 8px;'>{$user['name']}</td>";
+            echo "<td style='border: 1px solid #ddd; padding: 8px;'>{$user['email']}</td>";
+            echo "<td style='border: 1px solid #ddd; padding: 8px; $roleColor'>{$user['role']}</td>";
+            echo "</tr>";
+        }
+        echo "</table>";
+        
     } catch (Exception $e) {
-        echo "<p style='color: orange;'>⚠️ Admin user: " . $e->getMessage() . "</p>";
+        echo "<p style='color: orange;'>⚠️ Admin user management: " . $e->getMessage() . "</p>";
     }
     
     // 5. Clear cache and sessions

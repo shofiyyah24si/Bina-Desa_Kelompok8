@@ -27,40 +27,24 @@ Route::middleware('check.login')->group(function () {
     // Dashboard bisa diakses semua role (Admin, Warga, Mitra)
     Route::get('/dashboard', [DashboardAdminController::class, 'index'])->name('dashboard');
 
-    /// ===================== ADMIN =====================
+    /// ===================== ADMIN ONLY =====================
     Route::middleware('checkrole:Admin')->group(function () {
         Route::resource('warga', WargaController::class);
         Route::resource('users', UserController::class);
-
-        // Admin boleh CRUD kejadian
-        Route::resource('kejadian', KejadianBencanaController::class)
-            ->except(['index', 'show']);
     });
 
-    // ===================== WARGA =====================
-    Route::middleware('checkrole:Warga')->group(function () {
-        Route::resource('kejadian', KejadianBencanaController::class)
-            ->only(['index', 'show']);
-    });
-
-    // ===================== MITRA =====================
-    Route::middleware('checkrole:Mitra')->group(function () {
-        Route::resource('kejadian', KejadianBencanaController::class)
-            ->only(['index', 'show']);
-    });
-
-    // Logout untuk semua role
-    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-
+    // ===================== ALL ROLES (Admin, Warga, Mitra) =====================
+    // Semua role bisa akses kejadian, posko, donasi, logistik, distribusi
+    Route::resource('kejadian', KejadianBencanaController::class);
     Route::resource('posko', PoskoBencanaController::class);
-
     Route::resource('donasi', DonasiBencanaController::class);
-
     Route::resource('logistik', LogistikBencanaController::class);
-
     Route::resource('distribusi', DistribusiLogistikController::class);
     
     // AJAX routes
     Route::get('/api/logistik/{id?}', [DistribusiLogistikController::class, 'getLogistikData'])->name('api.logistik');
+
+    // Logout untuk semua role
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 });
