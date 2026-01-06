@@ -44,6 +44,18 @@
             @enderror
         </div>
 
+        <div class="col-md-6">
+            <label class="form-label">📅 Tanggal Donasi <span class="text-danger">*</span></label>
+            <input type="date" 
+                   name="tanggal_donasi" 
+                   class="form-control @error('tanggal_donasi') is-invalid @enderror" 
+                   value="{{ old('tanggal_donasi', $donasi->tanggal_donasi ? $donasi->tanggal_donasi->format('Y-m-d') : date('Y-m-d')) }}" 
+                   required>
+            @error('tanggal_donasi')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
         <div class="col-12">
             <label class="form-label">🎁 Jenis Donasi</label>
             <select name="jenis" id="jenis_donasi" class="form-select @error('jenis') is-invalid @enderror" required>

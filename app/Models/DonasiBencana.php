@@ -14,6 +14,7 @@ class DonasiBencana extends Model
 
     protected $fillable = [
         'kejadian_id',
+        'tanggal_donasi',
         'donatur_nama',
         'jenis',
         'nilai',
@@ -21,6 +22,7 @@ class DonasiBencana extends Model
     ];
 
     protected $casts = [
+        'tanggal_donasi' => 'date',
         'nilai' => 'decimal:2',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',

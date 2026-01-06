@@ -301,6 +301,7 @@
                 <tr>
                     <th>Bukti</th>
                     <th>Nama Donatur</th>
+                    <th>Tanggal</th>
                     <th>Jenis</th>
                     <th>Detail Donasi</th>
                     <th>Kejadian</th>
@@ -328,6 +329,13 @@
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <i class="fas fa-user text-primary"></i>
                                 <strong style="color: #191B47;">{{ $d->donatur_nama ?? '-' }}</strong>
+                            </div>
+                        </td>
+
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-calendar text-success"></i>
+                                <span style="color: #191B47;">{{ $d->tanggal_donasi ? \Carbon\Carbon::parse($d->tanggal_donasi)->format('d/m/Y') : '-' }}</span>
                             </div>
                         </td>
 

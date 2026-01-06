@@ -71,6 +71,7 @@ class DonasiBencanaController extends Controller
     {
         $request->validate([
             'kejadian_id' => 'required|integer',
+            'tanggal_donasi' => 'required|date',
             'donatur_nama' => 'nullable|string|max:150',
             'jenis' => 'required|string|in:uang,barang',
             'nilai' => 'nullable|numeric|min:0',
@@ -160,6 +161,7 @@ class DonasiBencanaController extends Controller
 
         $request->validate([
             'kejadian_id' => 'required|integer',
+            'tanggal_donasi' => 'required|date',
             'donatur_nama' => 'nullable|string|max:150',
             'jenis' => 'required|string|in:uang,barang',
             'nilai' => 'nullable|numeric|min:0',
