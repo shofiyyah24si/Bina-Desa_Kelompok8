@@ -95,8 +95,15 @@ class DonasiBencanaController extends Controller
         $data = $request->except('foto');
         if ($request->jenis === 'uang') {
             $data['keterangan_barang'] = null;
+            // Pastikan nilai ada untuk donasi uang
+            if (!$data['nilai']) {
+                $data['nilai'] = 0;
+            }
         } else {
-            $data['nilai'] = null;
+            // Untuk donasi barang, set nilai ke 0 jika tidak diisi (bukan null)
+            if (!$data['nilai']) {
+                $data['nilai'] = 0;
+            }
         }
         
         $donasi = DonasiBencana::create($data);
@@ -174,8 +181,15 @@ class DonasiBencanaController extends Controller
         $data = $request->except(['foto','delete_foto']);
         if ($request->jenis === 'uang') {
             $data['keterangan_barang'] = null;
+            // Pastikan nilai ada untuk donasi uang
+            if (!$data['nilai']) {
+                $data['nilai'] = 0;
+            }
         } else {
-            $data['nilai'] = null;
+            // Untuk donasi barang, set nilai ke 0 jika tidak diisi (bukan null)
+            if (!$data['nilai']) {
+                $data['nilai'] = 0;
+            }
         }
         
         $donasi->update($data);

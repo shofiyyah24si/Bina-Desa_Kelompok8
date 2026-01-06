@@ -65,7 +65,7 @@
                        name="nilai" 
                        class="form-control @error('nilai') is-invalid @enderror" 
                        placeholder="Masukkan nominal donasi"
-                       value="{{ old('nilai', $donasi->jenis == 'uang' ? $donasi->nilai : '') }}">
+                       value="{{ old('nilai', $donasi->nilai ?? 0) }}">
             </div>
             <small class="form-text text-muted mt-2">
                 <i class="fas fa-info-circle"></i>
@@ -185,9 +185,9 @@ document.addEventListener('DOMContentLoaded', function() {
             fieldBarang.style.display = 'block';
             inputKeterangan.setAttribute('required', 'required');
             
-            // Clear nilai field when switching to barang
+            // Set nilai to 0 when switching to barang (instead of empty)
             if (jenisSelect.dataset.changed) {
-                inputNilai.value = '';
+                inputNilai.value = '0';
             }
         }
     }
