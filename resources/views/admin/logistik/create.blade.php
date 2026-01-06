@@ -33,6 +33,18 @@
         </div>
 
         <div class="col-md-6">
+            <label class="form-label">📅 Tanggal Masuk <span class="text-danger">*</span></label>
+            <input type="date" 
+                   name="tanggal_masuk" 
+                   class="form-control @error('tanggal_masuk') is-invalid @enderror" 
+                   value="{{ old('tanggal_masuk', date('Y-m-d')) }}" 
+                   required>
+            @error('tanggal_masuk')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="col-md-6">
             <label class="form-label">📦 Nama Barang</label>
             <input type="text" 
                    name="nama_barang" 

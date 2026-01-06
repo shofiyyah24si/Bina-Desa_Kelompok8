@@ -77,6 +77,7 @@ class LogistikBencanaController extends Controller
     {
         $request->validate([
             'kejadian_id' => 'required|integer',
+            'tanggal_masuk' => 'required|date',
             'nama_barang' => 'required|string|max:255',
             'satuan'      => 'nullable|string|max:50',
             'stok'        => 'required|integer|min:0',
@@ -101,6 +102,7 @@ class LogistikBencanaController extends Controller
     {
         $request->validate([
             'kejadian_id' => 'required|integer',
+            'tanggal_masuk' => 'required|date',
             'nama_barang' => 'required|string|max:255',
             'satuan'      => 'nullable|string|max:50',
             'stok'        => 'required|integer|min:0',

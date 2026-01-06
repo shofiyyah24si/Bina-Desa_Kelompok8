@@ -11,10 +11,15 @@ class LogistikBencana extends Model
 
     protected $fillable = [
         'kejadian_id',
+        'tanggal_masuk',
         'nama_barang',
         'satuan',
         'stok',
         'sumber',
+    ];
+
+    protected $casts = [
+        'tanggal_masuk' => 'date',
     ];
 
     public function kejadian()

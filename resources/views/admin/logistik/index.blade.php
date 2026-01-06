@@ -248,6 +248,7 @@
             <thead style="background: linear-gradient(135deg, #191B47, #242A61); color: white;">
                 <tr>
                     <th style="border: none; padding: 18px 16px; font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Kejadian</th>
+                    <th style="border: none; padding: 18px 16px; font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Tanggal Masuk</th>
                     <th style="border: none; padding: 18px 16px; font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Nama Barang</th>
                     <th style="border: none; padding: 18px 16px; font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Satuan</th>
                     <th style="border: none; padding: 18px 16px; font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Stok</th>
@@ -262,6 +263,12 @@
                         <div style="display: flex; align-items: center; gap: 8px;">
                             <i class="fas fa-exclamation-triangle text-danger"></i>
                             <strong style="color: #191B47;">{{ $row->kejadian->jenis_bencana ?? '-' }}</strong>
+                        </div>
+                    </td>
+                    <td style="padding: 16px; vertical-align: middle;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-calendar text-success"></i>
+                            <span style="color: #191B47;">{{ $row->tanggal_masuk ? \Carbon\Carbon::parse($row->tanggal_masuk)->format('d/m/Y') : '-' }}</span>
                         </div>
                     </td>
                     <td style="padding: 16px; vertical-align: middle;">
