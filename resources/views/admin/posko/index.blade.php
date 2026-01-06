@@ -421,29 +421,14 @@
                 @forelse ($posko as $row)
                     <tr>
                         <td>
-                            @php 
-                                $mediaItems = [];
-                                try {
-                                    $mediaItems = $row->media ?? collect([]);
-                                } catch (\Exception $e) {
-                                    $mediaItems = collect([]);
-                                }
-                                $fotos = $mediaItems->take(3); 
-                            @endphp
                             <div class="photo-gallery">
-                                @foreach($fotos as $foto)
-                                    <img src="{{ \App\Helpers\ImageHelper::getImageUrl($foto->file_url) }}"
+                                @if($row->foto_profil)
+                                    <img src="{{ asset('uploads/' . $row->foto_profil) }}"
                                          class="photo-item"
-                                         alt="Foto Posko">
-                                @endforeach
-
-                                @if($mediaItems->count() > 3)
-                                    <div class="photo-counter">
-                                        +{{ $mediaItems->count() - 3 }}
-                                    </div>
-                                @endif
-
-                                @if($mediaItems->count() == 0)
+                                         alt="Foto Posko {{ $row->nama }}"
+                                         data-path="{{ $row->foto_profil }}"
+                                         onerror="this.style.display='none'">
+                                @else
                                     <div class="photo-counter">
                                         <i class="fas fa-image"></i>
                                     </div>

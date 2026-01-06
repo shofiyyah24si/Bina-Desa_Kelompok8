@@ -90,14 +90,26 @@
         <div class="col-12">
             <label class="form-label">📸 Upload Foto Posko</label>
             <input type="file" 
-                   name="foto[]" 
-                   class="form-control @error('foto.*') is-invalid @enderror" 
-                   multiple 
+                   name="foto_profil" 
+                   class="form-control @error('foto_profil') is-invalid @enderror" 
                    accept="image/*" 
                    id="fotoInput">
             <small class="form-text text-muted mt-2">
                 <i class="fas fa-info-circle"></i>
-                Format: JPG, PNG, JPEG. Maksimal 2MB per file. Bisa upload multiple foto.
+                Format: JPG, PNG, JPEG. Maksimal 2MB per file.
+            </small>
+            @error('foto_profil')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+
+        <div class="col-12">
+            <div class="preview-container" id="previewContainer">
+                <i class="fas fa-images" style="font-size: 48px; color: #cbd5e1; margin-bottom: 10px;"></i>
+                <p class="text-muted mb-0">Preview foto akan muncul di sini</p>
+            </div>
+        </div>
+    </div>
             </small>
             @error('foto.*')
                 <div class="invalid-feedback">{{ $message }}</div>
@@ -120,35 +132,24 @@ document.getElementById('fotoInput').addEventListener('change', function(e) {
     let container = document.getElementById('previewContainer');
     
     if (e.target.files.length > 0) {
-        container.innerHTML = '<div class="row g-3"></div>';
-        let row = container.querySelector('.row');
+        let file = e.target.files[0];
+        let reader = new FileReader();
         
-        Array.from(e.target.files).forEach((file, index) => {
-            let reader = new FileReader();
-            reader.onload = event => {
-                let col = document.createElement('div');
-                col.className = 'col-md-3 col-sm-4 col-6';
-                
-                let imgContainer = document.createElement('div');
-                imgContainer.className = 'position-relative';
-                
-                let img = document.createElement('img');
-                img.src = event.target.result;
-                img.className = 'preview-img w-100';
-                img.style.height = '120px';
-                
-                let badge = document.createElement('span');
-                badge.className = 'position-absolute top-0 start-0 badge bg-primary';
-                badge.style.margin = '5px';
-                badge.textContent = index + 1;
-                
-                imgContainer.appendChild(img);
-                imgContainer.appendChild(badge);
-                col.appendChild(imgContainer);
-                row.appendChild(col);
-            };
-            reader.readAsDataURL(file);
-        });
+        reader.onload = function(event) {
+            container.innerHTML = `
+                <div class="text-center">
+                    <img src="${event.target.result}" 
+                         class="img-fluid rounded shadow-sm" 
+                         style="max-height: 200px; max-width: 100%; object-fit: cover;">
+                    <p class="text-success mt-2 mb-0">
+                        <i class="fas fa-check-circle"></i> 
+                        Foto siap diupload: ${file.name}
+                    </p>
+                </div>
+            `;
+        };
+        
+        reader.readAsDataURL(file);
     } else {
         container.innerHTML = `
             <i class="fas fa-images" style="font-size: 48px; color: #cbd5e1; margin-bottom: 10px;"></i>
