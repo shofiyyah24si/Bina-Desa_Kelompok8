@@ -93,29 +93,16 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => $request->role, // Langsung masukkan role tanpa pengecekan
         ];
 
-        // Check if role column exists before adding it
-        try {
-            $hasRoleColumn = \DB::select("SHOW COLUMNS FROM users LIKE 'role'");
-            if (!empty($hasRoleColumn)) {
-                $data['role'] = $request->role;
-                \Log::info('Registration: Role column exists, setting role', ['role' => $request->role]);
-            } else {
-                \Log::warning('Registration: Role column does not exist');
-            }
-        } catch (\Exception $e) {
-            \Log::warning('Could not check role column: ' . $e->getMessage());
-            // Fallback: try to add role anyway, catch if it fails
-            try {
-                $data['role'] = $request->role;
-                \Log::info('Registration: Fallback role setting successful', ['role' => $request->role]);
-            } catch (\Exception $roleError) {
-                \Log::warning('Role column does not exist, skipping: ' . $roleError->getMessage());
-            }
-        }
+        \Log::info('Registration data prepared', [
+            'name' => $request->name,
+            'email' => $request->email,
+            'role' => $request->role
+        ]);
 
-        // Handle foto profil upload - konsisten dengan UserController
+        // Handle foto profil upload
         if ($request->hasFile('foto_profil') && $request->file('foto_profil')->isValid()) {
             $file = $request->file('foto_profil');
             $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
@@ -127,22 +114,7 @@ class AuthController extends Controller
             }
             
             $file->move($fullPath, $filename);
-            
-            // Only add foto_profil to data if column exists
-            try {
-                $hasFotoProfilColumn = \DB::select("SHOW COLUMNS FROM users LIKE 'foto_profil'");
-                if (!empty($hasFotoProfilColumn)) {
-                    $data['foto_profil'] = "users/$filename";
-                }
-            } catch (\Exception $e) {
-                \Log::warning('Could not check foto_profil column: ' . $e->getMessage());
-                // Fallback: try to add foto_profil anyway, catch if it fails
-                try {
-                    $data['foto_profil'] = "users/$filename";
-                } catch (\Exception $fotoError) {
-                    \Log::warning('foto_profil column does not exist, skipping: ' . $fotoError->getMessage());
-                }
-            }
+            $data['foto_profil'] = "users/$filename";
             
             \Log::info('Register photo uploaded successfully', [
                 'filename' => $filename,
@@ -150,47 +122,21 @@ class AuthController extends Controller
             ]);
         }
 
-        // Create user with error handling for missing columns
+        // Buat user baru
         try {
             $user = User::create($data);
-        } catch (\Illuminate\Database\QueryException $e) {
-            // If there's a column error, try creating with minimal data
-            if (strpos($e->getMessage(), 'Unknown column') !== false) {
-                \Log::warning('Column error during user creation, trying with minimal data: ' . $e->getMessage());
-                
-                $minimalData = [
-                    'name' => $request->name,
-                    'email' => $request->email,
-                    'password' => Hash::make($request->password),
-                ];
-                
-                $user = User::create($minimalData);
-                
-                // Try to update with additional fields if they exist
-                try {
-                    $updateData = [];
-                    
-                    $hasRoleColumn = \DB::select("SHOW COLUMNS FROM users LIKE 'role'");
-                    if (!empty($hasRoleColumn)) {
-                        $updateData['role'] = $request->role;
-                    }
-                    
-                    if (isset($data['foto_profil'])) {
-                        $hasFotoProfilColumn = \DB::select("SHOW COLUMNS FROM users LIKE 'foto_profil'");
-                        if (!empty($hasFotoProfilColumn)) {
-                            $updateData['foto_profil'] = $data['foto_profil'];
-                        }
-                    }
-                    
-                    if (!empty($updateData)) {
-                        $user->update($updateData);
-                    }
-                } catch (\Exception $updateError) {
-                    \Log::warning('Could not update user with additional fields: ' . $updateError->getMessage());
-                }
-            } else {
-                throw $e; // Re-throw if it's not a column error
-            }
+            \Log::info('User created successfully', [
+                'user_id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Failed to create user', [
+                'error' => $e->getMessage(),
+                'data' => $data
+            ]);
+            return back()->with('error', 'Gagal membuat akun. Silahkan coba lagi.')->withInput();
         }
 
         Auth::login($user);
