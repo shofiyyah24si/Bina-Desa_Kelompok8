@@ -46,10 +46,18 @@ class AuthController extends Controller
         // Login user
         Auth::login($user);
 
-        // Simpan waktu login
-        $user->update([
-            'last_login_at' => now(),
-        ]);
+        // Simpan waktu login - with column existence check
+        try {
+            $hasLastLoginColumn = \DB::select("SHOW COLUMNS FROM users LIKE 'last_login_at'");
+            if (!empty($hasLastLoginColumn)) {
+                $user->update([
+                    'last_login_at' => now(),
+                ]);
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Could not update last_login_at: ' . $e->getMessage());
+            // Continue without updating last login time
+        }
 
         // Redirect ke dashboard
         return redirect()->route('dashboard')->with('success', 'Selamat datang, ' . $user->name . '!');

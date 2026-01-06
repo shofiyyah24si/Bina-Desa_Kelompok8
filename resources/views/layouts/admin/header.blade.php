@@ -37,7 +37,7 @@
 
                 <span class="user-info-text small fw-semibold">
                     Hai, {{ Auth::user()->name }} <br>
-                    <strong class="text-dark">{{ Auth::user()->role }}</strong>
+                    <strong class="text-dark">{{ Auth::user()->role ?? 'User' }}</strong>
                 </span>
 
                 <img src="{{ Auth::user()->foto_profil ? asset('uploads/' . Auth::user()->foto_profil) : asset('assets-admin/images/profile/sofia.png') }}"
@@ -49,7 +49,7 @@
             <ul class="dropdown-menu dropdown-menu-end rounded-3 shadow-lg p-2">
                 <li class="px-3 py-2 fw-semibold text-dark">
                     {{ Auth::user()->name }} <br>
-                    <small class="text-muted">{{ Auth::user()->role }}</small>
+                    <small class="text-muted">{{ Auth::user()->role ?? 'User' }}</small>
                 </li>
 
                 <li><hr></li>

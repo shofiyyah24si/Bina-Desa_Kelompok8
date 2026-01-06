@@ -52,4 +52,36 @@ class User extends Authenticatable
             'last_login_at' => 'datetime',
         ];
     }
+
+    /**
+     * Safely get user role, return default if column doesn't exist
+     */
+    public function getRoleAttribute($value)
+    {
+        try {
+            return $value ?? 'User';
+        } catch (\Exception $e) {
+            return 'User';
+        }
+    }
+
+    /**
+     * Check if user has a specific role
+     */
+    public function hasRole($role)
+    {
+        try {
+            return $this->role === $role;
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Check if user is admin
+     */
+    public function isAdmin()
+    {
+        return $this->hasRole('Admin');
+    }
 }
