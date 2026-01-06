@@ -53,4 +53,71 @@ class DistribusiLogistik extends Model
             return collect([]);
         }
     }
+
+    /**
+     * Add media file (consistent with other modules)
+     */
+    public function addMedia($file, $refTable)
+    {
+        try {
+            if ($file->isValid()) {
+                // Simpan file ke public/uploads/distribusi_logistik (sama seperti modul lain)
+                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $uploadPath = "uploads/distribusi_logistik";
+                
+                // Pastikan folder ada (sama seperti modul lain)
+                $fullPath = public_path($uploadPath);
+                if (!file_exists($fullPath)) {
+                    mkdir($fullPath, 0755, true);
+                }
+                
+                // Upload file (sama seperti modul lain)
+                $file->move($fullPath, $filename);
+                
+                // Simpan ke tabel media (sama seperti modul lain)
+                Media::create([
+                    'ref_table' => $refTable,
+                    'ref_id' => $this->distribusi_id,
+                    'file_url' => "distribusi_logistik/$filename",
+                    'caption' => null,
+                    'mime_type' => $file->getClientMimeType(),
+                    'sort_order' => 0
+                ]);
+                
+                return true;
+            }
+        } catch (\Exception $e) {
+            \Log::error('Failed to add media to distribusi: ' . $e->getMessage());
+            return false;
+        }
+        
+        return false;
+    }
+
+    /**
+     * Delete media file (consistent with other modules)
+     */
+    public function deleteMedia($mediaId)
+    {
+        try {
+            $media = Media::where('media_id', $mediaId)
+                ->where('ref_table', 'distribusi_logistik')
+                ->where('ref_id', $this->distribusi_id)
+                ->first();
+                
+            if ($media) {
+                $filePath = public_path('uploads/' . $media->file_url);
+                if (file_exists($filePath)) {
+                    unlink($filePath);
+                }
+                $media->delete();
+                return true;
+            }
+        } catch (\Exception $e) {
+            \Log::error('Failed to delete media from distribusi: ' . $e->getMessage());
+            return false;
+        }
+        
+        return false;
+    }
 }

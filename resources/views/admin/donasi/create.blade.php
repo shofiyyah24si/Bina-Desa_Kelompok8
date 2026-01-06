@@ -151,9 +151,21 @@ document.addEventListener('DOMContentLoaded', function() {
         if (jenis === 'uang') {
             fieldUang.style.display = 'block';
             inputNilai.setAttribute('required', 'required');
+            // Remove hidden nilai field if exists
+            const hiddenNilai = document.querySelector('input[name="nilai"][type="hidden"]');
+            if (hiddenNilai) hiddenNilai.remove();
         } else if (jenis === 'barang') {
             fieldBarang.style.display = 'block';
             inputKeterangan.setAttribute('required', 'required');
+            // Add hidden nilai field with value 0 for barang
+            const hiddenNilai = document.querySelector('input[name="nilai"][type="hidden"]');
+            if (!hiddenNilai) {
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'nilai';
+                hiddenInput.value = '0';
+                document.querySelector('form').appendChild(hiddenInput);
+            }
         }
     }
 
