@@ -76,106 +76,69 @@ class WargaController extends Controller
         $request->validate([
             'nama'          => 'required|string|max:255',
             'no_ktp'        => 'nullable|string|max:20',
-            'alamat'        => 'nullable|string',
-            'rt'            => 'nullable|string|max:5',
-            'rw'            => 'nullable|string|max:5',
-            'no_hp'         => 'nullable|string|max:15',
-            'foto'          => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+            'jenis_kelamin' => 'nullable|string',
+            'agama'         => 'nullable|string',
+            'pekerjaan'     => 'nullable|string',
+            'telp'          => 'nullable|string|max:15',
+            'email'         => 'nullable|email',
+            'foto_profil'   => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
 
-        // Get available columns from database
-        $availableColumns = [];
-        try {
-            $columns = \DB::select("SHOW COLUMNS FROM warga");
-            foreach ($columns as $column) {
-                $availableColumns[] = $column->Field;
-            }
-        } catch (\Exception $e) {
-            \Log::error('Failed to get warga table columns: ' . $e->getMessage());
-            $availableColumns = ['nama']; // fallback to basic column
-        }
+        \Log::info('Warga store request', [
+            'request_data' => $request->except('foto_profil'),
+            'has_photo' => $request->hasFile('foto_profil')
+        ]);
 
-        \Log::info('Available warga columns', ['columns' => $availableColumns]);
-
-        // Build data array based on available columns
-        $data = [];
-        
-        // Always include nama (required)
-        $data['nama'] = $request->nama;
-        
-        // Map request fields to database columns
-        $fieldMapping = [
-            'no_ktp' => ['no_ktp', 'nik'], // try no_ktp first, then nik
-            'alamat' => ['alamat'],
-            'rt' => ['rt'],
-            'rw' => ['rw'],
-            'no_hp' => ['no_hp', 'telp'], // try no_hp first, then telp
+        // Siapkan data dasar
+        $data = [
+            'nama' => $request->nama,
+            'no_ktp' => $request->no_ktp,
+            'jenis_kelamin' => $request->jenis_kelamin,
+            'agama' => $request->agama,
+            'pekerjaan' => $request->pekerjaan,
+            'telp' => $request->telp,
+            'email' => $request->email,
         ];
-        
-        foreach ($fieldMapping as $requestField => $dbColumns) {
-            $value = $request->input($requestField);
-            if ($value !== null) {
-                foreach ($dbColumns as $dbColumn) {
-                    if (in_array($dbColumn, $availableColumns)) {
-                        $data[$dbColumn] = $value;
-                        break; // use first available column
-                    }
-                }
-            }
-        }
 
-        // Handle foto upload dengan error handling
-        if ($request->hasFile('foto') && $request->file('foto')->isValid()) {
+        // Handle foto upload dengan sistem public/uploads
+        if ($request->hasFile('foto_profil') && $request->file('foto_profil')->isValid()) {
             try {
-                $file = $request->file('foto');
+                $file = $request->file('foto_profil');
                 $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
                 $uploadPath = "uploads/warga";
                 
+                // Pastikan folder ada
                 $fullPath = public_path($uploadPath);
                 if (!file_exists($fullPath)) {
                     mkdir($fullPath, 0755, true);
                 }
                 
+                // Upload file
                 $file->move($fullPath, $filename);
-                
-                // Add foto to data if column exists
-                if (in_array('foto', $availableColumns)) {
-                    $data['foto'] = "warga/$filename";
-                }
+                $data['foto'] = "warga/$filename";
                 
                 \Log::info('Warga photo uploaded successfully', [
+                    'filename' => $filename,
                     'file_path' => "warga/$filename"
                 ]);
             } catch (\Exception $e) {
                 \Log::error('Failed to upload warga photo: ' . $e->getMessage());
+                return back()->withInput()->with('error', 'Gagal mengupload foto: ' . $e->getMessage());
             }
         }
 
         \Log::info('Creating warga with data', ['data' => $data]);
 
-        // Create warga dengan error handling
+        // Simpan data warga
         try {
-            Warga::create($data);
-            \Log::info('Warga created successfully');
-        } catch (\Illuminate\Database\QueryException $e) {
-            \Log::error('Database error during warga creation', [
-                'error' => $e->getMessage(),
-                'data' => $data,
-                'available_columns' => $availableColumns
-            ]);
+            $warga = Warga::create($data);
+            \Log::info('Warga created successfully', ['warga_id' => $warga->warga_id]);
             
-            // Fallback to basic creation with only nama
-            try {
-                $basicData = ['nama' => $request->nama];
-                Warga::create($basicData);
-                \Log::info('Warga created with basic data only');
-            } catch (\Exception $e2) {
-                \Log::error('Failed to create warga even with basic data', ['error' => $e2->getMessage()]);
-                throw $e2;
-            }
+            return redirect()->route('warga.index')->with('success', 'Data warga berhasil ditambahkan!');
+        } catch (\Exception $e) {
+            \Log::error('Failed to create warga', ['error' => $e->getMessage()]);
+            return back()->withInput()->with('error', 'Gagal menyimpan data warga: ' . $e->getMessage());
         }
-
-        return redirect()->route('warga.index')->with('success', 'Data warga berhasil ditambahkan!');
     }
 
     /**
@@ -197,115 +160,80 @@ class WargaController extends Controller
         $request->validate([
             'nama'          => 'required|string|max:255',
             'no_ktp'        => 'nullable|string|max:20',
-            'alamat'        => 'nullable|string',
-            'rt'            => 'nullable|string|max:5',
-            'rw'            => 'nullable|string|max:5',
-            'no_hp'         => 'nullable|string|max:15',
-            'foto'          => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+            'jenis_kelamin' => 'nullable|string',
+            'agama'         => 'nullable|string',
+            'pekerjaan'     => 'nullable|string',
+            'telp'          => 'nullable|string|max:15',
+            'email'         => 'nullable|email',
+            'foto_profil'   => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
 
-        // Get available columns from database
-        $availableColumns = [];
-        try {
-            $columns = \DB::select("SHOW COLUMNS FROM warga");
-            foreach ($columns as $column) {
-                $availableColumns[] = $column->Field;
-            }
-        } catch (\Exception $e) {
-            \Log::error('Failed to get warga table columns: ' . $e->getMessage());
-            $availableColumns = ['nama']; // fallback to basic column
-        }
+        \Log::info('Warga update request', [
+            'warga_id' => $id,
+            'request_data' => $request->except('foto_profil'),
+            'has_photo' => $request->hasFile('foto_profil')
+        ]);
 
-        \Log::info('Available warga columns', ['columns' => $availableColumns]);
-
-        // Build data array based on available columns
-        $data = [];
-        
-        // Always include nama (required)
-        $data['nama'] = $request->nama;
-        
-        // Map request fields to database columns
-        $fieldMapping = [
-            'no_ktp' => ['no_ktp', 'nik'], // try no_ktp first, then nik
-            'alamat' => ['alamat'],
-            'rt' => ['rt'],
-            'rw' => ['rw'],
-            'no_hp' => ['no_hp', 'telp'], // try no_hp first, then telp
+        // Siapkan data dasar
+        $data = [
+            'nama' => $request->nama,
+            'no_ktp' => $request->no_ktp,
+            'jenis_kelamin' => $request->jenis_kelamin,
+            'agama' => $request->agama,
+            'pekerjaan' => $request->pekerjaan,
+            'telp' => $request->telp,
+            'email' => $request->email,
         ];
-        
-        foreach ($fieldMapping as $requestField => $dbColumns) {
-            $value = $request->input($requestField);
-            if ($value !== null) {
-                foreach ($dbColumns as $dbColumn) {
-                    if (in_array($dbColumn, $availableColumns)) {
-                        $data[$dbColumn] = $value;
-                        break; // use first available column
-                    }
-                }
-            }
-        }
 
-        // Handle foto upload dengan error handling
-        if ($request->hasFile('foto') && $request->file('foto')->isValid()) {
+        // Handle foto upload dengan sistem public/uploads
+        if ($request->hasFile('foto_profil') && $request->file('foto_profil')->isValid()) {
             try {
-                // Delete old photo
+                // Hapus foto lama jika ada
                 if ($warga->foto) {
                     $oldPath = public_path('uploads/' . $warga->foto);
                     if (file_exists($oldPath)) {
                         unlink($oldPath);
+                        \Log::info('Old warga photo deleted', ['old_path' => $oldPath]);
                     }
                 }
                 
-                $file = $request->file('foto');
+                $file = $request->file('foto_profil');
                 $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
                 $uploadPath = "uploads/warga";
                 
+                // Pastikan folder ada
                 $fullPath = public_path($uploadPath);
                 if (!file_exists($fullPath)) {
                     mkdir($fullPath, 0755, true);
                 }
                 
+                // Upload file
                 $file->move($fullPath, $filename);
-                
-                // Add foto to data if column exists
-                if (in_array('foto', $availableColumns)) {
-                    $data['foto'] = "warga/$filename";
-                }
+                $data['foto'] = "warga/$filename";
                 
                 \Log::info('Warga photo updated successfully', [
-                    'warga_id' => $warga->warga_id,
+                    'warga_id' => $id,
+                    'filename' => $filename,
                     'file_path' => "warga/$filename"
                 ]);
             } catch (\Exception $e) {
                 \Log::error('Failed to update warga photo: ' . $e->getMessage());
+                return back()->withInput()->with('error', 'Gagal mengupload foto: ' . $e->getMessage());
             }
         }
 
         \Log::info('Updating warga with data', ['warga_id' => $id, 'data' => $data]);
 
-        // Update warga dengan error handling
+        // Update data warga
         try {
             $warga->update($data);
             \Log::info('Warga updated successfully', ['warga_id' => $id]);
-        } catch (\Illuminate\Database\QueryException $e) {
-            \Log::error('Database error during warga update', [
-                'error' => $e->getMessage(),
-                'data' => $data,
-                'available_columns' => $availableColumns
-            ]);
             
-            // Fallback to basic update with only nama
-            try {
-                $basicData = ['nama' => $request->nama];
-                $warga->update($basicData);
-                \Log::info('Warga updated with basic data only', ['warga_id' => $id]);
-            } catch (\Exception $e2) {
-                \Log::error('Failed to update warga even with basic data', ['error' => $e2->getMessage()]);
-                throw $e2;
-            }
+            return redirect()->route('warga.index')->with('success', 'Data warga berhasil diperbarui!');
+        } catch (\Exception $e) {
+            \Log::error('Failed to update warga', ['error' => $e->getMessage()]);
+            return back()->withInput()->with('error', 'Gagal mengupdate data warga: ' . $e->getMessage());
         }
-
-        return redirect()->route('warga.index')->with('success', 'Data warga berhasil diperbarui!');
     }
 
     /**

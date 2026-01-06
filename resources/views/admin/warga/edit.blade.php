@@ -371,8 +371,8 @@
                     </div>
                     <div class="preview-card">
                         <div class="position-relative d-inline-block">
-                            @if($warga->foto_profil)
-                                <img src="{{ asset('uploads/' . $warga->foto_profil) }}" 
+                            @if($warga->foto)
+                                <img src="{{ asset('uploads/' . $warga->foto) }}" 
                                      alt="Foto Profil" 
                                      id="preview-foto" 
                                      class="preview-image"
@@ -388,7 +388,7 @@
                             @endif
                         </div>
                         <h6 class="mt-3 mb-2">
-                            @if($warga->foto_profil)
+                            @if($warga->foto)
                                 Foto Profil Saat Ini
                             @else
                                 Belum Ada Foto Profil
@@ -396,7 +396,7 @@
                         </h6>
                         <p class="text-muted small mb-0">
                             <i class="fas fa-camera me-1"></i>
-                            @if($warga->foto_profil)
+                            @if($warga->foto)
                                 Pilih file baru untuk mengubah foto profil
                             @else
                                 Pilih file untuk menambahkan foto profil
