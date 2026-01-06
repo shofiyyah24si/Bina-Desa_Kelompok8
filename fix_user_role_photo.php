@@ -46,7 +46,7 @@ try {
     $adminEmails = ['shopie@gmail.com', 'admin@admin.com']; // Add your email here
     
     foreach ($adminEmails as $email) {
-        $stmt = $pdo->prepare("UPDATE users SET role = 'Admin' WHERE email = ? AND (role IS NULL OR role = '' OR role = 'User')");
+        $stmt = $pdo->prepare("UPDATE users SET role = 'Admin' WHERE email = ?");
         $result = $stmt->execute([$email]);
         $affected = $stmt->rowCount();
         
@@ -55,6 +55,17 @@ try {
         } else {
             echo "<p style='color: blue;'>ℹ️ No user found with email '$email' or already has correct role</p>";
         }
+    }
+    
+    // Update any users with NULL or empty roles to Warga
+    $stmt = $pdo->prepare("UPDATE users SET role = 'Warga' WHERE role IS NULL OR role = '' OR role = 'User'");
+    $result = $stmt->execute();
+    $affected = $stmt->rowCount();
+    
+    if ($affected > 0) {
+        echo "<p style='color: green;'>✅ Updated $affected users with missing/invalid roles to Warga</p>";
+    } else {
+        echo "<p style='color: blue;'>ℹ️ All users already have valid roles</p>";
     }
     
     // 3. Fix photo paths

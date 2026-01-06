@@ -1043,7 +1043,7 @@
                 <div class="info-value">
                     <span class="status-online">
                         <span class="status-indicator"></span>
-                        {{ Auth::user()->role ?? 'User' }}
+                        {{ Auth::user()->role ?: 'Warga' }}
                     </span>
                 </div>
             </div>

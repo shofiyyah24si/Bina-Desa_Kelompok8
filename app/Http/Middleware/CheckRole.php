@@ -29,8 +29,9 @@ class CheckRole
         // Check if user has role attribute, if not, treat as basic user
         $userRole = null;
         try {
-            $userRole = $user->role ?? null;
-            \Log::info('User role retrieved', ['role' => $userRole]);
+            // Access role directly from attributes to avoid accessor issues
+            $userRole = $user->attributes['role'] ?? $user->role ?? null;
+            \Log::info('User role retrieved', ['role' => $userRole, 'user_id' => $user->id]);
         } catch (\Exception $e) {
             \Log::warning('Could not access user role: ' . $e->getMessage());
             // If role column doesn't exist, allow access to dashboard but restrict admin functions

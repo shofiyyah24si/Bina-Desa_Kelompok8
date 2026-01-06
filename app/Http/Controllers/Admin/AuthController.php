@@ -100,12 +100,16 @@ class AuthController extends Controller
             $hasRoleColumn = \DB::select("SHOW COLUMNS FROM users LIKE 'role'");
             if (!empty($hasRoleColumn)) {
                 $data['role'] = $request->role;
+                \Log::info('Registration: Role column exists, setting role', ['role' => $request->role]);
+            } else {
+                \Log::warning('Registration: Role column does not exist');
             }
         } catch (\Exception $e) {
             \Log::warning('Could not check role column: ' . $e->getMessage());
             // Fallback: try to add role anyway, catch if it fails
             try {
                 $data['role'] = $request->role;
+                \Log::info('Registration: Fallback role setting successful', ['role' => $request->role]);
             } catch (\Exception $roleError) {
                 \Log::warning('Role column does not exist, skipping: ' . $roleError->getMessage());
             }

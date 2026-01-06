@@ -54,29 +54,12 @@ class User extends Authenticatable
     }
 
     /**
-     * Safely get user role, return default if column doesn't exist
-     */
-    public function getRoleAttribute($value)
-    {
-        try {
-            // If value exists and is one of the valid roles, return it
-            if ($value && in_array($value, ['Admin', 'Warga', 'Mitra'])) {
-                return $value;
-            }
-            // Default to Warga if no valid role is set
-            return 'Warga';
-        } catch (\Exception $e) {
-            return 'Warga';
-        }
-    }
-
-    /**
      * Check if user has a specific role
      */
     public function hasRole($role)
     {
         try {
-            return $this->role === $role;
+            return $this->attributes['role'] === $role;
         } catch (\Exception $e) {
             return false;
         }
@@ -88,5 +71,17 @@ class User extends Authenticatable
     public function isAdmin()
     {
         return $this->hasRole('Admin');
+    }
+
+    /**
+     * Get role safely with fallback
+     */
+    public function getRoleSafely()
+    {
+        try {
+            return $this->attributes['role'] ?? 'Warga';
+        } catch (\Exception $e) {
+            return 'Warga';
+        }
     }
 }
