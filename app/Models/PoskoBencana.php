@@ -15,6 +15,7 @@ class PoskoBencana extends Model
         'alamat',
         'kontak',
         'penanggung_jawab',
+        'foto_profil', // Sama seperti users, warga, dan kejadian_bencana
     ];
 
     public function kejadian()
@@ -23,43 +24,37 @@ class PoskoBencana extends Model
     }
 
     /**
-     * Relasi ke media dengan error handling
+     * Get foto URL dengan sistem public/uploads (sama seperti users, warga, dan kejadian_bencana)
      */
-    public function media()
+    public function getFotoUrlAttribute()
     {
-        try {
-            return $this->hasMany(Media::class, 'ref_id', 'posko_id')
-                        ->where('ref_table', 'posko_bencana')
-                        ->orderBy('sort_order')
-                        ->orderBy('media_id');
-        } catch (\Exception $e) {
-            // Return empty collection if media table doesn't exist
-            return collect([]);
+        if ($this->foto_profil) {
+            return asset('uploads/' . $this->foto_profil);
         }
+        return asset('assets-admin/images/default-posko.png'); // default posko image
     }
 
     /**
-     * Get media safely
+     * Get foto safely with fallback
      */
-    public function getMediaSafely()
+    public function getFotoSafely()
     {
-        try {
-            return $this->media;
-        } catch (\Exception $e) {
-            return collect([]);
-        }
+        return $this->foto_profil ?? null;
     }
 
     /**
-     * Get first photo safely
+     * Check if posko has photo
      */
-    public function getFirstPhotoSafely()
+    public function hasPhoto()
     {
-        try {
-            $media = $this->media()->first();
-            return $media ? $media->file_url : null;
-        } catch (\Exception $e) {
-            return null;
-        }
+        return !empty($this->foto_profil) && file_exists(public_path('uploads/' . $this->foto_profil));
+    }
+
+    /**
+     * Get photo URL safely (alias untuk compatibility)
+     */
+    public function getPhotoUrl()
+    {
+        return $this->getFotoUrlAttribute();
     }
 }
