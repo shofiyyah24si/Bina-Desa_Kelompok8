@@ -119,46 +119,45 @@
         Dokumentasi Kejadian
     </div>
 
-    {{-- Existing Photos --}}
-    @if($kejadian->media->count() > 0)
+    {{-- Current Photo --}}
+    @if($kejadian->hasPhoto())
         <div class="row g-3 mb-4">
             <div class="col-12">
                 <h6 class="text-muted mb-3">
-                    <i class="fas fa-images me-2"></i>Foto Saat Ini ({{ $kejadian->media->count() }} foto)
+                    <i class="fas fa-image me-2"></i>Foto Saat Ini
                 </h6>
             </div>
-            @foreach($kejadian->media as $media)
-                <div class="col-md-3 col-sm-4 col-6">
-                    <div class="position-relative">
-                        <img src="{{ \App\Helpers\ImageHelper::getImageUrl($media->file_url) }}" 
-                             class="img-fluid rounded shadow-sm" 
-                             style="height: 120px; width: 100%; object-fit: cover;">
-                        <div class="form-check position-absolute top-0 end-0 m-2">
-                            <input class="form-check-input" type="checkbox" name="delete_foto[]" value="{{ $media->media_id }}" id="delete{{ $media->media_id }}">
-                            <label class="form-check-label bg-danger text-white px-2 py-1 rounded" for="delete{{ $media->media_id }}" style="font-size: 12px;">
-                                <i class="fas fa-trash"></i>
-                            </label>
-                        </div>
+            <div class="col-md-4">
+                <div class="position-relative">
+                    <img src="{{ $kejadian->getPhotoUrl() }}" 
+                         class="img-fluid rounded shadow-sm" 
+                         style="height: 200px; width: 100%; object-fit: cover;">
+                    <div class="position-absolute top-0 end-0 m-2">
+                        <span class="badge bg-success">
+                            <i class="fas fa-check"></i> Foto Tersimpan
+                        </span>
                     </div>
                 </div>
-            @endforeach
+            </div>
         </div>
     @endif
 
     <div class="row g-4">
         <div class="col-12">
-            <label class="form-label">📸 Upload Foto Baru</label>
+            <label class="form-label">📸 {{ $kejadian->hasPhoto() ? 'Ganti Foto' : 'Upload Foto' }}</label>
             <input type="file" 
-                   name="foto[]" 
-                   class="form-control @error('foto.*') is-invalid @enderror" 
-                   multiple 
+                   name="foto_profil" 
+                   class="form-control @error('foto_profil') is-invalid @enderror" 
                    accept="image/*" 
                    id="fotoInput">
             <small class="form-text text-muted mt-2">
                 <i class="fas fa-info-circle"></i>
-                Format: JPG, PNG, JPEG. Maksimal 2MB per file. Bisa upload multiple foto.
+                Format: JPG, PNG, JPEG. Maksimal 2MB per file. 
+                @if($kejadian->hasPhoto())
+                    Upload foto baru akan mengganti foto yang ada.
+                @endif
             </small>
-            @error('foto.*')
+            @error('foto_profil')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>
@@ -179,37 +178,24 @@ document.getElementById('fotoInput').addEventListener('change', function(e) {
     let container = document.getElementById('previewContainer');
     
     if (e.target.files.length > 0) {
-        container.innerHTML = '<div class="row g-3"></div>';
-        let row = container.querySelector('.row');
+        let file = e.target.files[0];
+        let reader = new FileReader();
         
-        Array.from(e.target.files).forEach((file, index) => {
-            let reader = new FileReader();
-            reader.onload = event => {
-                let col = document.createElement('div');
-                col.className = 'col-md-3 col-sm-4 col-6';
-                
-                let imgContainer = document.createElement('div');
-                imgContainer.className = 'position-relative';
-                
-                let img = document.createElement('img');
-                img.src = event.target.result;
-                img.className = 'img-fluid rounded shadow-sm';
-                img.style.height = '120px';
-                img.style.width = '100%';
-                img.style.objectFit = 'cover';
-                
-                let badge = document.createElement('span');
-                badge.className = 'position-absolute top-0 start-0 badge bg-success';
-                badge.style.margin = '5px';
-                badge.textContent = 'Baru ' + (index + 1);
-                
-                imgContainer.appendChild(img);
-                imgContainer.appendChild(badge);
-                col.appendChild(imgContainer);
-                row.appendChild(col);
-            };
-            reader.readAsDataURL(file);
-        });
+        reader.onload = function(event) {
+            container.innerHTML = `
+                <div class="text-center">
+                    <img src="${event.target.result}" 
+                         class="img-fluid rounded shadow-sm" 
+                         style="max-height: 200px; max-width: 100%; object-fit: cover;">
+                    <p class="text-success mt-2 mb-0">
+                        <i class="fas fa-check-circle"></i> 
+                        Foto baru siap diupload: ${file.name}
+                    </p>
+                </div>
+            `;
+        };
+        
+        reader.readAsDataURL(file);
     } else {
         container.innerHTML = `
             <i class="fas fa-images" style="font-size: 48px; color: #cbd5e1; margin-bottom: 10px;"></i>

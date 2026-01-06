@@ -599,29 +599,12 @@
                 <tr>
                     <td>
                         <div class="photo-gallery">
-                            @php
-                                $mediaItems = [];
-                                try {
-                                    $mediaItems = $row->media ?? collect([]);
-                                } catch (\Exception $e) {
-                                    $mediaItems = collect([]);
-                                }
-                            @endphp
-                            
-                            @foreach($mediaItems->take(3) as $m)
-                                <img src="{{ \App\Helpers\ImageHelper::getImageUrl($m->file_url) }}"
+                            @if($row->hasPhoto())
+                                <img src="{{ $row->getPhotoUrl() }}"
                                      class="photo-item"
                                      alt="Foto Kejadian"
                                      onerror="this.style.display='none'">
-                            @endforeach
-
-                            @if($mediaItems->count() > 3)
-                                <div class="photo-counter">
-                                    +{{ $mediaItems->count() - 3 }}
-                                </div>
-                            @endif
-
-                            @if($mediaItems->count() == 0)
+                            @else
                                 <div class="photo-counter">
                                     <i class="fas fa-image"></i>
                                 </div>

@@ -43,12 +43,25 @@ try {
         echo "<p style='color: blue;'>ℹ️ Kolom 'foto_profil' sudah ada di tabel users</p>";
     }
     
-    // 3. Pastikan folder upload ada
-    echo "<h2>3. Membuat Folder Upload</h2>";
+    // 3. Perbaiki tabel kejadian_bencana
+    echo "<h2>3. Memperbaiki Tabel Kejadian Bencana</h2>";
+    $stmt = $pdo->query("SHOW COLUMNS FROM kejadian_bencana LIKE 'foto_profil'");
+    $kejadianFotoExists = $stmt->rowCount() > 0;
+    
+    if (!$kejadianFotoExists) {
+        $pdo->exec("ALTER TABLE kejadian_bencana ADD COLUMN `foto_profil` VARCHAR(255) NULL COMMENT 'Path foto utama kejadian bencana'");
+        echo "<p style='color: green;'>✅ Kolom 'foto_profil' berhasil ditambahkan ke tabel kejadian_bencana!</p>";
+    } else {
+        echo "<p style='color: blue;'>ℹ️ Kolom 'foto_profil' sudah ada di tabel kejadian_bencana</p>";
+    }
+    
+    // 4. Pastikan folder upload ada
+    echo "<h2>4. Membuat Folder Upload</h2>";
     $folders = [
         'uploads' => $_SERVER['DOCUMENT_ROOT'] . '/uploads',
         'uploads/warga' => $_SERVER['DOCUMENT_ROOT'] . '/uploads/warga',
-        'uploads/users' => $_SERVER['DOCUMENT_ROOT'] . '/uploads/users'
+        'uploads/users' => $_SERVER['DOCUMENT_ROOT'] . '/uploads/users',
+        'uploads/kejadian_bencana' => $_SERVER['DOCUMENT_ROOT'] . '/uploads/kejadian_bencana'
     ];
     
     foreach ($folders as $name => $path) {
@@ -66,8 +79,8 @@ try {
         }
     }
     
-    // 4. Tampilkan struktur tabel sekarang
-    echo "<h2>4. Struktur Tabel Sekarang</h2>";
+    // 5. Tampilkan struktur tabel sekarang
+    echo "<h2>5. Struktur Tabel Sekarang</h2>";
     
     // Tabel warga
     echo "<h3>Tabel Warga:</h3>";
@@ -101,23 +114,41 @@ try {
     }
     echo "</table>";
     
+    // Tabel kejadian_bencana
+    echo "<h3>Tabel Kejadian Bencana:</h3>";
+    $stmt = $pdo->query("DESCRIBE kejadian_bencana");
+    echo "<table style='width: 100%; border-collapse: collapse; background: white; margin: 10px 0;'>";
+    echo "<tr style='background: #f0f0f0;'><th style='border: 1px solid #ddd; padding: 8px;'>Field</th><th style='border: 1px solid #ddd; padding: 8px;'>Type</th><th style='border: 1px solid #ddd; padding: 8px;'>Null</th></tr>";
+    
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $highlight = ($row['Field'] === 'foto_profil') ? 'background: #d4edda;' : '';
+        echo "<tr style='$highlight'>";
+        echo "<td style='border: 1px solid #ddd; padding: 8px; font-weight: bold;'>{$row['Field']}</td>";
+        echo "<td style='border: 1px solid #ddd; padding: 8px;'>{$row['Type']}</td>";
+        echo "<td style='border: 1px solid #ddd; padding: 8px;'>{$row['Null']}</td>";
+        echo "</tr>";
+    }
+    echo "</table>";
+    
     echo "<h2>🎉 Selesai!</h2>";
     echo "<div style='background: white; padding: 15px; border-radius: 5px; margin: 10px 0;'>";
     echo "<p><strong>✅ Yang sudah diperbaiki:</strong></p>";
     echo "<ul>";
     echo "<li>✅ Kolom 'foto_profil' ditambahkan ke tabel warga (sama seperti users)</li>";
     echo "<li>✅ Kolom 'foto_profil' ditambahkan ke tabel users</li>";
-    echo "<li>✅ Folder 'uploads/warga' dan 'uploads/users' sudah dibuat</li>";
+    echo "<li>✅ Kolom 'foto_profil' ditambahkan ke tabel kejadian_bencana</li>";
+    echo "<li>✅ Folder 'uploads/warga', 'uploads/users', dan 'uploads/kejadian_bencana' sudah dibuat</li>";
     echo "<li>✅ Keamanan folder upload sudah diatur</li>";
     echo "</ul>";
     
     echo "<p><strong>🎯 Sekarang bisa:</strong></p>";
     echo "<ul>";
-    echo "<li>📝 Edit data warga dengan upload foto → tersimpan di uploads/warga/</li>";
-    echo "<li>👤 Edit data user dengan upload foto → tersimpan di uploads/users/</li>";
-    echo "<li>📸 Foto akan muncul di halaman index warga dan users</li>";
+    echo "<li>�  Edit data warga dengan upload foto → tersimpan di uploads/warga/</li>";
+    echo "<li>� Edit data  user dengan upload foto → tersimpan di uploads/users/</li>";
+    echo "<li>� UEdit data kejadian bencana dengan upload foto → tersimpan di uploads/kejadian_bencana/</li>";
+    echo "<li>📸 Foto akan muncul di halaman index warga, users, dan kejadian bencana</li>";
     echo "<li>🔄 Upload foto baru akan mengganti foto lama</li>";
-    echo "<li>✅ Sistem warga dan users sekarang menggunakan mekanisme yang sama persis</li>";
+    echo "<li>✅ Sistem warga, users, dan kejadian bencana sekarang menggunakan mekanisme yang sama persis</li>";
     echo "</ul>";
     
     echo "<p style='color: red;'><strong>⚠️ Jangan lupa hapus file ini setelah selesai!</strong></p>";

@@ -18,46 +18,25 @@ class KejadianBencana extends Model
         'dampak',
         'status_kejadian',
         'keterangan',
+        'foto_profil', // Tambahkan foto_profil ke fillable
     ];
 
     /**
-     * Relasi ke media dengan error handling
+     * Get photo URL safely
      */
-    public function media()
+    public function getPhotoUrl()
     {
-        try {
-            return $this->hasMany(Media::class, 'ref_id', 'kejadian_id')
-                        ->where('ref_table', 'kejadian_bencana')
-                        ->orderBy('sort_order')
-                        ->orderBy('media_id');
-        } catch (\Exception $e) {
-            // Return empty collection if media table doesn't exist
-            return collect([]);
+        if ($this->foto_profil) {
+            return asset('uploads/' . $this->foto_profil);
         }
+        return null;
     }
 
     /**
-     * Get media safely
+     * Check if has photo
      */
-    public function getMediaSafely()
+    public function hasPhoto()
     {
-        try {
-            return $this->media;
-        } catch (\Exception $e) {
-            return collect([]);
-        }
-    }
-
-    /**
-     * Get first photo safely
-     */
-    public function getFirstPhotoSafely()
-    {
-        try {
-            $media = $this->media()->first();
-            return $media ? $media->file_url : null;
-        } catch (\Exception $e) {
-            return null;
-        }
+        return !empty($this->foto_profil);
     }
 }
