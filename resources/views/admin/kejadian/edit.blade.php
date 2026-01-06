@@ -2,14 +2,14 @@
 @section('title', 'Edit Kejadian Bencana')
 
 @section('content')
-@component('components.modern-form', [
-    'title' => 'Edit Kejadian Bencana',
-    'subtitle' => 'Perbarui data kejadian bencana yang sudah ada',
-    'icon' => 'fas fa-edit',
-    'action' => route('kejadian.update', $kejadian->kejadian_id),
-    'method' => 'PUT',
-    'backUrl' => route('kejadian.index')
-])
+
+<x-modern-form 
+    title="Edit Kejadian Bencana"
+    subtitle="Perbarui data kejadian bencana yang sudah ada"
+    icon="fas fa-edit"
+    action="{{ route('kejadian.update', $kejadian->kejadian_id) }}"
+    method="PUT"
+    backUrl="{{ route('kejadian.index') }}">
 
     <div class="section-title">
         <i class="fas fa-info-circle"></i>
@@ -170,7 +170,7 @@
         </div>
     </div>
 
-@endcomponent
+</x-modern-form>
 
 <script>
 // Preview foto sebelum upload

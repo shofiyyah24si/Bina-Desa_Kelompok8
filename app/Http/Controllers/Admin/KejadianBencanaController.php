@@ -53,7 +53,13 @@ class KejadianBencanaController extends Controller
 
         \Log::info('KejadianBencana store request', [
             'request_data' => $request->except(['foto_profil']),
-            'has_photo' => $request->hasFile('foto_profil')
+            'has_photo' => $request->hasFile('foto_profil'),
+            'photo_info' => $request->hasFile('foto_profil') ? [
+                'name' => $request->file('foto_profil')->getClientOriginalName(),
+                'size' => $request->file('foto_profil')->getSize(),
+                'mime' => $request->file('foto_profil')->getClientMimeType(),
+                'is_valid' => $request->file('foto_profil')->isValid()
+            ] : null
         ]);
 
         // Cek kolom yang tersedia di database
@@ -106,37 +112,63 @@ class KejadianBencanaController extends Controller
                 $fullPath = public_path($uploadPath);
                 if (!file_exists($fullPath)) {
                     mkdir($fullPath, 0755, true);
+                    \Log::info('Created upload directory', ['path' => $fullPath]);
                 }
                 
                 // Upload file
                 $file->move($fullPath, $filename);
+                \Log::info('File moved successfully', [
+                    'from' => $file->getPathname(),
+                    'to' => $fullPath . '/' . $filename
+                ]);
                 
                 // Simpan path foto hanya jika kolom foto_profil ada
                 if (in_array('foto_profil', $availableColumns)) {
                     $data['foto_profil'] = "kejadian_bencana/$filename";
+                    \Log::info('Photo path added to data', ['foto_profil' => $data['foto_profil']]);
+                } else {
+                    \Log::warning('foto_profil column not found in database, photo uploaded but not saved to DB');
                 }
                 
                 \Log::info('KejadianBencana photo uploaded successfully', [
                     'filename' => $filename,
                     'file_path' => "kejadian_bencana/$filename",
-                    'foto_profil_column_exists' => in_array('foto_profil', $availableColumns)
+                    'foto_profil_column_exists' => in_array('foto_profil', $availableColumns),
+                    'full_upload_path' => $fullPath . '/' . $filename,
+                    'file_exists' => file_exists($fullPath . '/' . $filename)
                 ]);
             } catch (\Exception $e) {
-                \Log::error('Failed to upload kejadian photo: ' . $e->getMessage());
+                \Log::error('Failed to upload kejadian photo: ' . $e->getMessage(), [
+                    'trace' => $e->getTraceAsString()
+                ]);
                 return back()->withInput()->with('error', 'Gagal mengupload foto: ' . $e->getMessage());
+            }
+        } else {
+            if ($request->hasFile('foto_profil')) {
+                \Log::warning('Photo file is invalid', [
+                    'error' => $request->file('foto_profil')->getError(),
+                    'error_message' => $request->file('foto_profil')->getErrorMessage()
+                ]);
             }
         }
 
-        \Log::info('Creating kejadian with data', ['data' => array_keys($data)]);
+        \Log::info('Creating kejadian with data', ['data' => $data]);
 
         // Simpan data kejadian
         try {
             $kejadian = KejadianBencana::create($data);
-            \Log::info('KejadianBencana created successfully', ['kejadian_id' => $kejadian->kejadian_id]);
+            \Log::info('KejadianBencana created successfully', [
+                'kejadian_id' => $kejadian->kejadian_id,
+                'saved_data' => $kejadian->toArray()
+            ]);
             
             return redirect()->route('kejadian.index')->with('success', 'Kejadian bencana berhasil ditambahkan!');
         } catch (\Exception $e) {
-            \Log::error('Failed to create kejadian', ['error' => $e->getMessage()]);
+            \Log::error('Failed to create kejadian', [
+                'error' => $e->getMessage(),
+                'data' => $data,
+                'trace' => $e->getTraceAsString()
+            ]);
             return back()->withInput()->with('error', 'Gagal menyimpan data kejadian: ' . $e->getMessage());
         }
     }
