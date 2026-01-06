@@ -599,12 +599,18 @@
                 <tr>
                     <td>
                         <div class="photo-gallery">
-                            @if($row->foto_profil)
-                                <img src="{{ asset('uploads/' . $row->foto_profil) }}"
-                                     class="photo-item"
-                                     alt="Foto Kejadian {{ $row->jenis_bencana }}"
-                                     data-path="{{ $row->foto_profil }}"
-                                     onerror="this.style.display='none'">
+                            @if($row->media && $row->media->count() > 0)
+                                @foreach($row->media->take(3) as $media)
+                                    <img src="{{ asset('uploads/' . $media->file_url) }}"
+                                         class="photo-item"
+                                         alt="Foto Kejadian {{ $row->jenis_bencana }}"
+                                         onerror="this.style.display='none'">
+                                @endforeach
+                                @if($row->media->count() > 3)
+                                    <div class="photo-counter">
+                                        +{{ $row->media->count() - 3 }}
+                                    </div>
+                                @endif
                             @else
                                 <div class="photo-counter">
                                     <i class="fas fa-image"></i>

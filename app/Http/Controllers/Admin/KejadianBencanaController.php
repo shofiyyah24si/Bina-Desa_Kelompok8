@@ -48,95 +48,66 @@ class KejadianBencanaController extends Controller
             'dampak'         => 'nullable|string|max:150',
             'status_kejadian' => 'required|in:Dilaporkan,Verifikasi,Selesai',
             'keterangan'     => 'nullable|string',
-            'foto_profil'    => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+            'foto.*'         => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         \Log::info('KejadianBencana store request', [
-            'request_data' => $request->except('foto_profil'),
-            'has_photo' => $request->hasFile('foto_profil')
+            'request_data' => $request->except(['foto']),
+            'has_photo' => $request->hasFile('foto')
         ]);
 
-        // Cek kolom yang tersedia di database
-        $availableColumns = [];
-        try {
-            $columns = \DB::select("SHOW COLUMNS FROM kejadian_bencana");
-            foreach ($columns as $column) {
-                $availableColumns[] = $column->Field;
-            }
-        } catch (\Exception $e) {
-            \Log::error('Failed to get kejadian_bencana table columns: ' . $e->getMessage());
-            $availableColumns = ['jenis_bencana', 'tanggal', 'status_kejadian']; // fallback minimal
-        }
+        // Simpan data kejadian dulu
+        $kejadian = KejadianBencana::create($request->except('foto'));
 
-        \Log::info('Available kejadian_bencana columns', ['columns' => $availableColumns]);
-
-        // Siapkan data dasar - hanya kolom yang ada
-        $data = [];
-        
-        // Kolom wajib
-        $data['jenis_bencana'] = $request->jenis_bencana;
-        $data['tanggal'] = $request->tanggal;
-        $data['status_kejadian'] = $request->status_kejadian;
-        
-        // Kolom opsional
-        $optionalFields = [
-            'lokasi_text' => $request->lokasi_text,
-            'rt' => $request->rt,
-            'rw' => $request->rw,
-            'dampak' => $request->dampak,
-            'keterangan' => $request->keterangan,
-        ];
-        
-        foreach ($optionalFields as $field => $value) {
-            if (in_array($field, $availableColumns) && $value !== null) {
-                $data[$field] = $value;
-            }
-        }
-
-        // Handle foto upload dengan sistem public/uploads
-        if ($request->hasFile('foto_profil') && $request->file('foto_profil')->isValid()) {
+        // Upload multiple foto dengan mekanisme yang sama seperti User/Warga (mkdir + public/uploads)
+        if ($request->hasFile('foto')) {
             try {
-                $file = $request->file('foto_profil');
-                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-                $uploadPath = "uploads/kejadian_bencana";
-                
-                // Pastikan folder ada
-                $fullPath = public_path($uploadPath);
-                if (!file_exists($fullPath)) {
-                    mkdir($fullPath, 0755, true);
+                foreach ($request->file('foto') as $index => $file) {
+                    if ($file->isValid()) {
+                        // Simpan file ke public/uploads/kejadian_bencana (sama seperti User/Warga)
+                        $filename = time() . '_' . $index . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                        $uploadPath = "uploads/kejadian_bencana";
+                        
+                        // Pastikan folder ada (sama seperti User/Warga)
+                        $fullPath = public_path($uploadPath);
+                        if (!file_exists($fullPath)) {
+                            mkdir($fullPath, 0755, true);
+                        }
+                        
+                        // Upload file (sama seperti User/Warga)
+                        $file->move($fullPath, $filename);
+                        
+                        // Simpan ke tabel media (tetap menggunakan sistem asli)
+                        \App\Models\Media::create([
+                            'ref_table' => 'kejadian_bencana',
+                            'ref_id' => $kejadian->kejadian_id,
+                            'file_url' => "kejadian_bencana/$filename",
+                            'caption' => null,
+                            'mime_type' => $file->getClientMimeType(),
+                            'sort_order' => $index
+                        ]);
+                    }
                 }
                 
-                // Upload file
-                $file->move($fullPath, $filename);
-                
-                // Simpan path foto hanya jika kolom foto_profil ada
-                if (in_array('foto_profil', $availableColumns)) {
-                    $data['foto_profil'] = "kejadian_bencana/$filename";
-                }
-                
-                \Log::info('KejadianBencana photo uploaded successfully', [
-                    'filename' => $filename,
-                    'file_path' => "kejadian_bencana/$filename",
-                    'foto_profil_column_exists' => in_array('foto_profil', $availableColumns)
+                \Log::info('Kejadian photos uploaded successfully', [
+                    'kejadian_id' => $kejadian->kejadian_id,
+                    'photo_count' => count($request->file('foto'))
                 ]);
+                
             } catch (\Exception $e) {
-                \Log::error('Failed to upload kejadian photo: ' . $e->getMessage());
-                return back()->withInput()->with('error', 'Gagal mengupload foto: ' . $e->getMessage());
+                \Log::error('Failed to upload kejadian photos', [
+                    'error' => $e->getMessage(),
+                    'kejadian_id' => $kejadian->kejadian_id
+                ]);
+                
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Gagal mengupload foto: ' . $e->getMessage());
             }
         }
 
-        \Log::info('Creating kejadian with data', ['data' => $data]);
-
-        // Simpan data kejadian
-        try {
-            $kejadian = KejadianBencana::create($data);
-            \Log::info('KejadianBencana created successfully', ['kejadian_id' => $kejadian->kejadian_id]);
-            
-            return redirect()->route('kejadian.index')->with('success', 'Data kejadian bencana berhasil ditambahkan!');
-        } catch (\Exception $e) {
-            \Log::error('Failed to create kejadian', ['error' => $e->getMessage()]);
-            return back()->withInput()->with('error', 'Gagal menyimpan data kejadian: ' . $e->getMessage());
-        }
+        return redirect()->route('kejadian.index')
+            ->with('success', 'Kejadian bencana berhasil ditambahkan!');
     }
 
     public function show($id)
@@ -164,118 +135,99 @@ class KejadianBencanaController extends Controller
             'dampak'         => 'nullable|string|max:150',
             'status_kejadian' => 'required|in:Dilaporkan,Verifikasi,Selesai',
             'keterangan'     => 'nullable|string',
-            'foto_profil'    => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+            'foto.*'         => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'delete_foto'    => 'nullable|array',
         ]);
 
         \Log::info('KejadianBencana update request', [
-            'kejadian_id' => $id,
-            'request_data' => $request->except('foto_profil'),
-            'has_photo' => $request->hasFile('foto_profil')
+            'kejadian_id' => $kejadian->kejadian_id,
+            'request_data' => $request->except(['foto']),
+            'has_photo' => $request->hasFile('foto')
         ]);
 
-        // Cek kolom yang tersedia di database
-        $availableColumns = [];
-        try {
-            $columns = \DB::select("SHOW COLUMNS FROM kejadian_bencana");
-            foreach ($columns as $column) {
-                $availableColumns[] = $column->Field;
-            }
-        } catch (\Exception $e) {
-            \Log::error('Failed to get kejadian_bencana table columns: ' . $e->getMessage());
-            $availableColumns = ['jenis_bencana', 'tanggal', 'status_kejadian']; // fallback minimal
-        }
+        // Update data utama
+        $kejadian->update($request->except('foto', 'delete_foto'));
 
-        \Log::info('Available kejadian_bencana columns', ['columns' => $availableColumns]);
-
-        // Siapkan data dasar - hanya kolom yang ada
-        $data = [];
-        
-        // Kolom wajib
-        $data['jenis_bencana'] = $request->jenis_bencana;
-        $data['tanggal'] = $request->tanggal;
-        $data['status_kejadian'] = $request->status_kejadian;
-        
-        // Kolom opsional
-        $optionalFields = [
-            'lokasi_text' => $request->lokasi_text,
-            'rt' => $request->rt,
-            'rw' => $request->rw,
-            'dampak' => $request->dampak,
-            'keterangan' => $request->keterangan,
-        ];
-        
-        foreach ($optionalFields as $field => $value) {
-            if (in_array($field, $availableColumns) && $value !== null) {
-                $data[$field] = $value;
+        // Hapus foto yang dipilih
+        if ($request->delete_foto) {
+            foreach ($request->delete_foto as $mediaId) {
+                \Log::info('Deleting media', ['media_id' => $mediaId]);
+                
+                // Hapus file fisik dan record media (sama seperti User/Warga tapi untuk media table)
+                $media = \App\Models\Media::where('media_id', $mediaId)
+                    ->where('ref_table', 'kejadian_bencana')
+                    ->where('ref_id', $kejadian->kejadian_id)
+                    ->first();
+                    
+                if ($media) {
+                    $filePath = public_path('uploads/' . $media->file_url);
+                    if (file_exists($filePath)) {
+                        unlink($filePath);
+                    }
+                    $media->delete();
+                }
             }
         }
 
-        // Handle foto upload dengan sistem public/uploads
-        if ($request->hasFile('foto_profil') && $request->file('foto_profil')->isValid()) {
+        // Upload foto baru dengan mekanisme yang sama seperti User/Warga
+        if ($request->hasFile('foto')) {
+            \Log::info('Processing file uploads', ['files_count' => count($request->file('foto'))]);
             try {
-                // Hapus foto lama jika ada dan kolom foto_profil tersedia
-                if (in_array('foto_profil', $availableColumns) && $kejadian->foto_profil) {
-                    $oldPath = public_path('uploads/' . $kejadian->foto_profil);
-                    if (file_exists($oldPath)) {
-                        unlink($oldPath);
-                        \Log::info('Old kejadian photo deleted', ['old_path' => $oldPath]);
+                foreach ($request->file('foto') as $index => $file) {
+                    if ($file->isValid()) {
+                        // Simpan file ke public/uploads/kejadian_bencana (sama seperti User/Warga)
+                        $filename = time() . '_' . $index . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                        $uploadPath = "uploads/kejadian_bencana";
+                        
+                        // Pastikan folder ada (sama seperti User/Warga)
+                        $fullPath = public_path($uploadPath);
+                        if (!file_exists($fullPath)) {
+                            mkdir($fullPath, 0755, true);
+                        }
+                        
+                        // Upload file (sama seperti User/Warga)
+                        $file->move($fullPath, $filename);
+                        
+                        // Simpan ke tabel media (tetap menggunakan sistem asli)
+                        \App\Models\Media::create([
+                            'ref_table' => 'kejadian_bencana',
+                            'ref_id' => $kejadian->kejadian_id,
+                            'file_url' => "kejadian_bencana/$filename",
+                            'caption' => null,
+                            'mime_type' => $file->getClientMimeType(),
+                            'sort_order' => $index
+                        ]);
+                        
+                        \Log::info('Photo uploaded successfully', ['filename' => $filename]);
                     }
                 }
-                
-                $file = $request->file('foto_profil');
-                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-                $uploadPath = "uploads/kejadian_bencana";
-                
-                // Pastikan folder ada
-                $fullPath = public_path($uploadPath);
-                if (!file_exists($fullPath)) {
-                    mkdir($fullPath, 0755, true);
-                }
-                
-                // Upload file
-                $file->move($fullPath, $filename);
-                
-                // Simpan path foto hanya jika kolom foto_profil ada
-                if (in_array('foto_profil', $availableColumns)) {
-                    $data['foto_profil'] = "kejadian_bencana/$filename";
-                }
-                
-                \Log::info('KejadianBencana photo updated successfully', [
-                    'kejadian_id' => $id,
-                    'filename' => $filename,
-                    'file_path' => "kejadian_bencana/$filename",
-                    'foto_profil_column_exists' => in_array('foto_profil', $availableColumns)
-                ]);
             } catch (\Exception $e) {
-                \Log::error('Failed to update kejadian photo: ' . $e->getMessage());
-                return back()->withInput()->with('error', 'Gagal mengupload foto: ' . $e->getMessage());
+                \Log::error('Photo upload failed', ['error' => $e->getMessage()]);
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Gagal mengupload foto: ' . $e->getMessage());
             }
         }
 
-        \Log::info('Updating kejadian with data', ['kejadian_id' => $id, 'data' => $data]);
-
-        // Update data kejadian
-        try {
-            $kejadian->update($data);
-            \Log::info('KejadianBencana updated successfully', ['kejadian_id' => $id]);
-            
-            return redirect()->route('kejadian.index')->with('success', 'Data kejadian bencana berhasil diperbarui!');
-        } catch (\Exception $e) {
-            \Log::error('Failed to update kejadian', ['error' => $e->getMessage()]);
-            return back()->withInput()->with('error', 'Gagal mengupdate data kejadian: ' . $e->getMessage());
-        }
+        return redirect()->route('kejadian.index')
+            ->with('success', 'Kejadian bencana berhasil diperbarui!');
     }
 
     public function destroy($id)
     {
         $kejadian = KejadianBencana::findOrFail($id);
 
-        // Hapus foto jika ada
-        if ($kejadian->foto_profil) {
-            $oldPath = public_path('uploads/' . $kejadian->foto_profil);
-            if (file_exists($oldPath)) {
-                unlink($oldPath);
+        // Hapus semua foto (sama seperti User/Warga tapi untuk media table)
+        $mediaItems = \App\Models\Media::where('ref_table', 'kejadian_bencana')
+            ->where('ref_id', $kejadian->kejadian_id)
+            ->get();
+            
+        foreach ($mediaItems as $media) {
+            $filePath = public_path('uploads/' . $media->file_url);
+            if (file_exists($filePath)) {
+                unlink($filePath);
             }
+            $media->delete();
         }
 
         $kejadian->delete();

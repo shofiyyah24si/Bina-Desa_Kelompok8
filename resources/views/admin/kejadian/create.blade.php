@@ -121,17 +121,18 @@
 
     <div class="row g-4">
         <div class="col-12">
-            <label class="form-label">📸 Upload Foto Kejadian</label>
+            <label class="form-label">📸 Upload Foto Kejadian (Multiple)</label>
             <input type="file" 
-                   name="foto_profil" 
-                   class="form-control @error('foto_profil') is-invalid @enderror" 
+                   name="foto[]" 
+                   class="form-control @error('foto.*') is-invalid @enderror" 
                    accept="image/*" 
+                   multiple
                    id="fotoInput">
             <small class="form-text text-muted mt-2">
                 <i class="fas fa-info-circle"></i>
-                Format: JPG, PNG, JPEG. Maksimal 2MB per file.
+                Format: JPG, PNG, JPEG. Maksimal 2MB per file. Bisa upload multiple foto sekaligus.
             </small>
-            @error('foto_profil')
+            @error('foto.*')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>
@@ -147,29 +148,54 @@
 </x-modern-form>
 
 <script>
-// Preview foto sebelum upload dengan style yang lebih baik
+// Preview multiple foto sebelum upload
 document.getElementById('fotoInput').addEventListener('change', function(e) {
     let container = document.getElementById('previewContainer');
     
     if (e.target.files.length > 0) {
-        let file = e.target.files[0];
-        let reader = new FileReader();
+        let files = Array.from(e.target.files);
+        let previewHtml = '<div class="row g-3">';
         
-        reader.onload = function(event) {
-            container.innerHTML = `
-                <div class="text-center">
-                    <img src="${event.target.result}" 
-                         class="img-fluid rounded shadow-sm" 
-                         style="max-height: 200px; max-width: 100%; object-fit: cover;">
-                    <p class="text-success mt-2 mb-0">
-                        <i class="fas fa-check-circle"></i> 
-                        Foto siap diupload: ${file.name}
-                    </p>
+        files.forEach((file, index) => {
+            if (file.type.startsWith('image/')) {
+                let reader = new FileReader();
+                reader.onload = function(event) {
+                    let colDiv = document.createElement('div');
+                    colDiv.className = 'col-md-3 col-sm-4 col-6';
+                    colDiv.innerHTML = `
+                        <div class="text-center">
+                            <img src="${event.target.result}" 
+                                 class="img-fluid rounded shadow-sm" 
+                                 style="height: 150px; width: 100%; object-fit: cover;">
+                            <p class="text-success mt-2 mb-0 small">
+                                <i class="fas fa-check-circle"></i> 
+                                ${file.name}
+                            </p>
+                        </div>
+                    `;
+                    
+                    if (index === 0) {
+                        container.innerHTML = '<div class="row g-3"></div>';
+                    }
+                    container.querySelector('.row').appendChild(colDiv);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Add summary
+        setTimeout(() => {
+            let summaryDiv = document.createElement('div');
+            summaryDiv.className = 'col-12 mt-3';
+            summaryDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <i class="fas fa-images me-2"></i>
+                    <strong>${files.length} foto</strong> siap diupload
                 </div>
             `;
-        };
+            container.querySelector('.row').appendChild(summaryDiv);
+        }, 100);
         
-        reader.readAsDataURL(file);
     } else {
         container.innerHTML = `
             <i class="fas fa-images" style="font-size: 48px; color: #cbd5e1; margin-bottom: 10px;"></i>
