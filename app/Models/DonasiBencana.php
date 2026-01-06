@@ -1,48 +1,97 @@
 <?php
 
-namespace Database\Seeders;
+namespace App\Models;
 
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-use Faker\Factory as Faker;
-use App\Models\KejadianBencana;
+use Illuminate\Database\Eloquent\Model;
+use App\Traits\HasMedia;
 
-class CreateDonasiDummy extends Seeder
+class DonasiBencana extends Model
 {
-    public function run()
+    use HasMedia;
+    
+    protected $table = 'donasi_bencana';
+    protected $primaryKey = 'donasi_id';
+
+    protected $fillable = [
+        'kejadian_id',
+        'donatur_nama',
+        'jenis',
+        'nilai',
+        'keterangan_barang',
+    ];
+
+    protected $casts = [
+        'nilai' => 'decimal:2',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+    public function kejadian()
     {
-        $faker = Faker::create('id_ID');
+        return $this->belongsTo(KejadianBencana::class, 'kejadian_id', 'kejadian_id');
+    }
 
-        // Ambil kejadian_id yang ada
-        $kejadianIds = KejadianBencana::pluck('kejadian_id')->toArray();
-
-        if (empty($kejadianIds)) {
-            $this->command->warn('Tidak ada data kejadian_bencana. Seeder Donasi dilewati.');
-            return;
+    /**
+     * Relasi ke media dengan error handling
+     */
+    public function media()
+    {
+        try {
+            return $this->hasMany(Media::class, 'ref_id', 'donasi_id')
+                        ->where('ref_table', 'donasi_bencana')
+                        ->orderBy('sort_order')
+                        ->orderBy('media_id');
+        } catch (\Exception $e) {
+            \Log::warning('Media relation error in DonasiBencana: ' . $e->getMessage());
+            return collect([]);
         }
+    }
 
-        $jenisList = [
-            'Uang',
-            'Barang',
-            'Pakaian',
-            'Makanan',
-            'Obat-obatan',
-            'Peralatan'
-        ];
-
-        // ⬇️ MASUKKAN 5 DATA SAJA
-        for ($i = 1; $i <= 5; $i++) {
-            DB::table('donasi_bencana')->insert([
-                'kejadian_id'    => $faker->randomElement($kejadianIds),
-                'donatur_nama'   => $faker->name,
-                'jenis'          => $faker->randomElement($jenisList),
-                'nilai'          => $faker->numberBetween(50000, 3000000),
-                'tanggal_donasi' => $faker->date(), // ⬅️ DATE (AMAN)
-                'created_at'     => now(),
-                'updated_at'     => now(),
-            ]);
+    /**
+     * Get media safely
+     */
+    public function getMediaSafely()
+    {
+        try {
+            return $this->media;
+        } catch (\Exception $e) {
+            \Log::warning('Failed to get media for DonasiBencana: ' . $e->getMessage());
+            return collect([]);
         }
+    }
 
-        $this->command->info('Seeder Donasi Bencana berhasil (5 data).');
+    /**
+     * Get formatted nilai for display
+     */
+    public function getFormattedNilaiAttribute()
+    {
+        if ($this->jenis === 'uang' && $this->nilai) {
+            return 'Rp ' . number_format($this->nilai, 0, ',', '.');
+        }
+        return null;
+    }
+
+    /**
+     * Get jenis display name
+     */
+    public function getJenisDisplayAttribute()
+    {
+        return ucfirst($this->jenis);
+    }
+
+    /**
+     * Scope for filtering by jenis
+     */
+    public function scopeByJenis($query, $jenis)
+    {
+        return $query->where('jenis', $jenis);
+    }
+
+    /**
+     * Scope for filtering by kejadian
+     */
+    public function scopeByKejadian($query, $kejadianId)
+    {
+        return $query->where('kejadian_id', $kejadianId);
     }
 }
