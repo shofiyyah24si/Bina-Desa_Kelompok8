@@ -48,18 +48,12 @@ class KejadianBencanaController extends Controller
             'dampak'         => 'nullable|string|max:150',
             'status_kejadian' => 'required|in:Dilaporkan,Verifikasi,Selesai',
             'keterangan'     => 'nullable|string',
-            'foto_profil'    => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'foto_profil'    => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
 
         \Log::info('KejadianBencana store request', [
-            'request_data' => $request->except(['foto_profil']),
-            'has_photo' => $request->hasFile('foto_profil'),
-            'photo_info' => $request->hasFile('foto_profil') ? [
-                'name' => $request->file('foto_profil')->getClientOriginalName(),
-                'size' => $request->file('foto_profil')->getSize(),
-                'mime' => $request->file('foto_profil')->getClientMimeType(),
-                'is_valid' => $request->file('foto_profil')->isValid()
-            ] : null
+            'request_data' => $request->except('foto_profil'),
+            'has_photo' => $request->hasFile('foto_profil')
         ]);
 
         // Cek kolom yang tersedia di database
@@ -71,7 +65,7 @@ class KejadianBencanaController extends Controller
             }
         } catch (\Exception $e) {
             \Log::error('Failed to get kejadian_bencana table columns: ' . $e->getMessage());
-            $availableColumns = ['jenis_bencana', 'tanggal', 'lokasi_text', 'rt', 'rw', 'dampak', 'status_kejadian', 'keterangan']; // fallback minimal
+            $availableColumns = ['jenis_bencana', 'tanggal', 'status_kejadian']; // fallback minimal
         }
 
         \Log::info('Available kejadian_bencana columns', ['columns' => $availableColumns]);
@@ -84,21 +78,19 @@ class KejadianBencanaController extends Controller
         $data['tanggal'] = $request->tanggal;
         $data['status_kejadian'] = $request->status_kejadian;
         
-        // Kolom opsional yang ada
-        if (in_array('lokasi_text', $availableColumns)) {
-            $data['lokasi_text'] = $request->lokasi_text;
-        }
-        if (in_array('rt', $availableColumns)) {
-            $data['rt'] = $request->rt;
-        }
-        if (in_array('rw', $availableColumns)) {
-            $data['rw'] = $request->rw;
-        }
-        if (in_array('dampak', $availableColumns)) {
-            $data['dampak'] = $request->dampak;
-        }
-        if (in_array('keterangan', $availableColumns)) {
-            $data['keterangan'] = $request->keterangan;
+        // Kolom opsional
+        $optionalFields = [
+            'lokasi_text' => $request->lokasi_text,
+            'rt' => $request->rt,
+            'rw' => $request->rw,
+            'dampak' => $request->dampak,
+            'keterangan' => $request->keterangan,
+        ];
+        
+        foreach ($optionalFields as $field => $value) {
+            if (in_array($field, $availableColumns) && $value !== null) {
+                $data[$field] = $value;
+            }
         }
 
         // Handle foto upload dengan sistem public/uploads
@@ -112,43 +104,24 @@ class KejadianBencanaController extends Controller
                 $fullPath = public_path($uploadPath);
                 if (!file_exists($fullPath)) {
                     mkdir($fullPath, 0755, true);
-                    \Log::info('Created upload directory', ['path' => $fullPath]);
                 }
                 
                 // Upload file
                 $file->move($fullPath, $filename);
-                \Log::info('File moved successfully', [
-                    'from' => $file->getPathname(),
-                    'to' => $fullPath . '/' . $filename
-                ]);
                 
                 // Simpan path foto hanya jika kolom foto_profil ada
                 if (in_array('foto_profil', $availableColumns)) {
                     $data['foto_profil'] = "kejadian_bencana/$filename";
-                    \Log::info('Photo path added to data', ['foto_profil' => $data['foto_profil']]);
-                } else {
-                    \Log::warning('foto_profil column not found in database, photo uploaded but not saved to DB');
                 }
                 
                 \Log::info('KejadianBencana photo uploaded successfully', [
                     'filename' => $filename,
                     'file_path' => "kejadian_bencana/$filename",
-                    'foto_profil_column_exists' => in_array('foto_profil', $availableColumns),
-                    'full_upload_path' => $fullPath . '/' . $filename,
-                    'file_exists' => file_exists($fullPath . '/' . $filename)
+                    'foto_profil_column_exists' => in_array('foto_profil', $availableColumns)
                 ]);
             } catch (\Exception $e) {
-                \Log::error('Failed to upload kejadian photo: ' . $e->getMessage(), [
-                    'trace' => $e->getTraceAsString()
-                ]);
+                \Log::error('Failed to upload kejadian photo: ' . $e->getMessage());
                 return back()->withInput()->with('error', 'Gagal mengupload foto: ' . $e->getMessage());
-            }
-        } else {
-            if ($request->hasFile('foto_profil')) {
-                \Log::warning('Photo file is invalid', [
-                    'error' => $request->file('foto_profil')->getError(),
-                    'error_message' => $request->file('foto_profil')->getErrorMessage()
-                ]);
             }
         }
 
@@ -157,18 +130,11 @@ class KejadianBencanaController extends Controller
         // Simpan data kejadian
         try {
             $kejadian = KejadianBencana::create($data);
-            \Log::info('KejadianBencana created successfully', [
-                'kejadian_id' => $kejadian->kejadian_id,
-                'saved_data' => $kejadian->toArray()
-            ]);
+            \Log::info('KejadianBencana created successfully', ['kejadian_id' => $kejadian->kejadian_id]);
             
-            return redirect()->route('kejadian.index')->with('success', 'Kejadian bencana berhasil ditambahkan!');
+            return redirect()->route('kejadian.index')->with('success', 'Data kejadian bencana berhasil ditambahkan!');
         } catch (\Exception $e) {
-            \Log::error('Failed to create kejadian', [
-                'error' => $e->getMessage(),
-                'data' => $data,
-                'trace' => $e->getTraceAsString()
-            ]);
+            \Log::error('Failed to create kejadian', ['error' => $e->getMessage()]);
             return back()->withInput()->with('error', 'Gagal menyimpan data kejadian: ' . $e->getMessage());
         }
     }
@@ -198,12 +164,12 @@ class KejadianBencanaController extends Controller
             'dampak'         => 'nullable|string|max:150',
             'status_kejadian' => 'required|in:Dilaporkan,Verifikasi,Selesai',
             'keterangan'     => 'nullable|string',
-            'foto_profil'    => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'foto_profil'    => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
 
         \Log::info('KejadianBencana update request', [
-            'kejadian_id' => $kejadian->kejadian_id,
-            'request_data' => $request->except(['foto_profil']),
+            'kejadian_id' => $id,
+            'request_data' => $request->except('foto_profil'),
             'has_photo' => $request->hasFile('foto_profil')
         ]);
 
@@ -216,7 +182,7 @@ class KejadianBencanaController extends Controller
             }
         } catch (\Exception $e) {
             \Log::error('Failed to get kejadian_bencana table columns: ' . $e->getMessage());
-            $availableColumns = ['jenis_bencana', 'tanggal', 'lokasi_text', 'rt', 'rw', 'dampak', 'status_kejadian', 'keterangan']; // fallback minimal
+            $availableColumns = ['jenis_bencana', 'tanggal', 'status_kejadian']; // fallback minimal
         }
 
         \Log::info('Available kejadian_bencana columns', ['columns' => $availableColumns]);
@@ -229,21 +195,19 @@ class KejadianBencanaController extends Controller
         $data['tanggal'] = $request->tanggal;
         $data['status_kejadian'] = $request->status_kejadian;
         
-        // Kolom opsional yang ada
-        if (in_array('lokasi_text', $availableColumns)) {
-            $data['lokasi_text'] = $request->lokasi_text;
-        }
-        if (in_array('rt', $availableColumns)) {
-            $data['rt'] = $request->rt;
-        }
-        if (in_array('rw', $availableColumns)) {
-            $data['rw'] = $request->rw;
-        }
-        if (in_array('dampak', $availableColumns)) {
-            $data['dampak'] = $request->dampak;
-        }
-        if (in_array('keterangan', $availableColumns)) {
-            $data['keterangan'] = $request->keterangan;
+        // Kolom opsional
+        $optionalFields = [
+            'lokasi_text' => $request->lokasi_text,
+            'rt' => $request->rt,
+            'rw' => $request->rw,
+            'dampak' => $request->dampak,
+            'keterangan' => $request->keterangan,
+        ];
+        
+        foreach ($optionalFields as $field => $value) {
+            if (in_array($field, $availableColumns) && $value !== null) {
+                $data[$field] = $value;
+            }
         }
 
         // Handle foto upload dengan sistem public/uploads
@@ -277,7 +241,7 @@ class KejadianBencanaController extends Controller
                 }
                 
                 \Log::info('KejadianBencana photo updated successfully', [
-                    'kejadian_id' => $kejadian->kejadian_id,
+                    'kejadian_id' => $id,
                     'filename' => $filename,
                     'file_path' => "kejadian_bencana/$filename",
                     'foto_profil_column_exists' => in_array('foto_profil', $availableColumns)
@@ -288,14 +252,14 @@ class KejadianBencanaController extends Controller
             }
         }
 
-        \Log::info('Updating kejadian with data', ['kejadian_id' => $kejadian->kejadian_id, 'data' => array_keys($data)]);
+        \Log::info('Updating kejadian with data', ['kejadian_id' => $id, 'data' => $data]);
 
         // Update data kejadian
         try {
             $kejadian->update($data);
-            \Log::info('KejadianBencana updated successfully', ['kejadian_id' => $kejadian->kejadian_id]);
+            \Log::info('KejadianBencana updated successfully', ['kejadian_id' => $id]);
             
-            return redirect()->route('kejadian.index')->with('success', 'Kejadian bencana berhasil diperbarui!');
+            return redirect()->route('kejadian.index')->with('success', 'Data kejadian bencana berhasil diperbarui!');
         } catch (\Exception $e) {
             \Log::error('Failed to update kejadian', ['error' => $e->getMessage()]);
             return back()->withInput()->with('error', 'Gagal mengupdate data kejadian: ' . $e->getMessage());

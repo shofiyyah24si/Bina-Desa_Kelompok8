@@ -18,25 +18,41 @@ class KejadianBencana extends Model
         'dampak',
         'status_kejadian',
         'keterangan',
-        'foto_profil', // Tambahkan foto_profil ke fillable
+        'foto_profil', // Sama seperti users dan warga
     ];
 
     /**
-     * Get photo URL safely
+     * Get foto URL dengan sistem public/uploads (sama seperti users dan warga)
      */
-    public function getPhotoUrl()
+    public function getFotoUrlAttribute()
     {
         if ($this->foto_profil) {
             return asset('uploads/' . $this->foto_profil);
         }
-        return null;
+        return asset('assets-admin/images/default-disaster.png'); // default disaster image
     }
 
     /**
-     * Check if has photo
+     * Get foto safely with fallback
+     */
+    public function getFotoSafely()
+    {
+        return $this->foto_profil ?? null;
+    }
+
+    /**
+     * Check if kejadian has photo
      */
     public function hasPhoto()
     {
-        return !empty($this->foto_profil);
+        return !empty($this->foto_profil) && file_exists(public_path('uploads/' . $this->foto_profil));
+    }
+
+    /**
+     * Get photo URL safely (alias untuk compatibility)
+     */
+    public function getPhotoUrl()
+    {
+        return $this->getFotoUrlAttribute();
     }
 }

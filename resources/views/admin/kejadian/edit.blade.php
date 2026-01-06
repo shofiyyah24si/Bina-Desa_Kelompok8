@@ -120,7 +120,7 @@
     </div>
 
     {{-- Current Photo --}}
-    @if($kejadian->hasPhoto())
+    @if($kejadian->foto_profil)
         <div class="row g-3 mb-4">
             <div class="col-12">
                 <h6 class="text-muted mb-3">
@@ -129,9 +129,12 @@
             </div>
             <div class="col-md-4">
                 <div class="position-relative">
-                    <img src="{{ $kejadian->getPhotoUrl() }}" 
+                    <img src="{{ asset('uploads/' . $kejadian->foto_profil) }}" 
                          class="img-fluid rounded shadow-sm" 
-                         style="height: 200px; width: 100%; object-fit: cover;">
+                         style="height: 200px; width: 100%; object-fit: cover;"
+                         alt="Foto Kejadian {{ $kejadian->jenis_bencana }}"
+                         data-path="{{ $kejadian->foto_profil }}"
+                         onerror="this.style.display='none'">
                     <div class="position-absolute top-0 end-0 m-2">
                         <span class="badge bg-success">
                             <i class="fas fa-check"></i> Foto Tersimpan
@@ -144,7 +147,7 @@
 
     <div class="row g-4">
         <div class="col-12">
-            <label class="form-label">📸 {{ $kejadian->hasPhoto() ? 'Ganti Foto' : 'Upload Foto' }}</label>
+            <label class="form-label">📸 {{ $kejadian->foto_profil ? 'Ganti Foto' : 'Upload Foto' }}</label>
             <input type="file" 
                    name="foto_profil" 
                    class="form-control @error('foto_profil') is-invalid @enderror" 
@@ -153,7 +156,7 @@
             <small class="form-text text-muted mt-2">
                 <i class="fas fa-info-circle"></i>
                 Format: JPG, PNG, JPEG. Maksimal 2MB per file. 
-                @if($kejadian->hasPhoto())
+                @if($kejadian->foto_profil)
                     Upload foto baru akan mengganti foto yang ada.
                 @endif
             </small>

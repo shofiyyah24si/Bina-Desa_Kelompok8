@@ -599,10 +599,11 @@
                 <tr>
                     <td>
                         <div class="photo-gallery">
-                            @if($row->hasPhoto())
-                                <img src="{{ $row->getPhotoUrl() }}"
+                            @if($row->foto_profil)
+                                <img src="{{ asset('uploads/' . $row->foto_profil) }}"
                                      class="photo-item"
-                                     alt="Foto Kejadian"
+                                     alt="Foto Kejadian {{ $row->jenis_bencana }}"
+                                     data-path="{{ $row->foto_profil }}"
                                      onerror="this.style.display='none'">
                             @else
                                 <div class="photo-counter">
