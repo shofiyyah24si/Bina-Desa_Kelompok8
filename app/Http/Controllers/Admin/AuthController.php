@@ -46,16 +46,45 @@ class AuthController extends Controller
         // Login user
         Auth::login($user);
 
-        // Simpan waktu login - with column existence check
+        // Simpan waktu login - improved version with better error handling
         try {
+            \Log::info('Attempting to update last_login_at for user: ' . $user->id);
+            
+            // Check if column exists first
             $hasLastLoginColumn = \DB::select("SHOW COLUMNS FROM users LIKE 'last_login_at'");
+            
             if (!empty($hasLastLoginColumn)) {
-                $user->update([
-                    'last_login_at' => now(),
-                ]);
+                \Log::info('last_login_at column exists, updating...');
+                
+                // Update using direct DB query for better reliability
+                $updated = \DB::table('users')
+                    ->where('id', $user->id)
+                    ->update(['last_login_at' => now()]);
+                
+                if ($updated) {
+                    \Log::info('Successfully updated last_login_at for user: ' . $user->id);
+                } else {
+                    \Log::warning('Failed to update last_login_at - no rows affected for user: ' . $user->id);
+                }
+                
+                // Also try updating via model as backup
+                try {
+                    $user->last_login_at = now();
+                    $user->save();
+                    \Log::info('Model update for last_login_at successful');
+                } catch (\Exception $modelException) {
+                    \Log::warning('Model update failed: ' . $modelException->getMessage());
+                }
+                
+            } else {
+                \Log::warning('last_login_at column does not exist in users table');
             }
+            
         } catch (\Exception $e) {
-            \Log::warning('Could not update last_login_at: ' . $e->getMessage());
+            \Log::error('Could not update last_login_at: ' . $e->getMessage(), [
+                'user_id' => $user->id,
+                'error_trace' => $e->getTraceAsString()
+            ]);
             // Continue without updating last login time
         }
 
@@ -155,6 +184,21 @@ class AuthController extends Controller
 
             // Login user
             Auth::login($user);
+
+            // Set last_login_at for new user
+            try {
+                \Log::info('Setting initial last_login_at for new user: ' . $user->id);
+                
+                $updated = \DB::table('users')
+                    ->where('id', $user->id)
+                    ->update(['last_login_at' => now()]);
+                
+                if ($updated) {
+                    \Log::info('Successfully set initial last_login_at for new user: ' . $user->id);
+                }
+            } catch (\Exception $e) {
+                \Log::warning('Could not set initial last_login_at: ' . $e->getMessage());
+            }
 
             \Log::info('User logged in after registration', [
                 'user_id' => $user->id,
