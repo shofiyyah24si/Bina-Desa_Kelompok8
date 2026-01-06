@@ -292,15 +292,12 @@
 
                     <div class="mb-3">
                         <label for="role" class="form-label">👑 Role <span class="required-mark">*</span></label>
-                        <select id="role" name="role" class="form-select @error('role') is-invalid @enderror" required>
-                            <option value="">-- Pilih Role --</option>
-                            <option value="Admin" @selected(old('role') == 'Admin')>👑 Admin - Administrator Sistem</option>
-                            <option value="Warga" @selected(old('role') == 'Warga')>👤 Warga - Pengguna Umum</option>
-                            <option value="Mitra" @selected(old('role') == 'Mitra')>🤝 Mitra - Partner Kerjasama</option>
-                        </select>
-                        @error('role')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                        <input type="text" class="form-control" value="Admin" readonly>
+                        <input type="hidden" name="role" value="Admin">
+                        <small class="form-text text-muted mt-2">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Semua user otomatis menjadi Admin
+                        </small>
                     </div>
 
                     <div class="mb-3">

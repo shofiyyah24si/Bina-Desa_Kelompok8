@@ -485,21 +485,8 @@
                 @enderror
             </div>
 
-            {{-- ROLE --}}
-            <div class="input-group">
-                <label>Role</label>
-                <div class="input-box">
-                    <select name="role">
-                        <option value="">-- Pilih Role --</option>
-                        <option value="Admin" {{ old('role') == 'Admin' ? 'selected' : '' }}>Admin</option>
-                        <option value="Warga" {{ old('role') == 'Warga' ? 'selected' : '' }}>Warga</option>
-                        <option value="Mitra" {{ old('role') == 'Mitra' ? 'selected' : '' }}>Mitra</option>
-                    </select>
-                </div>
-                @error('role')
-                    <div class="error-text">Role wajib dipilih.</div>
-                @enderror
-            </div>
+            {{-- ROLE - HIDDEN FIELD ADMIN --}}
+            <input type="hidden" name="role" value="Admin">
 
             {{-- FOTO --}}
             <div class="input-group">

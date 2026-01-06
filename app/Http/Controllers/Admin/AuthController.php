@@ -85,7 +85,6 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6',
-            'role' => 'required|in:Admin,Warga,Mitra',
             'foto_profil' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
 
@@ -93,7 +92,7 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => $request->role, // Langsung masukkan role tanpa pengecekan
+            'role' => 'Admin', // Semua user otomatis jadi Admin
         ];
 
         \Log::info('Registration data prepared', [

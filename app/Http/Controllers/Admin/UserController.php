@@ -44,9 +44,11 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6',
-            'role' => 'required|in:Admin,Warga,Mitra',
             'foto_profil' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
+
+        // Semua user otomatis jadi Admin
+        $data['role'] = 'Admin';
 
         // Hash password
         $data['password'] = bcrypt($data['password']);
@@ -94,9 +96,11 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:6',
-            'role' => 'required|in:Admin,Warga,Mitra',
             'foto_profil' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
+
+        // Semua user otomatis jadi Admin
+        $data['role'] = 'Admin';
 
         // Hash password
         if (!empty($data['password'])) {

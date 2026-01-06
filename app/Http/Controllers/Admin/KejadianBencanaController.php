@@ -54,15 +54,45 @@ class KejadianBencanaController extends Controller
 
         $kejadian = KejadianBencana::create($request->except('foto'));
 
-        // Upload multi foto
+        // Upload multi foto dengan cara sederhana
         if ($request->hasFile('foto')) {
             try {
-                foreach ($request->file('foto') as $file) {
+                foreach ($request->file('foto') as $index => $file) {
                     if ($file->isValid()) {
-                        $kejadian->addMedia($file, 'kejadian_bencana');
+                        // Simpan file ke public/uploads/kejadian_bencana
+                        $filename = time() . '_' . $index . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                        $uploadPath = "uploads/kejadian_bencana";
+                        
+                        $fullPath = public_path($uploadPath);
+                        if (!file_exists($fullPath)) {
+                            mkdir($fullPath, 0755, true);
+                        }
+                        
+                        $file->move($fullPath, $filename);
+                        
+                        // Simpan ke tabel media
+                        \App\Models\Media::create([
+                            'ref_table' => 'kejadian_bencana',
+                            'ref_id' => $kejadian->id,
+                            'file_url' => "kejadian_bencana/$filename",
+                            'caption' => null,
+                            'mime_type' => $file->getClientMimeType(),
+                            'sort_order' => $index
+                        ]);
                     }
                 }
+                
+                \Log::info('Kejadian photos uploaded successfully', [
+                    'kejadian_id' => $kejadian->id,
+                    'photo_count' => count($request->file('foto'))
+                ]);
+                
             } catch (\Exception $e) {
+                \Log::error('Failed to upload kejadian photos', [
+                    'error' => $e->getMessage(),
+                    'kejadian_id' => $kejadian->id
+                ]);
+                
                 return redirect()->back()
                     ->withInput()
                     ->with('error', 'Gagal mengupload foto: ' . $e->getMessage());

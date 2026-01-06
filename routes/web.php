@@ -24,17 +24,12 @@ Route::get('/', function () {
 
 Route::middleware('check.login')->group(function () {
 
-    // Dashboard bisa diakses semua role (Admin, Warga, Mitra)
+    // Dashboard bisa diakses semua user (semua Admin)
     Route::get('/dashboard', [DashboardAdminController::class, 'index'])->name('dashboard');
 
-    /// ===================== ADMIN ONLY =====================
-    Route::middleware('checkrole:Admin')->group(function () {
-        Route::resource('warga', WargaController::class);
-        Route::resource('users', UserController::class);
-    });
-
-    // ===================== ALL ROLES (Admin, Warga, Mitra) =====================
-    // Semua role bisa akses kejadian, posko, donasi, logistik, distribusi
+    // Semua fitur bisa diakses karena semua user adalah Admin
+    Route::resource('warga', WargaController::class);
+    Route::resource('users', UserController::class);
     Route::resource('kejadian', KejadianBencanaController::class);
     Route::resource('posko', PoskoBencanaController::class);
     Route::resource('donasi', DonasiBencanaController::class);
@@ -44,7 +39,7 @@ Route::middleware('check.login')->group(function () {
     // AJAX routes
     Route::get('/api/logistik/{id?}', [DistribusiLogistikController::class, 'getLogistikData'])->name('api.logistik');
 
-    // Logout untuk semua role
+    // Logout untuk semua user
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 });
