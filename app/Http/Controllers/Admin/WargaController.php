@@ -172,48 +172,6 @@ class WargaController extends Controller
             return back()->withInput()->with('error', 'Gagal menyimpan data warga: ' . $e->getMessage());
         }
     }
-        ];
-
-        // Handle foto upload dengan sistem public/uploads
-        if ($request->hasFile('foto_profil') && $request->file('foto_profil')->isValid()) {
-            try {
-                $file = $request->file('foto_profil');
-                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-                $uploadPath = "uploads/warga";
-                
-                // Pastikan folder ada
-                $fullPath = public_path($uploadPath);
-                if (!file_exists($fullPath)) {
-                    mkdir($fullPath, 0755, true);
-                }
-                
-                // Upload file
-                $file->move($fullPath, $filename);
-                $data['foto'] = "warga/$filename";
-                
-                \Log::info('Warga photo uploaded successfully', [
-                    'filename' => $filename,
-                    'file_path' => "warga/$filename"
-                ]);
-            } catch (\Exception $e) {
-                \Log::error('Failed to upload warga photo: ' . $e->getMessage());
-                return back()->withInput()->with('error', 'Gagal mengupload foto: ' . $e->getMessage());
-            }
-        }
-
-        \Log::info('Creating warga with data', ['data' => $data]);
-
-        // Simpan data warga
-        try {
-            $warga = Warga::create($data);
-            \Log::info('Warga created successfully', ['warga_id' => $warga->warga_id]);
-            
-            return redirect()->route('warga.index')->with('success', 'Data warga berhasil ditambahkan!');
-        } catch (\Exception $e) {
-            \Log::error('Failed to create warga', ['error' => $e->getMessage()]);
-            return back()->withInput()->with('error', 'Gagal menyimpan data warga: ' . $e->getMessage());
-        }
-    }
 
     /**
      * Show the form for editing the specified resource.
@@ -348,8 +306,17 @@ class WargaController extends Controller
     public function destroy(string $id)
     {
         $warga = Warga::findOrFail($id);
+        
+        // Hapus foto jika ada
+        if ($warga->foto) {
+            $photoPath = public_path('uploads/' . $warga->foto);
+            if (file_exists($photoPath)) {
+                unlink($photoPath);
+            }
+        }
+        
         $warga->delete();
 
-        return redirect()->route('warga.index')->with('update', 'Data berhasil dihapus');
+        return redirect()->route('warga.index')->with('success', 'Data warga berhasil dihapus!');
     }
 }
