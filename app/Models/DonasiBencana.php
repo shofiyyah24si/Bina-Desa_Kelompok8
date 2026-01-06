@@ -1,51 +1,48 @@
 <?php
 
-namespace App\Models;
+namespace Database\Seeders;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Faker\Factory as Faker;
+use App\Models\KejadianBencana;
 
-class DonasiBencana extends Model
+class CreateDonasiDummy extends Seeder
 {
-    protected $table = 'donasi_bencana';
-    protected $primaryKey = 'donasi_id';
-
-    protected $fillable = [
-        'kejadian_id',
-        'donatur_nama',
-        'jenis',
-        'nilai',
-        'keterangan_barang',
-    ];
-
-    public function kejadian()
+    public function run()
     {
-        return $this->belongsTo(KejadianBencana::class, 'kejadian_id');
-    }
+        $faker = Faker::create('id_ID');
 
-    /**
-     * Relasi ke media dengan error handling
-     */
-    public function media()
-    {
-        try {
-            return $this->hasMany(Media::class, 'ref_id', 'donasi_id')
-                        ->where('ref_table', 'donasi_bencana')
-                        ->orderBy('sort_order')
-                        ->orderBy('media_id');
-        } catch (\Exception $e) {
-            return collect([]);
+        // Ambil kejadian_id yang ada
+        $kejadianIds = KejadianBencana::pluck('kejadian_id')->toArray();
+
+        if (empty($kejadianIds)) {
+            $this->command->warn('Tidak ada data kejadian_bencana. Seeder Donasi dilewati.');
+            return;
         }
-    }
 
-    /**
-     * Get media safely
-     */
-    public function getMediaSafely()
-    {
-        try {
-            return $this->media;
-        } catch (\Exception $e) {
-            return collect([]);
+        $jenisList = [
+            'Uang',
+            'Barang',
+            'Pakaian',
+            'Makanan',
+            'Obat-obatan',
+            'Peralatan'
+        ];
+
+        // ⬇️ MASUKKAN 5 DATA SAJA
+        for ($i = 1; $i <= 5; $i++) {
+            DB::table('donasi_bencana')->insert([
+                'kejadian_id'    => $faker->randomElement($kejadianIds),
+                'donatur_nama'   => $faker->name,
+                'jenis'          => $faker->randomElement($jenisList),
+                'nilai'          => $faker->numberBetween(50000, 3000000),
+                'tanggal_donasi' => $faker->date(), // ⬅️ DATE (AMAN)
+                'created_at'     => now(),
+                'updated_at'     => now(),
+            ]);
         }
+
+        $this->command->info('Seeder Donasi Bencana berhasil (5 data).');
     }
 }

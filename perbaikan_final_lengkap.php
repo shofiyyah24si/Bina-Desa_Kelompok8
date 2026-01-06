@@ -134,7 +134,7 @@ try {
           `donasi_id` bigint unsigned NOT NULL AUTO_INCREMENT,
           `kejadian_id` bigint unsigned,
           `donatur_nama` varchar(255) NOT NULL,
-          `jenis` enum('uang','barang') NOT NULL,
+          `jenis` varchar(100) NOT NULL,
           `nilai` decimal(15,2) DEFAULT NULL,
           `keterangan_barang` text,
           `created_at` timestamp NULL DEFAULT NULL,
@@ -239,8 +239,31 @@ try {
         echo "<p style='color: orange;'>⚠️ Update role: " . $e->getMessage() . "</p>";
     }
     
-    // 7. Test upload foto (buat file dummy untuk test)
-    echo "<h2>7. Test Upload System</h2>";
+    // 8. Fix donasi_bencana table structure (remove tanggal_donasi if exists)
+    echo "<h2>8. Memperbaiki Struktur Tabel Donasi</h2>";
+    try {
+        // Check if tanggal_donasi column exists
+        $stmt = $pdo->query("SHOW COLUMNS FROM donasi_bencana LIKE 'tanggal_donasi'");
+        $hasColumn = $stmt->rowCount() > 0;
+        
+        if ($hasColumn) {
+            // Remove the problematic column
+            $pdo->exec("ALTER TABLE donasi_bencana DROP COLUMN tanggal_donasi");
+            echo "<p style='color: green;'>✅ Kolom 'tanggal_donasi' berhasil dihapus dari tabel donasi_bencana</p>";
+        } else {
+            echo "<p style='color: blue;'>ℹ️ Kolom 'tanggal_donasi' tidak ada di tabel donasi_bencana</p>";
+        }
+        
+        // Ensure jenis column is varchar instead of enum for flexibility
+        $pdo->exec("ALTER TABLE donasi_bencana MODIFY COLUMN jenis VARCHAR(100) NOT NULL");
+        echo "<p style='color: green;'>✅ Kolom 'jenis' diubah menjadi VARCHAR untuk fleksibilitas</p>";
+        
+    } catch (Exception $e) {
+        echo "<p style='color: orange;'>⚠️ Perbaikan tabel donasi: " . $e->getMessage() . "</p>";
+    }
+    
+    // 9. Test upload foto (buat file dummy untuk test)
+    echo "<h2>9. Test Upload System</h2>";
     foreach ($uploadFolders as $folder) {
         if ($folder !== 'uploads') {
             $testFile = $_SERVER['DOCUMENT_ROOT'] . '/' . $folder . '/test.txt';
@@ -253,8 +276,8 @@ try {
         }
     }
     
-    // 8. Tampilkan ringkasan sistem
-    echo "<h2>8. Ringkasan Sistem</h2>";
+    // 10. Tampilkan ringkasan sistem
+    echo "<h2>10. Ringkasan Sistem</h2>";
     $tables = ['users', 'warga', 'kejadian_bencana', 'posko_bencana', 'donasi_bencana', 'logistik_bencana', 'distribusi_logistik', 'media'];
     
     echo "<table style='width: 100%; border-collapse: collapse; margin: 10px 0; background: white;'>";
@@ -279,8 +302,8 @@ try {
     }
     echo "</table>";
     
-    // 9. Tampilkan data users
-    echo "<h2>9. Data Users Saat Ini</h2>";
+    // 11. Tampilkan data users
+    echo "<h2>11. Data Users Saat Ini</h2>";
     try {
         $stmt = $pdo->query("SELECT id, name, email, role, foto_profil FROM users ORDER BY id");
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
