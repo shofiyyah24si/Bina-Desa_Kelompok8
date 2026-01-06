@@ -22,7 +22,7 @@
     <div class="ms-auto d-flex align-items-center">
 
         <span class="me-3 text-muted small">
-            Hai, {{ Auth::user()->name }} — <strong>{{ Auth::user()->role ?? 'User' }}</strong>
+            Hai, {{ Auth::user()->name }} — <strong>{{ Auth::user()->role ?? 'Warga' }}</strong>
         </span>
 
         <div class="dropdown">

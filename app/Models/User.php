@@ -59,9 +59,14 @@ class User extends Authenticatable
     public function getRoleAttribute($value)
     {
         try {
-            return $value ?? 'User';
+            // If value exists and is one of the valid roles, return it
+            if ($value && in_array($value, ['Admin', 'Warga', 'Mitra'])) {
+                return $value;
+            }
+            // Default to Warga if no valid role is set
+            return 'Warga';
         } catch (\Exception $e) {
-            return 'User';
+            return 'Warga';
         }
     }
 
