@@ -20,62 +20,83 @@ class DashboardAdminController extends Controller
      */
     public function index()
     {
-        // Data untuk statistics cards
-        $totalWarga = Warga::count();
-        $totalUser = User::count();
-        $totalKejadian = KejadianBencana::count();
-        $totalPosko = PoskoBencana::count();
-        $totalDonasi = DonasiBencana::count();
-        $totalLogistik = LogistikBencana::count();
+        try {
+            // Data untuk statistics cards
+            $totalWarga = $this->getCountSafely(Warga::class);
+            $totalUser = $this->getCountSafely(User::class);
+            $totalKejadian = $this->getCountSafely(KejadianBencana::class);
+            $totalPosko = $this->getCountSafely(PoskoBencana::class);
+            $totalDonasi = $this->getCountSafely(DonasiBencana::class);
+            $totalLogistik = $this->getCountSafely(LogistikBencana::class);
 
-        // Data untuk informasi donasi
-        $totalDonasiUang = DonasiBencana::where('jenis', 'uang')->sum('nilai') ?? 0;
-        $totalDonasiBarang = DonasiBencana::where('jenis', 'barang')->count();
-        $totalDonatur = DonasiBencana::distinct('donatur_nama')->count('donatur_nama');
-        $donasiBulanIni = DonasiBencana::whereMonth('created_at', now()->month)
-                                      ->whereYear('created_at', now()->year)
-                                      ->count();
+            // Data untuk informasi donasi
+            $totalDonasiUang = $this->getSumSafely(DonasiBencana::class, 'nilai', ['jenis' => 'uang']);
+            $totalDonasiBarang = $this->getCountSafely(DonasiBencana::class, ['jenis' => 'barang']);
+            $totalDonatur = $this->getDistinctCountSafely(DonasiBencana::class, 'donatur_nama');
+            $donasiBulanIni = $this->getCountSafely(DonasiBencana::class, [
+                ['created_at', '>=', now()->startOfMonth()],
+                ['created_at', '<=', now()->endOfMonth()]
+            ]);
 
-        // Data untuk informasi logistik
-        $totalStokLogistik = LogistikBencana::sum('stok') ?? 0;
-        $totalDistribusi = DistribusiLogistik::count();
-        $stokMenipis = LogistikBencana::where('stok', '<=', 10)->count();
-        $distribusiBulanIni = DistribusiLogistik::whereMonth('created_at', now()->month)
-                                               ->whereYear('created_at', now()->year)
-                                               ->sum('jumlah') ?? 0;
+            // Data untuk informasi logistik
+            $totalStokLogistik = $this->getSumSafely(LogistikBencana::class, 'stok');
+            $totalDistribusi = $this->getCountSafely(DistribusiLogistik::class);
+            $stokMenipis = $this->getCountSafely(LogistikBencana::class, [['stok', '<=', 10]]);
+            $distribusiBulanIni = $this->getSumSafely(DistribusiLogistik::class, 'jumlah', [
+                ['created_at', '>=', now()->startOfMonth()],
+                ['created_at', '<=', now()->endOfMonth()]
+            ]);
 
-        return view('admin.dashboard', [
-            // Statistics cards
-            'totalWarga' => $totalWarga,
-            'totalUser' => $totalUser,
-            'totalKejadian' => $totalKejadian,
-            'totalPosko' => $totalPosko,
-            'totalDonasi' => $totalDonasi,
-            'totalLogistik' => $totalLogistik,
+            return view('admin.dashboard', [
+                // Statistics cards
+                'totalWarga' => $totalWarga,
+                'totalUser' => $totalUser,
+                'totalKejadian' => $totalKejadian,
+                'totalPosko' => $totalPosko,
+                'totalDonasi' => $totalDonasi,
+                'totalLogistik' => $totalLogistik,
 
-            // Informasi donasi
-            'totalDonasiUang' => $totalDonasiUang,
-            'totalDonasiBarang' => $totalDonasiBarang,
-            'totalDonatur' => $totalDonatur,
-            'donasiBulanIni' => $donasiBulanIni,
+                // Informasi donasi
+                'totalDonasiUang' => $totalDonasiUang,
+                'totalDonasiBarang' => $totalDonasiBarang,
+                'totalDonatur' => $totalDonatur,
+                'donasiBulanIni' => $donasiBulanIni,
 
-            // Informasi logistik
-            'totalStokLogistik' => $totalStokLogistik,
-            'totalDistribusi' => $totalDistribusi,
-            'stokMenipis' => $stokMenipis,
-            'distribusiBulanIni' => $distribusiBulanIni,
+                // Informasi logistik
+                'totalStokLogistik' => $totalStokLogistik,
+                'totalDistribusi' => $totalDistribusi,
+                'stokMenipis' => $stokMenipis,
+                'distribusiBulanIni' => $distribusiBulanIni,
 
-            // FOTO SLIDER
-            'fotoKejadian' => Media::where('ref_table', 'kejadian_bencana')
-                                   ->orderBy('created_at', 'desc')
-                                   ->take(8)
-                                   ->get(),
+                // FOTO SLIDER - with error handling for missing media table
+                'fotoKejadian' => $this->getMediaSafely('kejadian_bencana'),
 
-            // DATA KEJADIAN TERBARU
-            'kejadianTerbaru' => KejadianBencana::orderBy('created_at', 'desc')
-                                                ->take(5)
-                                                ->get(),
-        ]);
+                // DATA KEJADIAN TERBARU
+                'kejadianTerbaru' => $this->getDataSafely(KejadianBencana::class, 5),
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Dashboard error: ' . $e->getMessage());
+            
+            // Return dashboard with empty/default values if there's an error
+            return view('admin.dashboard', [
+                'totalWarga' => 0,
+                'totalUser' => 0,
+                'totalKejadian' => 0,
+                'totalPosko' => 0,
+                'totalDonasi' => 0,
+                'totalLogistik' => 0,
+                'totalDonasiUang' => 0,
+                'totalDonasiBarang' => 0,
+                'totalDonatur' => 0,
+                'donasiBulanIni' => 0,
+                'totalStokLogistik' => 0,
+                'totalDistribusi' => 0,
+                'stokMenipis' => 0,
+                'distribusiBulanIni' => 0,
+                'fotoKejadian' => collect([]),
+                'kejadianTerbaru' => collect([]),
+            ]);
+        }
     }
 
     /**
@@ -124,5 +145,123 @@ class DashboardAdminController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    /**
+     * Safely get media data, return empty collection if table doesn't exist
+     */
+    private function getMediaSafely($refTable, $limit = 8)
+    {
+        try {
+            return Media::where('ref_table', $refTable)
+                       ->orderBy('created_at', 'desc')
+                       ->take($limit)
+                       ->get();
+        } catch (\Illuminate\Database\QueryException $e) {
+            // If media table doesn't exist, return empty collection
+            if (strpos($e->getMessage(), "doesn't exist") !== false) {
+                \Log::warning("Media table doesn't exist, returning empty collection");
+                return collect([]);
+            }
+            throw $e; // Re-throw if it's a different error
+        }
+    }
+
+    /**
+     * Safely get count from a model, return 0 if table doesn't exist
+     */
+    private function getCountSafely($modelClass, $conditions = [])
+    {
+        try {
+            $query = $modelClass::query();
+            
+            if (!empty($conditions)) {
+                if (is_array($conditions) && isset($conditions[0]) && is_array($conditions[0])) {
+                    // Multiple conditions
+                    foreach ($conditions as $condition) {
+                        $query->where($condition[0], $condition[1] ?? '=', $condition[2] ?? $condition[1]);
+                    }
+                } else {
+                    // Single condition as key-value pairs
+                    foreach ($conditions as $key => $value) {
+                        $query->where($key, $value);
+                    }
+                }
+            }
+            
+            return $query->count();
+        } catch (\Illuminate\Database\QueryException $e) {
+            if (strpos($e->getMessage(), "doesn't exist") !== false) {
+                \Log::warning("Table doesn't exist for count query: " . $modelClass);
+                return 0;
+            }
+            throw $e;
+        }
+    }
+
+    /**
+     * Safely get sum from a model, return 0 if table doesn't exist
+     */
+    private function getSumSafely($modelClass, $column, $conditions = [])
+    {
+        try {
+            $query = $modelClass::query();
+            
+            if (!empty($conditions)) {
+                if (is_array($conditions) && isset($conditions[0]) && is_array($conditions[0])) {
+                    // Multiple conditions
+                    foreach ($conditions as $condition) {
+                        $query->where($condition[0], $condition[1] ?? '=', $condition[2] ?? $condition[1]);
+                    }
+                } else {
+                    // Single condition as key-value pairs
+                    foreach ($conditions as $key => $value) {
+                        $query->where($key, $value);
+                    }
+                }
+            }
+            
+            return $query->sum($column) ?? 0;
+        } catch (\Illuminate\Database\QueryException $e) {
+            if (strpos($e->getMessage(), "doesn't exist") !== false) {
+                \Log::warning("Table doesn't exist for sum query: " . $modelClass);
+                return 0;
+            }
+            throw $e;
+        }
+    }
+
+    /**
+     * Safely get distinct count from a model, return 0 if table doesn't exist
+     */
+    private function getDistinctCountSafely($modelClass, $column)
+    {
+        try {
+            return $modelClass::distinct($column)->count($column);
+        } catch (\Illuminate\Database\QueryException $e) {
+            if (strpos($e->getMessage(), "doesn't exist") !== false) {
+                \Log::warning("Table doesn't exist for distinct count query: " . $modelClass);
+                return 0;
+            }
+            throw $e;
+        }
+    }
+
+    /**
+     * Safely get data from a model, return empty collection if table doesn't exist
+     */
+    private function getDataSafely($modelClass, $limit = 5)
+    {
+        try {
+            return $modelClass::orderBy('created_at', 'desc')
+                             ->take($limit)
+                             ->get();
+        } catch (\Illuminate\Database\QueryException $e) {
+            if (strpos($e->getMessage(), "doesn't exist") !== false) {
+                \Log::warning("Table doesn't exist for data query: " . $modelClass);
+                return collect([]);
+            }
+            throw $e;
+        }
     }
 }

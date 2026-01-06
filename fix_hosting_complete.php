@@ -42,8 +42,35 @@ try {
         echo "<p style='color: orange;'>⚠️ Sessions table: " . $e->getMessage() . "</p>";
     }
     
-    // 2. Check all required tables
-    echo "<h2>2. Checking Required Tables</h2>";
+    // 2. Check all required tables and create missing ones
+    echo "<h2>2. Creating Missing Tables</h2>";
+    
+    // Create media table if it doesn't exist
+    try {
+        $sql = "
+        CREATE TABLE IF NOT EXISTS `media` (
+          `media_id` bigint unsigned NOT NULL AUTO_INCREMENT,
+          `ref_table` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+          `ref_id` bigint unsigned NOT NULL,
+          `file_url` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+          `caption` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+          `mime_type` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+          `sort_order` int NOT NULL DEFAULT '0',
+          `created_at` timestamp NULL DEFAULT NULL,
+          `updated_at` timestamp NULL DEFAULT NULL,
+          PRIMARY KEY (`media_id`),
+          KEY `media_ref_table_ref_id_index` (`ref_table`,`ref_id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+        ";
+        
+        $pdo->exec($sql);
+        echo "<p style='color: green;'>✅ Media table created/verified!</p>";
+    } catch (Exception $e) {
+        echo "<p style='color: orange;'>⚠️ Media table: " . $e->getMessage() . "</p>";
+    }
+    
+    // Check all required tables
+    echo "<h3>Checking Required Tables</h3>";
     $requiredTables = [
         'users', 'warga', 'kejadian_bencana', 'posko_bencana', 
         'donasi_bencana', 'logistik_bencana', 'distribusi_logistik', 
