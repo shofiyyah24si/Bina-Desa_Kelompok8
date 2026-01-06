@@ -9,13 +9,24 @@ class Warga extends Model
     protected $table = 'warga';
     protected $primaryKey = 'warga_id';
     protected $fillable = [
-        'no_ktp',
         'nama',
-        'jenis_kelamin',
-        'agama',
-        'pekerjaan',
-        'telp',
-        'email',
-        'foto_profil',
+        'nik',
+        'alamat',
+        'rt',
+        'rw',
+        'no_hp',
+        'foto',
     ];
+
+    /**
+     * Get foto safely with fallback
+     */
+    public function getFotoSafely()
+    {
+        try {
+            return $this->foto ?? null;
+        } catch (\Exception $e) {
+            return null;
+        }
+    }
 }

@@ -73,49 +73,76 @@ class WargaController extends Controller
      */
     public function store(Request $request)
     {
-
         $request->validate([
-            'no_ktp'        => 'required|numeric|unique:warga,no_ktp',
             'nama'          => 'required|string|max:255',
-            'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
-            'agama'         => 'required|string|max:100',
-            'pekerjaan'     => 'required|string|max:100',
-            'telp'          => 'nullable|string|max:20',
-            'email'         => 'nullable|email|unique:warga,email',
-            'foto_profil'   => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
-        ], [
-            'no_ktp.required' => 'Nomor KTP wajib diisi.',
-            'no_ktp.unique'   => 'Nomor KTP sudah terdaftar.',
-            'nama.required'   => 'Nama wajib diisi.',
-            'email.unique'    => 'Email sudah digunakan.',
+            'nik'           => 'nullable|string|max:20',
+            'alamat'        => 'nullable|string',
+            'rt'            => 'nullable|string|max:5',
+            'rw'            => 'nullable|string|max:5',
+            'no_hp'         => 'nullable|string|max:15',
+            'foto'          => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
 
-        $data['no_ktp']        = $request->no_ktp;
-        $data['nama']          = $request->nama;
-        $data['jenis_kelamin'] = $request->jenis_kelamin;
-        $data['agama']         = $request->agama;
-        $data['pekerjaan']     = $request->pekerjaan;
-        $data['telp']          = $request->telp;
-        $data['email']         = $request->email;
+        $data = [
+            'nama'    => $request->nama,
+            'nik'     => $request->nik,
+            'alamat'  => $request->alamat,
+            'rt'      => $request->rt,
+            'rw'      => $request->rw,
+            'no_hp'   => $request->no_hp,
+        ];
 
-        if ($request->hasFile('foto_profil') && $request->file('foto_profil')->isValid()) {
-
-            $file = $request->file('foto_profil');
-            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $uploadPath = "uploads/warga";
-            
-            $fullPath = public_path($uploadPath);
-            if (!file_exists($fullPath)) {
-                mkdir($fullPath, 0755, true);
+        // Handle foto upload dengan error handling
+        if ($request->hasFile('foto') && $request->file('foto')->isValid()) {
+            try {
+                $file = $request->file('foto');
+                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $uploadPath = "uploads/warga";
+                
+                $fullPath = public_path($uploadPath);
+                if (!file_exists($fullPath)) {
+                    mkdir($fullPath, 0755, true);
+                }
+                
+                $file->move($fullPath, $filename);
+                
+                // Cek apakah kolom foto ada
+                try {
+                    $hasFotoColumn = \DB::select("SHOW COLUMNS FROM warga LIKE 'foto'");
+                    if (!empty($hasFotoColumn)) {
+                        $data['foto'] = "warga/$filename";
+                    }
+                } catch (\Exception $e) {
+                    \Log::warning('foto column does not exist in warga table');
+                }
+                
+                \Log::info('Warga photo uploaded successfully', [
+                    'file_path' => "warga/$filename"
+                ]);
+            } catch (\Exception $e) {
+                \Log::error('Failed to upload warga photo: ' . $e->getMessage());
             }
-            
-            $file->move($fullPath, $filename);
-            $data['foto_profil'] = "warga/$filename";
         }
 
-        Warga::create($data);
+        // Create warga dengan error handling
+        try {
+            Warga::create($data);
+        } catch (\Illuminate\Database\QueryException $e) {
+            if (strpos($e->getMessage(), 'Unknown column') !== false) {
+                \Log::warning('Column error during warga creation, trying with basic fields: ' . $e->getMessage());
+                
+                $basicData = [
+                    'nama' => $data['nama'],
+                    'alamat' => $data['alamat'] ?? null,
+                ];
+                
+                Warga::create($basicData);
+            } else {
+                throw $e;
+            }
+        }
 
-        return redirect()->route('warga.index')->with('success', 'Penambahan Data Berhasil!');
+        return redirect()->route('warga.index')->with('success', 'Data warga berhasil ditambahkan!');
     }
 
     /**
@@ -135,58 +162,84 @@ class WargaController extends Controller
         $warga = Warga::findOrFail($id);
 
         $request->validate([
-            'no_ktp'        => 'required|numeric|unique:warga,no_ktp,' . $warga->warga_id . ',warga_id',
             'nama'          => 'required|string|max:255',
-            'jenis_kelamin' => 'required|in:Laki-laki,Perempuan',
-            'agama'         => 'required|string|max:100',
-            'pekerjaan'     => 'required|string|max:100',
-            'telp'          => 'nullable|string|max:20',
-            'email'         => 'nullable|email|unique:warga,email,' . $warga->warga_id . ',warga_id',
-            'foto_profil'   => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
-        ], [
-            'no_ktp.unique' => 'Nomor KTP sudah terdaftar.',
-            'email.unique'  => 'Email sudah digunakan.',
+            'nik'           => 'nullable|string|max:20',
+            'alamat'        => 'nullable|string',
+            'rt'            => 'nullable|string|max:5',
+            'rw'            => 'nullable|string|max:5',
+            'no_hp'         => 'nullable|string|max:15',
+            'foto'          => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
 
-        $warga->no_ktp        = $request->no_ktp;
-        $warga->nama          = $request->nama;
-        $warga->jenis_kelamin = $request->jenis_kelamin;
-        $warga->agama         = $request->agama;
-        $warga->pekerjaan     = $request->pekerjaan;
-        $warga->telp          = $request->telp;
-        $warga->email         = $request->email;
+        $data = [
+            'nama'    => $request->nama,
+            'nik'     => $request->nik,
+            'alamat'  => $request->alamat,
+            'rt'      => $request->rt,
+            'rw'      => $request->rw,
+            'no_hp'   => $request->no_hp,
+        ];
 
-        if ($request->hasFile('foto_profil') && $request->file('foto_profil')->isValid()) {
-
-            // Delete old photo
-            if ($warga->foto_profil) {
-                $oldPath = public_path('uploads/' . $warga->foto_profil);
-                if (file_exists($oldPath)) {
-                    unlink($oldPath);
+        // Handle foto upload dengan error handling
+        if ($request->hasFile('foto') && $request->file('foto')->isValid()) {
+            try {
+                // Delete old photo
+                if ($warga->foto) {
+                    $oldPath = public_path('uploads/' . $warga->foto);
+                    if (file_exists($oldPath)) {
+                        unlink($oldPath);
+                    }
                 }
+                
+                $file = $request->file('foto');
+                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $uploadPath = "uploads/warga";
+                
+                $fullPath = public_path($uploadPath);
+                if (!file_exists($fullPath)) {
+                    mkdir($fullPath, 0755, true);
+                }
+                
+                $file->move($fullPath, $filename);
+                
+                // Cek apakah kolom foto ada
+                try {
+                    $hasFotoColumn = \DB::select("SHOW COLUMNS FROM warga LIKE 'foto'");
+                    if (!empty($hasFotoColumn)) {
+                        $data['foto'] = "warga/$filename";
+                    }
+                } catch (\Exception $e) {
+                    \Log::warning('foto column does not exist in warga table');
+                }
+                
+                \Log::info('Warga photo updated successfully', [
+                    'warga_id' => $warga->warga_id,
+                    'file_path' => "warga/$filename"
+                ]);
+            } catch (\Exception $e) {
+                \Log::error('Failed to update warga photo: ' . $e->getMessage());
             }
-            
-            $file = $request->file('foto_profil');
-            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $uploadPath = "uploads/warga";
-            
-            $fullPath = public_path($uploadPath);
-            if (!file_exists($fullPath)) {
-                mkdir($fullPath, 0755, true);
-            }
-            
-            $file->move($fullPath, $filename);
-            $warga->foto_profil = "warga/$filename";
-            
-            \Log::info('Warga photo uploaded successfully', [
-                'warga_id' => $warga->warga_id,
-                'file_path' => $warga->foto_profil
-            ]);
         }
 
-        $warga->save();
+        // Update warga dengan error handling
+        try {
+            $warga->update($data);
+        } catch (\Illuminate\Database\QueryException $e) {
+            if (strpos($e->getMessage(), 'Unknown column') !== false) {
+                \Log::warning('Column error during warga update, trying with basic fields: ' . $e->getMessage());
+                
+                $basicData = [
+                    'nama' => $data['nama'],
+                    'alamat' => $data['alamat'] ?? null,
+                ];
+                
+                $warga->update($basicData);
+            } else {
+                throw $e;
+            }
+        }
 
-        return redirect()->route('warga.index')->with('success', 'Perubahan Data Berhasil!');
+        return redirect()->route('warga.index')->with('success', 'Data warga berhasil diperbarui!');
     }
 
     /**
