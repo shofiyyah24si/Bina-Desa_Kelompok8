@@ -28,13 +28,14 @@ class CreateLogistikDummy extends Seeder
         // ⬇️ MASUKKAN 5 DATA SAJA
         for ($i = 1; $i <= 5; $i++) {
             DB::table('logistik_bencana')->insert([
-                'kejadian_id' => $kejadianIds->random(),
-                'nama_barang' => $barangList[array_rand($barangList)],
-                'satuan'      => 'Unit',
-                'stok'        => rand(50, 300),
-                'sumber'      => 'Donasi Warga / Pemerintah',
-                'created_at'  => now(),
-                'updated_at'  => now(),
+                'kejadian_id'    => $kejadianIds->random(),
+                'nama_barang'    => $barangList[array_rand($barangList)],
+                'satuan'         => 'Unit',
+                'stok'           => rand(50, 300),
+                'sumber'         => 'Donasi Warga / Pemerintah',
+                'tanggal_masuk'  => now()->toDateString(), // ⬅️ WAJIB
+                'created_at'     => now(),
+                'updated_at'     => now(),
             ]);
         }
 
