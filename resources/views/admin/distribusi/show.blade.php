@@ -13,11 +13,11 @@
         <table class="table table-bordered">
             <tr>
                 <th width="200">Logistik</th>
-                <td>{{ $item->logistik->nama_barang }}</td>
+                <td>{{ $item->logistik ? $item->logistik->nama_barang : 'Logistik tidak ditemukan' }}</td>
             </tr>
             <tr>
                 <th>Posko</th>
-                <td>{{ $item->posko->nama }}</td>
+                <td>{{ $item->posko ? $item->posko->nama : 'Posko tidak ditemukan' }}</td>
             </tr>
             <tr>
                 <th>Tanggal</th>

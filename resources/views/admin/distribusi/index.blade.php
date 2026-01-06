@@ -325,14 +325,14 @@
                         <td>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <i class="fas fa-box text-primary"></i>
-                                <strong style="color: #191B47;">{{ $row->logistik->nama_barang }}</strong>
+                                <strong style="color: #191B47;">{{ $row->logistik ? $row->logistik->nama_barang : 'Logistik tidak ditemukan' }}</strong>
                             </div>
                         </td>
 
                         <td>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <i class="fas fa-home text-success"></i>
-                                {{ $row->posko->nama }}
+                                {{ $row->posko ? $row->posko->nama : 'Posko tidak ditemukan' }}
                             </div>
                         </td>
 
@@ -383,7 +383,7 @@
                                     @csrf
                                     @method('DELETE')
                                     <button style="padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; border: none; transition: all .3s; margin: 0 2px; background: #f87171; color: #991b1b; display: inline-flex; align-items: center; justify-content: center; min-width: 36px; min-height: 36px;"
-                                            onclick="return confirm('⚠️ Yakin ingin menghapus distribusi {{ $row->logistik->nama_barang }}?\n\nData yang dihapus tidak dapat dikembalikan!')"
+                                            onclick="return confirm('⚠️ Yakin ingin menghapus distribusi {{ $row->logistik ? $row->logistik->nama_barang : 'ini' }}?\n\nData yang dihapus tidak dapat dikembalikan!')"
                                             title="Hapus Distribusi"
                                             onmouseover="this.style.background='#ef4444'; this.style.color='white'; this.style.transform='translateY(-1px)'"
                                             onmouseout="this.style.background='#f87171'; this.style.color='#991b1b'; this.style.transform='translateY(0)'">
