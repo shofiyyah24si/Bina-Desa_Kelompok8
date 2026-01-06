@@ -158,6 +158,7 @@ class WargaController extends Controller
 
         if ($request->hasFile('foto_profil') && $request->file('foto_profil')->isValid()) {
 
+            // Delete old photo
             if ($warga->foto_profil) {
                 $oldPath = public_path('uploads/' . $warga->foto_profil);
                 if (file_exists($oldPath)) {

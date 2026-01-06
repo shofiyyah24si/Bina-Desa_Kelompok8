@@ -35,7 +35,7 @@ trait HasMedia
                 'mime_type' => $file->getClientMimeType() ?? 'image/jpeg',
             ]);
         } else {
-            // Local storage (existing code)
+            // Local storage (back to original system)
             $uploadPath = "uploads/$folder";
             
             // Ensure directory exists

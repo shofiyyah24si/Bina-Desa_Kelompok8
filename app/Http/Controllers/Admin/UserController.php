@@ -107,6 +107,7 @@ class UserController extends Controller
 
         if ($request->hasFile('foto_profil') && $request->file('foto_profil')->isValid()) {
     
+            // Delete old photo
             if ($user->foto_profil) {
                 $oldPath = public_path('uploads/' . $user->foto_profil);
                 if (file_exists($oldPath)) {
@@ -148,7 +149,10 @@ class UserController extends Controller
         }
 
         if ($user->foto_profil) {
-            Storage::disk('public')->delete($user->foto_profil);
+            $oldPath = public_path('uploads/' . $user->foto_profil);
+            if (file_exists($oldPath)) {
+                unlink($oldPath);
+            }
         }
 
         $user->delete();

@@ -18,11 +18,6 @@ class ImageHelper
             return $path;
         }
 
-        // For storage paths (storage/...)
-        if (str_starts_with($path, 'storage/')) {
-            return asset($path);
-        }
-
         // For uploads paths - these are typically media files stored in public/uploads
         if (str_starts_with($path, 'uploads/')) {
             return asset($path);
@@ -32,11 +27,6 @@ class ImageHelper
         // Check if file exists in public/uploads directory first
         if (file_exists(public_path('uploads/' . $path))) {
             return asset('uploads/' . $path);
-        }
-
-        // Check if file exists in storage directory
-        if (file_exists(storage_path('app/public/' . $path))) {
-            return asset('storage/' . $path);
         }
 
         // Try shared storage URL for guest access (for AlwaysData hosting)
@@ -63,11 +53,6 @@ class ImageHelper
             return true;
         }
 
-        // Check in storage/app/public
-        if (file_exists(storage_path('app/public/' . $path))) {
-            return true;
-        }
-
         return false;
     }
 
@@ -85,23 +70,9 @@ class ImageHelper
             return $path;
         }
 
-        // For Laravel storage paths (stored as uploads/users/filename.jpg)
-        // These are stored in storage/app/public/uploads/users/filename.jpg
-        // and accessed via storage/uploads/users/filename.jpg
+        // For Laravel paths (stored as uploads/users/filename.jpg or users/filename.jpg)
         if (str_starts_with($path, 'uploads/')) {
-            // Check if file exists in storage
-            $storagePath = storage_path('app/public/' . $path);
-            if (file_exists($storagePath)) {
-                $url = asset('storage/' . $path);
-                
-                // Add cache busting parameter based on file modification time
-                $timestamp = filemtime($storagePath);
-                $url .= '?v=' . $timestamp;
-                
-                return $url;
-            }
-            
-            // Check if file exists in public uploads (backup location)
+            // Check if file exists in public uploads
             $publicPath = public_path($path);
             if (file_exists($publicPath)) {
                 $url = asset($path);
@@ -109,11 +80,15 @@ class ImageHelper
                 $url .= '?v=' . $timestamp;
                 return $url;
             }
-        }
-
-        // For direct storage paths
-        if (str_starts_with($path, 'storage/')) {
-            return asset($path);
+        } else {
+            // Check if file exists in public/uploads/path
+            $publicPath = public_path('uploads/' . $path);
+            if (file_exists($publicPath)) {
+                $url = asset('uploads/' . $path);
+                $timestamp = filemtime($publicPath);
+                $url .= '?v=' . $timestamp;
+                return $url;
+            }
         }
 
         // If no file found, return fallback
