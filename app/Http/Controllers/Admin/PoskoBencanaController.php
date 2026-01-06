@@ -65,92 +65,66 @@ class PoskoBencanaController extends Controller
             'alamat'      => 'nullable|string',
             'kontak'      => 'nullable|string|max:30',
             'penanggung_jawab' => 'nullable|string|max:150',
-            'foto_profil' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+            'foto.*'      => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         \Log::info('PoskoBencana store request', [
-            'request_data' => $request->except('foto_profil'),
-            'has_photo' => $request->hasFile('foto_profil')
+            'request_data' => $request->except('foto'),
+            'has_photo' => $request->hasFile('foto')
         ]);
 
-        // Cek kolom yang tersedia di database
-        $availableColumns = [];
-        try {
-            $columns = \DB::select("SHOW COLUMNS FROM posko_bencana");
-            foreach ($columns as $column) {
-                $availableColumns[] = $column->Field;
-            }
-        } catch (\Exception $e) {
-            \Log::error('Failed to get posko_bencana table columns: ' . $e->getMessage());
-            $availableColumns = ['kejadian_id', 'nama']; // fallback minimal
-        }
+        // Simpan data posko dulu
+        $posko = PoskoBencana::create($request->except('foto'));
 
-        \Log::info('Available posko_bencana columns', ['columns' => $availableColumns]);
-
-        // Siapkan data dasar - hanya kolom yang ada
-        $data = [];
-        
-        // Kolom wajib
-        $data['kejadian_id'] = $request->kejadian_id;
-        $data['nama'] = $request->nama;
-        
-        // Kolom opsional
-        $optionalFields = [
-            'alamat' => $request->alamat,
-            'kontak' => $request->kontak,
-            'penanggung_jawab' => $request->penanggung_jawab,
-        ];
-        
-        foreach ($optionalFields as $field => $value) {
-            if (in_array($field, $availableColumns) && $value !== null) {
-                $data[$field] = $value;
-            }
-        }
-
-        // Handle foto upload dengan sistem public/uploads
-        if ($request->hasFile('foto_profil') && $request->file('foto_profil')->isValid()) {
+        // Upload multiple foto dengan mekanisme yang sama seperti KejadianBencana
+        if ($request->hasFile('foto')) {
             try {
-                $file = $request->file('foto_profil');
-                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-                $uploadPath = "uploads/posko_bencana";
-                
-                // Pastikan folder ada
-                $fullPath = public_path($uploadPath);
-                if (!file_exists($fullPath)) {
-                    mkdir($fullPath, 0755, true);
+                foreach ($request->file('foto') as $index => $file) {
+                    if ($file->isValid()) {
+                        // Simpan file ke public/uploads/posko_bencana (sama seperti KejadianBencana)
+                        $filename = time() . '_' . $index . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                        $uploadPath = "uploads/posko_bencana";
+                        
+                        // Pastikan folder ada (sama seperti KejadianBencana)
+                        $fullPath = public_path($uploadPath);
+                        if (!file_exists($fullPath)) {
+                            mkdir($fullPath, 0755, true);
+                        }
+                        
+                        // Upload file (sama seperti KejadianBencana)
+                        $file->move($fullPath, $filename);
+                        
+                        // Simpan ke tabel media (sama seperti KejadianBencana)
+                        \App\Models\Media::create([
+                            'ref_table' => 'posko_bencana',
+                            'ref_id' => $posko->posko_id,
+                            'file_url' => "posko_bencana/$filename",
+                            'caption' => null,
+                            'mime_type' => $file->getClientMimeType(),
+                            'sort_order' => $index
+                        ]);
+                    }
                 }
                 
-                // Upload file
-                $file->move($fullPath, $filename);
-                
-                // Simpan path foto hanya jika kolom foto_profil ada
-                if (in_array('foto_profil', $availableColumns)) {
-                    $data['foto_profil'] = "posko_bencana/$filename";
-                }
-                
-                \Log::info('PoskoBencana photo uploaded successfully', [
-                    'filename' => $filename,
-                    'file_path' => "posko_bencana/$filename",
-                    'foto_profil_column_exists' => in_array('foto_profil', $availableColumns)
+                \Log::info('Posko photos uploaded successfully', [
+                    'posko_id' => $posko->posko_id,
+                    'photo_count' => count($request->file('foto'))
                 ]);
+                
             } catch (\Exception $e) {
-                \Log::error('Failed to upload posko photo: ' . $e->getMessage());
-                return back()->withInput()->with('error', 'Gagal mengupload foto: ' . $e->getMessage());
+                \Log::error('Failed to upload posko photos', [
+                    'error' => $e->getMessage(),
+                    'posko_id' => $posko->posko_id
+                ]);
+                
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Gagal mengupload foto: ' . $e->getMessage());
             }
         }
 
-        \Log::info('Creating posko with data', ['data' => $data]);
-
-        // Simpan data posko
-        try {
-            $posko = PoskoBencana::create($data);
-            \Log::info('PoskoBencana created successfully', ['posko_id' => $posko->posko_id]);
-            
-            return redirect()->route('posko.index')->with('success', 'Data posko berhasil ditambahkan!');
-        } catch (\Exception $e) {
-            \Log::error('Failed to create posko', ['error' => $e->getMessage()]);
-            return back()->withInput()->with('error', 'Gagal menyimpan data posko: ' . $e->getMessage());
-        }
+        return redirect()->route('posko.index')
+            ->with('success', 'Data posko berhasil ditambahkan!');
     }
 
     public function show($id)
@@ -177,115 +151,99 @@ class PoskoBencanaController extends Controller
             'alamat'      => 'nullable|string',
             'kontak'      => 'nullable|string|max:30',
             'penanggung_jawab' => 'nullable|string|max:150',
-            'foto_profil' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
+            'foto.*'      => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'delete_foto' => 'nullable|array',
         ]);
 
         \Log::info('PoskoBencana update request', [
             'posko_id' => $id,
-            'request_data' => $request->except('foto_profil'),
-            'has_photo' => $request->hasFile('foto_profil')
+            'request_data' => $request->except('foto'),
+            'has_photo' => $request->hasFile('foto')
         ]);
 
-        // Cek kolom yang tersedia di database
-        $availableColumns = [];
-        try {
-            $columns = \DB::select("SHOW COLUMNS FROM posko_bencana");
-            foreach ($columns as $column) {
-                $availableColumns[] = $column->Field;
-            }
-        } catch (\Exception $e) {
-            \Log::error('Failed to get posko_bencana table columns: ' . $e->getMessage());
-            $availableColumns = ['kejadian_id', 'nama']; // fallback minimal
-        }
+        // Update data utama
+        $posko->update($request->except('foto', 'delete_foto'));
 
-        \Log::info('Available posko_bencana columns', ['columns' => $availableColumns]);
-
-        // Siapkan data dasar - hanya kolom yang ada
-        $data = [];
-        
-        // Kolom wajib
-        $data['kejadian_id'] = $request->kejadian_id;
-        $data['nama'] = $request->nama;
-        
-        // Kolom opsional
-        $optionalFields = [
-            'alamat' => $request->alamat,
-            'kontak' => $request->kontak,
-            'penanggung_jawab' => $request->penanggung_jawab,
-        ];
-        
-        foreach ($optionalFields as $field => $value) {
-            if (in_array($field, $availableColumns) && $value !== null) {
-                $data[$field] = $value;
+        // Hapus foto yang dipilih
+        if ($request->delete_foto) {
+            foreach ($request->delete_foto as $mediaId) {
+                \Log::info('Deleting media', ['media_id' => $mediaId]);
+                
+                // Hapus file fisik dan record media (sama seperti KejadianBencana)
+                $media = \App\Models\Media::where('media_id', $mediaId)
+                    ->where('ref_table', 'posko_bencana')
+                    ->where('ref_id', $posko->posko_id)
+                    ->first();
+                    
+                if ($media) {
+                    $filePath = public_path('uploads/' . $media->file_url);
+                    if (file_exists($filePath)) {
+                        unlink($filePath);
+                    }
+                    $media->delete();
+                }
             }
         }
 
-        // Handle foto upload dengan sistem public/uploads
-        if ($request->hasFile('foto_profil') && $request->file('foto_profil')->isValid()) {
+        // Upload foto baru dengan mekanisme yang sama seperti KejadianBencana
+        if ($request->hasFile('foto')) {
+            \Log::info('Processing file uploads', ['files_count' => count($request->file('foto'))]);
             try {
-                // Hapus foto lama jika ada dan kolom foto_profil tersedia
-                if (in_array('foto_profil', $availableColumns) && $posko->foto_profil) {
-                    $oldPath = public_path('uploads/' . $posko->foto_profil);
-                    if (file_exists($oldPath)) {
-                        unlink($oldPath);
-                        \Log::info('Old posko photo deleted', ['old_path' => $oldPath]);
+                foreach ($request->file('foto') as $index => $file) {
+                    if ($file->isValid()) {
+                        // Simpan file ke public/uploads/posko_bencana (sama seperti KejadianBencana)
+                        $filename = time() . '_' . $index . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                        $uploadPath = "uploads/posko_bencana";
+                        
+                        // Pastikan folder ada (sama seperti KejadianBencana)
+                        $fullPath = public_path($uploadPath);
+                        if (!file_exists($fullPath)) {
+                            mkdir($fullPath, 0755, true);
+                        }
+                        
+                        // Upload file (sama seperti KejadianBencana)
+                        $file->move($fullPath, $filename);
+                        
+                        // Simpan ke tabel media (sama seperti KejadianBencana)
+                        \App\Models\Media::create([
+                            'ref_table' => 'posko_bencana',
+                            'ref_id' => $posko->posko_id,
+                            'file_url' => "posko_bencana/$filename",
+                            'caption' => null,
+                            'mime_type' => $file->getClientMimeType(),
+                            'sort_order' => $index
+                        ]);
+                        
+                        \Log::info('Photo uploaded successfully', ['filename' => $filename]);
                     }
                 }
-                
-                $file = $request->file('foto_profil');
-                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-                $uploadPath = "uploads/posko_bencana";
-                
-                // Pastikan folder ada
-                $fullPath = public_path($uploadPath);
-                if (!file_exists($fullPath)) {
-                    mkdir($fullPath, 0755, true);
-                }
-                
-                // Upload file
-                $file->move($fullPath, $filename);
-                
-                // Simpan path foto hanya jika kolom foto_profil ada
-                if (in_array('foto_profil', $availableColumns)) {
-                    $data['foto_profil'] = "posko_bencana/$filename";
-                }
-                
-                \Log::info('PoskoBencana photo updated successfully', [
-                    'posko_id' => $id,
-                    'filename' => $filename,
-                    'file_path' => "posko_bencana/$filename",
-                    'foto_profil_column_exists' => in_array('foto_profil', $availableColumns)
-                ]);
             } catch (\Exception $e) {
-                \Log::error('Failed to update posko photo: ' . $e->getMessage());
-                return back()->withInput()->with('error', 'Gagal mengupload foto: ' . $e->getMessage());
+                \Log::error('Photo upload failed', ['error' => $e->getMessage()]);
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Gagal mengupload foto: ' . $e->getMessage());
             }
         }
 
-        \Log::info('Updating posko with data', ['posko_id' => $id, 'data' => $data]);
-
-        // Update data posko
-        try {
-            $posko->update($data);
-            \Log::info('PoskoBencana updated successfully', ['posko_id' => $id]);
-            
-            return redirect()->route('posko.index')->with('success', 'Data posko berhasil diperbarui!');
-        } catch (\Exception $e) {
-            \Log::error('Failed to update posko', ['error' => $e->getMessage()]);
-            return back()->withInput()->with('error', 'Gagal mengupdate data posko: ' . $e->getMessage());
-        }
+        return redirect()->route('posko.index')
+            ->with('success', 'Data posko berhasil diperbarui!');
     }
 
     public function destroy($id)
     {
         $posko = PoskoBencana::findOrFail($id);
 
-        // Hapus foto jika ada
-        if ($posko->foto_profil) {
-            $oldPath = public_path('uploads/' . $posko->foto_profil);
-            if (file_exists($oldPath)) {
-                unlink($oldPath);
+        // Hapus semua foto (sama seperti KejadianBencana)
+        $mediaItems = \App\Models\Media::where('ref_table', 'posko_bencana')
+            ->where('ref_id', $posko->posko_id)
+            ->get();
+            
+        foreach ($mediaItems as $media) {
+            $filePath = public_path('uploads/' . $media->file_url);
+            if (file_exists($filePath)) {
+                unlink($filePath);
             }
+            $media->delete();
         }
 
         $posko->delete();
