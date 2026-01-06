@@ -85,8 +85,17 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => $request->role,
         ];
+
+        // Check if role column exists before adding it
+        try {
+            $columns = \Schema::getColumnListing('users');
+            if (in_array('role', $columns)) {
+                $data['role'] = $request->role;
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Could not check users table columns: ' . $e->getMessage());
+        }
 
         // Handle foto profil upload - konsisten dengan UserController
         if ($request->hasFile('foto_profil') && $request->file('foto_profil')->isValid()) {
