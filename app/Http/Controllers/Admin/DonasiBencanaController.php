@@ -74,6 +74,7 @@ class DonasiBencanaController extends Controller
             'donatur_nama' => 'nullable|string|max:150',
             'jenis' => 'required|string|in:uang,barang',
             'nilai' => 'nullable|numeric|min:0',
+            'nilai_barang' => 'nullable|numeric|min:0',
             'keterangan_barang' => 'nullable|string|max:1000',
             'foto.*' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
@@ -92,17 +93,20 @@ class DonasiBencanaController extends Controller
         }
 
         // Clean data based on jenis
-        $data = $request->except('foto');
+        $data = $request->except(['foto', 'nilai_barang']);
+        
         if ($request->jenis === 'uang') {
             $data['keterangan_barang'] = null;
             // Pastikan nilai ada untuk donasi uang
-            if (!$data['nilai']) {
+            if (empty($data['nilai']) || $data['nilai'] === null) {
                 $data['nilai'] = 0;
             }
         } else {
-            // Untuk donasi barang, set nilai ke 0 jika tidak diisi (bukan null)
-            if (!$data['nilai']) {
-                $data['nilai'] = 0;
+            // Untuk donasi barang, selalu set nilai ke 0
+            $data['nilai'] = 0;
+            // Gunakan nilai_barang jika ada, atau fallback ke 0
+            if ($request->has('nilai_barang')) {
+                $data['nilai'] = (float) $request->nilai_barang;
             }
         }
         
@@ -159,6 +163,7 @@ class DonasiBencanaController extends Controller
             'donatur_nama' => 'nullable|string|max:150',
             'jenis' => 'required|string|in:uang,barang',
             'nilai' => 'nullable|numeric|min:0',
+            'nilai_barang' => 'nullable|numeric|min:0',
             'keterangan_barang' => 'nullable|string|max:1000',
             'delete_foto' => 'nullable|array',
             'foto.*' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
@@ -178,17 +183,20 @@ class DonasiBencanaController extends Controller
         }
 
         // Clean data based on jenis
-        $data = $request->except(['foto','delete_foto']);
+        $data = $request->except(['foto','delete_foto', 'nilai_barang']);
+        
         if ($request->jenis === 'uang') {
             $data['keterangan_barang'] = null;
             // Pastikan nilai ada untuk donasi uang
-            if (!$data['nilai']) {
+            if (empty($data['nilai']) || $data['nilai'] === null) {
                 $data['nilai'] = 0;
             }
         } else {
-            // Untuk donasi barang, set nilai ke 0 jika tidak diisi (bukan null)
-            if (!$data['nilai']) {
-                $data['nilai'] = 0;
+            // Untuk donasi barang, selalu set nilai ke 0
+            $data['nilai'] = 0;
+            // Gunakan nilai_barang jika ada, atau fallback ke 0
+            if ($request->has('nilai_barang')) {
+                $data['nilai'] = (float) $request->nilai_barang;
             }
         }
         

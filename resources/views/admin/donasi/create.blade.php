@@ -88,6 +88,8 @@
                 <i class="fas fa-info-circle"></i>
                 Sebutkan jenis dan jumlah barang yang didonasikan
             </small>
+            <!-- Hidden input untuk nilai barang (always 0) -->
+            <input type="hidden" name="nilai_barang" value="0">
             @error('keterangan_barang')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
@@ -157,9 +159,13 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (jenis === 'barang') {
             fieldBarang.style.display = 'block';
             inputKeterangan.setAttribute('required', 'required');
+            // Clear any existing nilai value and set to 0
+            inputNilai.value = '0';
             // Add hidden nilai field with value 0 for barang
-            const hiddenNilai = document.querySelector('input[name="nilai"][type="hidden"]');
-            if (!hiddenNilai) {
+            let hiddenNilai = document.querySelector('input[name="nilai"][type="hidden"]');
+            if (hiddenNilai) {
+                hiddenNilai.value = '0';
+            } else {
                 const hiddenInput = document.createElement('input');
                 hiddenInput.type = 'hidden';
                 hiddenInput.name = 'nilai';

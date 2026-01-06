@@ -87,6 +87,8 @@
                 <i class="fas fa-info-circle"></i>
                 Sebutkan jenis dan jumlah barang yang didonasikan
             </small>
+            <!-- Hidden input untuk nilai barang (always 0) -->
+            <input type="hidden" name="nilai_barang" value="0">
             @error('keterangan_barang')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
