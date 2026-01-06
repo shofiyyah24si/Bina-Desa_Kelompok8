@@ -27,8 +27,25 @@ class KejadianBencanaController extends Controller
             $query->where('status_kejadian', $request->status);
         }
 
-        // Pagination
-        $kejadian = $query->paginate(10);
+        // Pagination dengan error handling untuk media
+        try {
+            $kejadian = $query->paginate(10);
+            
+            // Load media relation safely
+            $kejadian->getCollection()->transform(function ($item) {
+                try {
+                    $item->load('media');
+                } catch (\Exception $e) {
+                    // Skip loading media if table doesn't exist
+                    \Log::warning('Could not load media for kejadian: ' . $e->getMessage());
+                }
+                return $item;
+            });
+            
+        } catch (\Exception $e) {
+            \Log::error('Error loading kejadian data: ' . $e->getMessage());
+            $kejadian = collect([]);
+        }
 
         return view('admin.kejadian.index', compact('kejadian')); 
     }
