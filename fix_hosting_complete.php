@@ -9,7 +9,7 @@
 $host = 'mysql-shopi-sie.alwaysdata.net'; // sesuaikan dengan hosting
 $dbname = 'shopi-sie_db'; // nama database hosting
 $username = 'shopi-sie'; // username database hosting  
-$password = 'password_hosting'; // password database hosting (sesuaikan)
+$password = 'Sh0opiie694'; // password database hosting (sesuaikan)
 
 echo "<h1>🔧 Fix Hosting Database</h1>";
 
