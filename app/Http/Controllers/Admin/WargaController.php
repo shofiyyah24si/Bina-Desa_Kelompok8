@@ -75,7 +75,7 @@ class WargaController extends Controller
     {
         $request->validate([
             'nama'          => 'required|string|max:255',
-            'no_ktp'           => 'nullable|string|max:20',
+            'no_ktp'        => 'nullable|string|max:20',
             'alamat'        => 'nullable|string',
             'rt'            => 'nullable|string|max:5',
             'rw'            => 'nullable|string|max:5',
@@ -83,14 +83,46 @@ class WargaController extends Controller
             'foto'          => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
 
-        $data = [
-            'nama'    => $request->nama,
-            'no_ktp'     => $request->no_ktp,
-            'alamat'  => $request->alamat,
-            'rt'      => $request->rt,
-            'rw'      => $request->rw,
-            'no_hp'   => $request->no_hp,
+        // Get available columns from database
+        $availableColumns = [];
+        try {
+            $columns = \DB::select("SHOW COLUMNS FROM warga");
+            foreach ($columns as $column) {
+                $availableColumns[] = $column->Field;
+            }
+        } catch (\Exception $e) {
+            \Log::error('Failed to get warga table columns: ' . $e->getMessage());
+            $availableColumns = ['nama']; // fallback to basic column
+        }
+
+        \Log::info('Available warga columns', ['columns' => $availableColumns]);
+
+        // Build data array based on available columns
+        $data = [];
+        
+        // Always include nama (required)
+        $data['nama'] = $request->nama;
+        
+        // Map request fields to database columns
+        $fieldMapping = [
+            'no_ktp' => ['no_ktp', 'nik'], // try no_ktp first, then nik
+            'alamat' => ['alamat'],
+            'rt' => ['rt'],
+            'rw' => ['rw'],
+            'no_hp' => ['no_hp', 'telp'], // try no_hp first, then telp
         ];
+        
+        foreach ($fieldMapping as $requestField => $dbColumns) {
+            $value = $request->input($requestField);
+            if ($value !== null) {
+                foreach ($dbColumns as $dbColumn) {
+                    if (in_array($dbColumn, $availableColumns)) {
+                        $data[$dbColumn] = $value;
+                        break; // use first available column
+                    }
+                }
+            }
+        }
 
         // Handle foto upload dengan error handling
         if ($request->hasFile('foto') && $request->file('foto')->isValid()) {
@@ -106,14 +138,9 @@ class WargaController extends Controller
                 
                 $file->move($fullPath, $filename);
                 
-                // Cek apakah kolom foto ada
-                try {
-                    $hasFotoColumn = \DB::select("SHOW COLUMNS FROM warga LIKE 'foto'");
-                    if (!empty($hasFotoColumn)) {
-                        $data['foto'] = "warga/$filename";
-                    }
-                } catch (\Exception $e) {
-                    \Log::warning('foto column does not exist in warga table');
+                // Add foto to data if column exists
+                if (in_array('foto', $availableColumns)) {
+                    $data['foto'] = "warga/$filename";
                 }
                 
                 \Log::info('Warga photo uploaded successfully', [
@@ -124,21 +151,27 @@ class WargaController extends Controller
             }
         }
 
+        \Log::info('Creating warga with data', ['data' => $data]);
+
         // Create warga dengan error handling
         try {
             Warga::create($data);
+            \Log::info('Warga created successfully');
         } catch (\Illuminate\Database\QueryException $e) {
-            if (strpos($e->getMessage(), 'Unknown column') !== false) {
-                \Log::warning('Column error during warga creation, trying with basic fields: ' . $e->getMessage());
-                
-                $basicData = [
-                    'nama' => $data['nama'],
-                    'alamat' => $data['alamat'] ?? null,
-                ];
-                
+            \Log::error('Database error during warga creation', [
+                'error' => $e->getMessage(),
+                'data' => $data,
+                'available_columns' => $availableColumns
+            ]);
+            
+            // Fallback to basic creation with only nama
+            try {
+                $basicData = ['nama' => $request->nama];
                 Warga::create($basicData);
-            } else {
-                throw $e;
+                \Log::info('Warga created with basic data only');
+            } catch (\Exception $e2) {
+                \Log::error('Failed to create warga even with basic data', ['error' => $e2->getMessage()]);
+                throw $e2;
             }
         }
 
@@ -163,7 +196,7 @@ class WargaController extends Controller
 
         $request->validate([
             'nama'          => 'required|string|max:255',
-            'no_ktp'           => 'nullable|string|max:20',
+            'no_ktp'        => 'nullable|string|max:20',
             'alamat'        => 'nullable|string',
             'rt'            => 'nullable|string|max:5',
             'rw'            => 'nullable|string|max:5',
@@ -171,14 +204,46 @@ class WargaController extends Controller
             'foto'          => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
 
-        $data = [
-            'nama'    => $request->nama,
-            'no_ktp'     => $request->no_ktp,
-            'alamat'  => $request->alamat,
-            'rt'      => $request->rt,
-            'rw'      => $request->rw,
-            'no_hp'   => $request->no_hp,
+        // Get available columns from database
+        $availableColumns = [];
+        try {
+            $columns = \DB::select("SHOW COLUMNS FROM warga");
+            foreach ($columns as $column) {
+                $availableColumns[] = $column->Field;
+            }
+        } catch (\Exception $e) {
+            \Log::error('Failed to get warga table columns: ' . $e->getMessage());
+            $availableColumns = ['nama']; // fallback to basic column
+        }
+
+        \Log::info('Available warga columns', ['columns' => $availableColumns]);
+
+        // Build data array based on available columns
+        $data = [];
+        
+        // Always include nama (required)
+        $data['nama'] = $request->nama;
+        
+        // Map request fields to database columns
+        $fieldMapping = [
+            'no_ktp' => ['no_ktp', 'nik'], // try no_ktp first, then nik
+            'alamat' => ['alamat'],
+            'rt' => ['rt'],
+            'rw' => ['rw'],
+            'no_hp' => ['no_hp', 'telp'], // try no_hp first, then telp
         ];
+        
+        foreach ($fieldMapping as $requestField => $dbColumns) {
+            $value = $request->input($requestField);
+            if ($value !== null) {
+                foreach ($dbColumns as $dbColumn) {
+                    if (in_array($dbColumn, $availableColumns)) {
+                        $data[$dbColumn] = $value;
+                        break; // use first available column
+                    }
+                }
+            }
+        }
 
         // Handle foto upload dengan error handling
         if ($request->hasFile('foto') && $request->file('foto')->isValid()) {
@@ -202,14 +267,9 @@ class WargaController extends Controller
                 
                 $file->move($fullPath, $filename);
                 
-                // Cek apakah kolom foto ada
-                try {
-                    $hasFotoColumn = \DB::select("SHOW COLUMNS FROM warga LIKE 'foto'");
-                    if (!empty($hasFotoColumn)) {
-                        $data['foto'] = "warga/$filename";
-                    }
-                } catch (\Exception $e) {
-                    \Log::warning('foto column does not exist in warga table');
+                // Add foto to data if column exists
+                if (in_array('foto', $availableColumns)) {
+                    $data['foto'] = "warga/$filename";
                 }
                 
                 \Log::info('Warga photo updated successfully', [
@@ -221,21 +281,27 @@ class WargaController extends Controller
             }
         }
 
+        \Log::info('Updating warga with data', ['warga_id' => $id, 'data' => $data]);
+
         // Update warga dengan error handling
         try {
             $warga->update($data);
+            \Log::info('Warga updated successfully', ['warga_id' => $id]);
         } catch (\Illuminate\Database\QueryException $e) {
-            if (strpos($e->getMessage(), 'Unknown column') !== false) {
-                \Log::warning('Column error during warga update, trying with basic fields: ' . $e->getMessage());
-                
-                $basicData = [
-                    'nama' => $data['nama'],
-                    'alamat' => $data['alamat'] ?? null,
-                ];
-                
+            \Log::error('Database error during warga update', [
+                'error' => $e->getMessage(),
+                'data' => $data,
+                'available_columns' => $availableColumns
+            ]);
+            
+            // Fallback to basic update with only nama
+            try {
+                $basicData = ['nama' => $request->nama];
                 $warga->update($basicData);
-            } else {
-                throw $e;
+                \Log::info('Warga updated with basic data only', ['warga_id' => $id]);
+            } catch (\Exception $e2) {
+                \Log::error('Failed to update warga even with basic data', ['error' => $e2->getMessage()]);
+                throw $e2;
             }
         }
 
