@@ -38,9 +38,27 @@ class PoskoBencanaController extends Controller
             $perPage = 10;
         }
 
-        $data['posko'] = $query->orderBy('created_at', 'desc')
-            ->paginate($perPage)
-            ->appends($request->query());
+        // Pagination dengan error handling untuk media
+        try {
+            $data['posko'] = $query->orderBy('created_at', 'desc')
+                ->paginate($perPage)
+                ->appends($request->query());
+            
+            // Load media relation safely
+            $data['posko']->getCollection()->transform(function ($item) {
+                try {
+                    $item->load('media');
+                } catch (\Exception $e) {
+                    // Skip loading media if table doesn't exist
+                    \Log::warning('Could not load media for posko: ' . $e->getMessage());
+                }
+                return $item;
+            });
+            
+        } catch (\Exception $e) {
+            \Log::error('Error loading posko data: ' . $e->getMessage());
+            $data['posko'] = collect([]);
+        }
 
         // Filter options
         $data['kejadian'] = KejadianBencana::orderBy('jenis_bencana')->get();

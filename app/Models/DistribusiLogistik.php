@@ -3,12 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\HasMedia;
 
 class DistribusiLogistik extends Model
 {
-    use HasMedia;
-
     protected $table = 'distribusi_logistik';
     protected $primaryKey = 'distribusi_id';
 
@@ -28,5 +25,32 @@ class DistribusiLogistik extends Model
     public function posko()
     {
         return $this->belongsTo(PoskoBencana::class, 'posko_id');
+    }
+
+    /**
+     * Relasi ke media dengan error handling
+     */
+    public function media()
+    {
+        try {
+            return $this->hasMany(Media::class, 'ref_id', 'distribusi_id')
+                        ->where('ref_table', 'distribusi_logistik')
+                        ->orderBy('sort_order')
+                        ->orderBy('media_id');
+        } catch (\Exception $e) {
+            return collect([]);
+        }
+    }
+
+    /**
+     * Get media safely
+     */
+    public function getMediaSafely()
+    {
+        try {
+            return $this->media;
+        } catch (\Exception $e) {
+            return collect([]);
+        }
     }
 }

@@ -421,7 +421,15 @@
                 @forelse ($posko as $row)
                     <tr>
                         <td>
-                            @php $fotos = $row->media->take(3); @endphp
+                            @php 
+                                $mediaItems = [];
+                                try {
+                                    $mediaItems = $row->media ?? collect([]);
+                                } catch (\Exception $e) {
+                                    $mediaItems = collect([]);
+                                }
+                                $fotos = $mediaItems->take(3); 
+                            @endphp
                             <div class="photo-gallery">
                                 @foreach($fotos as $foto)
                                     <img src="{{ \App\Helpers\ImageHelper::getImageUrl($foto->file_url) }}"
@@ -429,13 +437,13 @@
                                          alt="Foto Posko">
                                 @endforeach
 
-                                @if($row->media->count() > 3)
+                                @if($mediaItems->count() > 3)
                                     <div class="photo-counter">
-                                        +{{ $row->media->count() - 3 }}
+                                        +{{ $mediaItems->count() - 3 }}
                                     </div>
                                 @endif
 
-                                @if($row->media->count() == 0)
+                                @if($mediaItems->count() == 0)
                                     <div class="photo-counter">
                                         <i class="fas fa-image"></i>
                                     </div>

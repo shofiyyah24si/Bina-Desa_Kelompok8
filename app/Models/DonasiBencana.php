@@ -3,12 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\HasMedia;
 
 class DonasiBencana extends Model
 {
-    use HasMedia;
-
     protected $table = 'donasi_bencana';
     protected $primaryKey = 'donasi_id';
 
@@ -23,5 +20,32 @@ class DonasiBencana extends Model
     public function kejadian()
     {
         return $this->belongsTo(KejadianBencana::class, 'kejadian_id');
+    }
+
+    /**
+     * Relasi ke media dengan error handling
+     */
+    public function media()
+    {
+        try {
+            return $this->hasMany(Media::class, 'ref_id', 'donasi_id')
+                        ->where('ref_table', 'donasi_bencana')
+                        ->orderBy('sort_order')
+                        ->orderBy('media_id');
+        } catch (\Exception $e) {
+            return collect([]);
+        }
+    }
+
+    /**
+     * Get media safely
+     */
+    public function getMediaSafely()
+    {
+        try {
+            return $this->media;
+        } catch (\Exception $e) {
+            return collect([]);
+        }
     }
 }
