@@ -40,72 +40,89 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->validate([
+        $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6',
             'foto_profil' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
 
-        // Semua user otomatis jadi Admin
-        $data['role'] = 'Admin';
+        \Log::info('User store request', [
+            'request_data' => $request->except(['password', 'foto_profil']),
+            'has_photo' => $request->hasFile('foto_profil')
+        ]);
 
-        // Hash password
-        $data['password'] = bcrypt($data['password']);
-
-        // Handle foto profil upload dengan pengecekan kolom
-        if ($request->hasFile('foto_profil') && $request->file('foto_profil')->isValid()) {
-
-            $file = $request->file('foto_profil');
-            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $uploadPath = "uploads/users";
-  
-            $fullPath = public_path($uploadPath);
-            if (!file_exists($fullPath)) {
-                mkdir($fullPath, 0755, true);
+        // Cek kolom yang tersedia di database
+        $availableColumns = [];
+        try {
+            $columns = \DB::select("SHOW COLUMNS FROM users");
+            foreach ($columns as $column) {
+                $availableColumns[] = $column->Field;
             }
-            
-            $file->move($fullPath, $filename);
-            
-            // Cek apakah kolom foto_profil ada sebelum menambahkan ke data
+        } catch (\Exception $e) {
+            \Log::error('Failed to get users table columns: ' . $e->getMessage());
+            $availableColumns = ['name', 'email', 'password']; // fallback minimal
+        }
+
+        \Log::info('Available users columns', ['columns' => $availableColumns]);
+
+        // Siapkan data dasar - hanya kolom yang ada
+        $data = [];
+        
+        // Kolom wajib
+        $data['name'] = $request->name;
+        $data['email'] = $request->email;
+        $data['password'] = Hash::make($request->password);
+        
+        // Kolom role jika ada
+        if (in_array('role', $availableColumns)) {
+            $data['role'] = 'Admin'; // Semua user otomatis jadi Admin
+        }
+
+        // Handle foto upload dengan sistem public/uploads
+        if ($request->hasFile('foto_profil') && $request->file('foto_profil')->isValid()) {
             try {
-                $hasFotoProfilColumn = \DB::select("SHOW COLUMNS FROM users LIKE 'foto_profil'");
-                if (!empty($hasFotoProfilColumn)) {
+                $file = $request->file('foto_profil');
+                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $uploadPath = "uploads/users";
+                
+                // Pastikan folder ada
+                $fullPath = public_path($uploadPath);
+                if (!file_exists($fullPath)) {
+                    mkdir($fullPath, 0755, true);
+                }
+                
+                // Upload file
+                $file->move($fullPath, $filename);
+                
+                // Simpan path foto hanya jika kolom foto_profil ada
+                if (in_array('foto_profil', $availableColumns)) {
                     $data['foto_profil'] = "users/$filename";
                 }
+                
+                \Log::info('User photo uploaded successfully', [
+                    'filename' => $filename,
+                    'file_path' => "users/$filename",
+                    'foto_profil_column_exists' => in_array('foto_profil', $availableColumns)
+                ]);
             } catch (\Exception $e) {
-                \Log::warning('foto_profil column does not exist, skipping photo during create');
+                \Log::error('Failed to upload user photo: ' . $e->getMessage());
+                return back()->withInput()->with('error', 'Gagal mengupload foto: ' . $e->getMessage());
             }
-            
-            \Log::info('New user photo uploaded successfully', [
-                'file_path' => "users/$filename"
-            ]);
         }
 
-        // Create user dengan error handling
+        \Log::info('Creating user with data', ['data' => array_keys($data)]);
+
+        // Simpan data user
         try {
-            User::create($data);
-            \Log::info('User created successfully');
-        } catch (\Illuminate\Database\QueryException $e) {
-            if (strpos($e->getMessage(), 'Unknown column') !== false) {
-                \Log::warning('Column error during user creation, trying with basic fields only: ' . $e->getMessage());
-                
-                // Create dengan field dasar saja
-                $basicData = [
-                    'name' => $data['name'],
-                    'email' => $data['email'],
-                    'password' => $data['password'],
-                    'role' => $data['role']
-                ];
-                
-                User::create($basicData);
-                \Log::info('User created with basic fields only');
-            } else {
-                throw $e;
-            }
+            $user = User::create($data);
+            \Log::info('User created successfully', ['user_id' => $user->id]);
+            
+            return redirect()->route('users.index')->with('success', 'Data user berhasil ditambahkan!');
+        } catch (\Exception $e) {
+            \Log::error('Failed to create user', ['error' => $e->getMessage()]);
+            return back()->withInput()->with('error', 'Gagal menyimpan data user: ' . $e->getMessage());
         }
-
-        return redirect()->route('users.index')->with('success', 'Data user berhasil ditambahkan!');
     }
 
     /**
@@ -121,94 +138,104 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
-        $data = $request->validate([
+        $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:6',
             'foto_profil' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ]);
 
-        // Semua user otomatis jadi Admin
-        $data['role'] = 'Admin';
+        \Log::info('User update request', [
+            'user_id' => $user->id,
+            'request_data' => $request->except(['password', 'foto_profil']),
+            'has_photo' => $request->hasFile('foto_profil')
+        ]);
 
-        // Hash password
-        if (!empty($data['password'])) {
-            $data['password'] = bcrypt($data['password']);
-        } else {
-            unset($data['password']);
+        // Cek kolom yang tersedia di database
+        $availableColumns = [];
+        try {
+            $columns = \DB::select("SHOW COLUMNS FROM users");
+            foreach ($columns as $column) {
+                $availableColumns[] = $column->Field;
+            }
+        } catch (\Exception $e) {
+            \Log::error('Failed to get users table columns: ' . $e->getMessage());
+            $availableColumns = ['name', 'email', 'password']; // fallback minimal
         }
 
+        \Log::info('Available users columns', ['columns' => $availableColumns]);
+
+        // Siapkan data dasar - hanya kolom yang ada
+        $data = [];
+        
+        // Kolom wajib
+        $data['name'] = $request->name;
+        $data['email'] = $request->email;
+        
+        // Password jika diisi
+        if ($request->filled('password')) {
+            $data['password'] = Hash::make($request->password);
+        }
+        
+        // Kolom role jika ada
+        if (in_array('role', $availableColumns)) {
+            $data['role'] = 'Admin'; // Semua user otomatis jadi Admin
+        }
+
+        // Handle foto upload dengan sistem public/uploads
         if ($request->hasFile('foto_profil') && $request->file('foto_profil')->isValid()) {
-    
-            // Delete old photo
             try {
-                if ($user->foto_profil) {
+                // Hapus foto lama jika ada dan kolom foto_profil tersedia
+                if (in_array('foto_profil', $availableColumns) && $user->foto_profil) {
                     $oldPath = public_path('uploads/' . $user->foto_profil);
                     if (file_exists($oldPath)) {
                         unlink($oldPath);
+                        \Log::info('Old user photo deleted', ['old_path' => $oldPath]);
                     }
                 }
-            } catch (\Exception $e) {
-                \Log::warning('Could not delete old photo: ' . $e->getMessage());
-            }
-            
-            $file = $request->file('foto_profil');
-            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $uploadPath = "uploads/users";
-            
-            $fullPath = public_path($uploadPath);
-            if (!file_exists($fullPath)) {
-                mkdir($fullPath, 0755, true);
-            }
-            
-            $file->move($fullPath, $filename);
-            
-            // Cek apakah kolom foto_profil ada sebelum menambahkan ke data
-            try {
-                $hasFotoProfilColumn = \DB::select("SHOW COLUMNS FROM users LIKE 'foto_profil'");
-                if (!empty($hasFotoProfilColumn)) {
+                
+                $file = $request->file('foto_profil');
+                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $uploadPath = "uploads/users";
+                
+                // Pastikan folder ada
+                $fullPath = public_path($uploadPath);
+                if (!file_exists($fullPath)) {
+                    mkdir($fullPath, 0755, true);
+                }
+                
+                // Upload file
+                $file->move($fullPath, $filename);
+                
+                // Simpan path foto hanya jika kolom foto_profil ada
+                if (in_array('foto_profil', $availableColumns)) {
                     $data['foto_profil'] = "users/$filename";
                 }
+                
+                \Log::info('User photo updated successfully', [
+                    'user_id' => $user->id,
+                    'filename' => $filename,
+                    'file_path' => "users/$filename",
+                    'foto_profil_column_exists' => in_array('foto_profil', $availableColumns)
+                ]);
             } catch (\Exception $e) {
-                \Log::warning('foto_profil column does not exist, skipping photo update');
+                \Log::error('Failed to update user photo: ' . $e->getMessage());
+                return back()->withInput()->with('error', 'Gagal mengupload foto: ' . $e->getMessage());
             }
-            
-            \Log::info('User photo uploaded successfully', [
-                'user_id' => $user->id,
-                'file_path' => "users/$filename"
-            ]);
         }
 
-        // Update user dengan error handling
+        \Log::info('Updating user with data', ['user_id' => $user->id, 'data' => array_keys($data)]);
+
+        // Update data user
         try {
             $user->update($data);
-            \Log::info('User updated successfully', [
-                'user_id' => $user->id,
-                'updated_fields' => array_keys($data)
-            ]);
-        } catch (\Illuminate\Database\QueryException $e) {
-            if (strpos($e->getMessage(), 'Unknown column') !== false) {
-                \Log::warning('Column error during user update, trying with basic fields only: ' . $e->getMessage());
-                
-                // Update hanya field dasar yang pasti ada
-                $basicData = [
-                    'name' => $data['name'],
-                    'email' => $data['email'],
-                    'role' => $data['role']
-                ];
-                
-                if (isset($data['password'])) {
-                    $basicData['password'] = $data['password'];
-                }
-                
-                $user->update($basicData);
-                \Log::info('User updated with basic fields only');
-            } else {
-                throw $e;
-            }
+            \Log::info('User updated successfully', ['user_id' => $user->id]);
+            
+            return redirect()->route('users.index')->with('success', 'Data user berhasil diperbarui!');
+        } catch (\Exception $e) {
+            \Log::error('Failed to update user', ['error' => $e->getMessage()]);
+            return back()->withInput()->with('error', 'Gagal mengupdate data user: ' . $e->getMessage());
         }
-
-        return redirect()->route('users.index')->with('success', 'Data user berhasil diperbarui!');
     }
 
     /**

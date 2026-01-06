@@ -89,15 +89,89 @@ class WargaController extends Controller
             'has_photo' => $request->hasFile('foto_profil')
         ]);
 
-        // Siapkan data dasar
-        $data = [
-            'nama' => $request->nama,
-            'no_ktp' => $request->no_ktp,
+        // Cek kolom yang tersedia di database
+        $availableColumns = [];
+        try {
+            $columns = \DB::select("SHOW COLUMNS FROM warga");
+            foreach ($columns as $column) {
+                $availableColumns[] = $column->Field;
+            }
+        } catch (\Exception $e) {
+            \Log::error('Failed to get warga table columns: ' . $e->getMessage());
+            $availableColumns = ['nama', 'no_ktp']; // fallback minimal
+        }
+
+        \Log::info('Available warga columns', ['columns' => $availableColumns]);
+
+        // Siapkan data dasar - hanya kolom yang ada
+        $data = [];
+        
+        // Kolom wajib
+        $data['nama'] = $request->nama;
+        if (in_array('no_ktp', $availableColumns)) {
+            $data['no_ktp'] = $request->no_ktp;
+        }
+        
+        // Kolom opsional
+        $optionalFields = [
             'jenis_kelamin' => $request->jenis_kelamin,
             'agama' => $request->agama,
             'pekerjaan' => $request->pekerjaan,
             'telp' => $request->telp,
             'email' => $request->email,
+        ];
+        
+        foreach ($optionalFields as $field => $value) {
+            if (in_array($field, $availableColumns) && $value !== null) {
+                $data[$field] = $value;
+            }
+        }
+
+        // Handle foto upload dengan sistem public/uploads
+        if ($request->hasFile('foto_profil') && $request->file('foto_profil')->isValid()) {
+            try {
+                $file = $request->file('foto_profil');
+                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                $uploadPath = "uploads/warga";
+                
+                // Pastikan folder ada
+                $fullPath = public_path($uploadPath);
+                if (!file_exists($fullPath)) {
+                    mkdir($fullPath, 0755, true);
+                }
+                
+                // Upload file
+                $file->move($fullPath, $filename);
+                
+                // Simpan path foto hanya jika kolom foto ada
+                if (in_array('foto', $availableColumns)) {
+                    $data['foto'] = "warga/$filename";
+                }
+                
+                \Log::info('Warga photo uploaded successfully', [
+                    'filename' => $filename,
+                    'file_path' => "warga/$filename",
+                    'foto_column_exists' => in_array('foto', $availableColumns)
+                ]);
+            } catch (\Exception $e) {
+                \Log::error('Failed to upload warga photo: ' . $e->getMessage());
+                return back()->withInput()->with('error', 'Gagal mengupload foto: ' . $e->getMessage());
+            }
+        }
+
+        \Log::info('Creating warga with data', ['data' => $data]);
+
+        // Simpan data warga
+        try {
+            $warga = Warga::create($data);
+            \Log::info('Warga created successfully', ['warga_id' => $warga->warga_id]);
+            
+            return redirect()->route('warga.index')->with('success', 'Data warga berhasil ditambahkan!');
+        } catch (\Exception $e) {
+            \Log::error('Failed to create warga', ['error' => $e->getMessage()]);
+            return back()->withInput()->with('error', 'Gagal menyimpan data warga: ' . $e->getMessage());
+        }
+    }
         ];
 
         // Handle foto upload dengan sistem public/uploads
@@ -174,22 +248,49 @@ class WargaController extends Controller
             'has_photo' => $request->hasFile('foto_profil')
         ]);
 
-        // Siapkan data dasar
-        $data = [
-            'nama' => $request->nama,
-            'no_ktp' => $request->no_ktp,
+        // Cek kolom yang tersedia di database
+        $availableColumns = [];
+        try {
+            $columns = \DB::select("SHOW COLUMNS FROM warga");
+            foreach ($columns as $column) {
+                $availableColumns[] = $column->Field;
+            }
+        } catch (\Exception $e) {
+            \Log::error('Failed to get warga table columns: ' . $e->getMessage());
+            $availableColumns = ['nama', 'no_ktp']; // fallback minimal
+        }
+
+        \Log::info('Available warga columns', ['columns' => $availableColumns]);
+
+        // Siapkan data dasar - hanya kolom yang ada
+        $data = [];
+        
+        // Kolom wajib
+        $data['nama'] = $request->nama;
+        if (in_array('no_ktp', $availableColumns)) {
+            $data['no_ktp'] = $request->no_ktp;
+        }
+        
+        // Kolom opsional
+        $optionalFields = [
             'jenis_kelamin' => $request->jenis_kelamin,
             'agama' => $request->agama,
             'pekerjaan' => $request->pekerjaan,
             'telp' => $request->telp,
             'email' => $request->email,
         ];
+        
+        foreach ($optionalFields as $field => $value) {
+            if (in_array($field, $availableColumns) && $value !== null) {
+                $data[$field] = $value;
+            }
+        }
 
         // Handle foto upload dengan sistem public/uploads
         if ($request->hasFile('foto_profil') && $request->file('foto_profil')->isValid()) {
             try {
-                // Hapus foto lama jika ada
-                if ($warga->foto) {
+                // Hapus foto lama jika ada dan kolom foto tersedia
+                if (in_array('foto', $availableColumns) && $warga->foto) {
                     $oldPath = public_path('uploads/' . $warga->foto);
                     if (file_exists($oldPath)) {
                         unlink($oldPath);
@@ -209,12 +310,17 @@ class WargaController extends Controller
                 
                 // Upload file
                 $file->move($fullPath, $filename);
-                $data['foto'] = "warga/$filename";
+                
+                // Simpan path foto hanya jika kolom foto ada
+                if (in_array('foto', $availableColumns)) {
+                    $data['foto'] = "warga/$filename";
+                }
                 
                 \Log::info('Warga photo updated successfully', [
                     'warga_id' => $id,
                     'filename' => $filename,
-                    'file_path' => "warga/$filename"
+                    'file_path' => "warga/$filename",
+                    'foto_column_exists' => in_array('foto', $availableColumns)
                 ]);
             } catch (\Exception $e) {
                 \Log::error('Failed to update warga photo: ' . $e->getMessage());
