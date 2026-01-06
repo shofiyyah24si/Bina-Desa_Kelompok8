@@ -530,11 +530,11 @@
                     <tr>
                         <td><strong>{{ $dataWarga->firstItem() + $i }}</strong></td>
                         <td>
-                            @if($item->foto)
-                                <img src="{{ asset('uploads/' . $item->foto) }}" 
+                            @if($item->foto_profil)
+                                <img src="{{ asset('uploads/' . $item->foto_profil) }}" 
                                      alt="Foto Profil {{ $item->nama }}" 
                                      class="profile-img"
-                                     data-path="{{ $item->foto }}"
+                                     data-path="{{ $item->foto_profil }}"
                                      onerror="this.src='{{ asset('assets-admin/images/profile/sofia.png') }}'">
                             @else
                                 <div class="profile-placeholder">

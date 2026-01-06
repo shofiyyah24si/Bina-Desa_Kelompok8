@@ -21,14 +21,14 @@ try {
     
     // 1. Perbaiki tabel warga
     echo "<h2>1. Memperbaiki Tabel Warga</h2>";
-    $stmt = $pdo->query("SHOW COLUMNS FROM warga LIKE 'foto'");
+    $stmt = $pdo->query("SHOW COLUMNS FROM warga LIKE 'foto_profil'");
     $wargaFotoExists = $stmt->rowCount() > 0;
     
     if (!$wargaFotoExists) {
-        $pdo->exec("ALTER TABLE warga ADD COLUMN `foto` VARCHAR(255) NULL COMMENT 'Path foto warga'");
-        echo "<p style='color: green;'>✅ Kolom 'foto' berhasil ditambahkan ke tabel warga!</p>";
+        $pdo->exec("ALTER TABLE warga ADD COLUMN `foto_profil` VARCHAR(255) NULL COMMENT 'Path foto profil warga'");
+        echo "<p style='color: green;'>✅ Kolom 'foto_profil' berhasil ditambahkan ke tabel warga!</p>";
     } else {
-        echo "<p style='color: blue;'>ℹ️ Kolom 'foto' sudah ada di tabel warga</p>";
+        echo "<p style='color: blue;'>ℹ️ Kolom 'foto_profil' sudah ada di tabel warga</p>";
     }
     
     // 2. Perbaiki tabel users
@@ -76,7 +76,7 @@ try {
     echo "<tr style='background: #f0f0f0;'><th style='border: 1px solid #ddd; padding: 8px;'>Field</th><th style='border: 1px solid #ddd; padding: 8px;'>Type</th><th style='border: 1px solid #ddd; padding: 8px;'>Null</th></tr>";
     
     while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $highlight = ($row['Field'] === 'foto') ? 'background: #d4edda;' : '';
+        $highlight = ($row['Field'] === 'foto_profil') ? 'background: #d4edda;' : '';
         echo "<tr style='$highlight'>";
         echo "<td style='border: 1px solid #ddd; padding: 8px; font-weight: bold;'>{$row['Field']}</td>";
         echo "<td style='border: 1px solid #ddd; padding: 8px;'>{$row['Type']}</td>";
@@ -105,7 +105,7 @@ try {
     echo "<div style='background: white; padding: 15px; border-radius: 5px; margin: 10px 0;'>";
     echo "<p><strong>✅ Yang sudah diperbaiki:</strong></p>";
     echo "<ul>";
-    echo "<li>✅ Kolom 'foto' ditambahkan ke tabel warga</li>";
+    echo "<li>✅ Kolom 'foto_profil' ditambahkan ke tabel warga (sama seperti users)</li>";
     echo "<li>✅ Kolom 'foto_profil' ditambahkan ke tabel users</li>";
     echo "<li>✅ Folder 'uploads/warga' dan 'uploads/users' sudah dibuat</li>";
     echo "<li>✅ Keamanan folder upload sudah diatur</li>";
@@ -117,6 +117,7 @@ try {
     echo "<li>👤 Edit data user dengan upload foto → tersimpan di uploads/users/</li>";
     echo "<li>📸 Foto akan muncul di halaman index warga dan users</li>";
     echo "<li>🔄 Upload foto baru akan mengganti foto lama</li>";
+    echo "<li>✅ Sistem warga dan users sekarang menggunakan mekanisme yang sama persis</li>";
     echo "</ul>";
     
     echo "<p style='color: red;'><strong>⚠️ Jangan lupa hapus file ini setelah selesai!</strong></p>";

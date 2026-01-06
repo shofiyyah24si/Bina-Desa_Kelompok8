@@ -143,15 +143,15 @@ class WargaController extends Controller
                 // Upload file
                 $file->move($fullPath, $filename);
                 
-                // Simpan path foto hanya jika kolom foto ada
-                if (in_array('foto', $availableColumns)) {
-                    $data['foto'] = "warga/$filename";
+                // Simpan path foto hanya jika kolom foto_profil ada (sama seperti users)
+                if (in_array('foto_profil', $availableColumns)) {
+                    $data['foto_profil'] = "warga/$filename";
                 }
                 
                 \Log::info('Warga photo uploaded successfully', [
                     'filename' => $filename,
                     'file_path' => "warga/$filename",
-                    'foto_column_exists' => in_array('foto', $availableColumns)
+                    'foto_profil_column_exists' => in_array('foto_profil', $availableColumns)
                 ]);
             } catch (\Exception $e) {
                 \Log::error('Failed to upload warga photo: ' . $e->getMessage());
@@ -247,9 +247,9 @@ class WargaController extends Controller
         // Handle foto upload dengan sistem public/uploads
         if ($request->hasFile('foto_profil') && $request->file('foto_profil')->isValid()) {
             try {
-                // Hapus foto lama jika ada dan kolom foto tersedia
-                if (in_array('foto', $availableColumns) && $warga->foto) {
-                    $oldPath = public_path('uploads/' . $warga->foto);
+                // Hapus foto lama jika ada dan kolom foto_profil tersedia
+                if (in_array('foto_profil', $availableColumns) && $warga->foto_profil) {
+                    $oldPath = public_path('uploads/' . $warga->foto_profil);
                     if (file_exists($oldPath)) {
                         unlink($oldPath);
                         \Log::info('Old warga photo deleted', ['old_path' => $oldPath]);
@@ -269,16 +269,16 @@ class WargaController extends Controller
                 // Upload file
                 $file->move($fullPath, $filename);
                 
-                // Simpan path foto hanya jika kolom foto ada
-                if (in_array('foto', $availableColumns)) {
-                    $data['foto'] = "warga/$filename";
+                // Simpan path foto hanya jika kolom foto_profil ada (sama seperti users)
+                if (in_array('foto_profil', $availableColumns)) {
+                    $data['foto_profil'] = "warga/$filename";
                 }
                 
                 \Log::info('Warga photo updated successfully', [
                     'warga_id' => $id,
                     'filename' => $filename,
                     'file_path' => "warga/$filename",
-                    'foto_column_exists' => in_array('foto', $availableColumns)
+                    'foto_profil_column_exists' => in_array('foto_profil', $availableColumns)
                 ]);
             } catch (\Exception $e) {
                 \Log::error('Failed to update warga photo: ' . $e->getMessage());
@@ -307,9 +307,9 @@ class WargaController extends Controller
     {
         $warga = Warga::findOrFail($id);
         
-        // Hapus foto jika ada
-        if ($warga->foto) {
-            $photoPath = public_path('uploads/' . $warga->foto);
+        // Hapus foto jika ada (menggunakan foto_profil seperti users)
+        if ($warga->foto_profil) {
+            $photoPath = public_path('uploads/' . $warga->foto_profil);
             if (file_exists($photoPath)) {
                 unlink($photoPath);
             }

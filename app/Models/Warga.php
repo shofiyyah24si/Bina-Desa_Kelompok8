@@ -17,16 +17,16 @@ class Warga extends Model
         'pekerjaan',
         'telp',
         'email',
-        'foto',
+        'foto_profil', // Sama seperti users, bukan 'foto'
     ];
 
     /**
-     * Get foto URL dengan sistem public/uploads
+     * Get foto URL dengan sistem public/uploads (sama seperti users)
      */
     public function getFotoUrlAttribute()
     {
-        if ($this->foto) {
-            return asset('uploads/' . $this->foto);
+        if ($this->foto_profil) {
+            return asset('uploads/' . $this->foto_profil);
         }
         return asset('assets-admin/images/default-avatar.png'); // default avatar
     }
@@ -36,7 +36,7 @@ class Warga extends Model
      */
     public function getFotoSafely()
     {
-        return $this->foto ?? null;
+        return $this->foto_profil ?? null;
     }
 
     /**
@@ -44,6 +44,6 @@ class Warga extends Model
      */
     public function hasPhoto()
     {
-        return !empty($this->foto) && file_exists(public_path('uploads/' . $this->foto));
+        return !empty($this->foto_profil) && file_exists(public_path('uploads/' . $this->foto_profil));
     }
 }
