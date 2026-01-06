@@ -89,12 +89,18 @@ class AuthController extends Controller
 
         // Check if role column exists before adding it
         try {
-            $columns = \Schema::getColumnListing('users');
-            if (in_array('role', $columns)) {
+            $hasRoleColumn = \DB::select("SHOW COLUMNS FROM users LIKE 'role'");
+            if (!empty($hasRoleColumn)) {
                 $data['role'] = $request->role;
             }
         } catch (\Exception $e) {
-            \Log::warning('Could not check users table columns: ' . $e->getMessage());
+            \Log::warning('Could not check role column: ' . $e->getMessage());
+            // Fallback: try to add role anyway, catch if it fails
+            try {
+                $data['role'] = $request->role;
+            } catch (\Exception $roleError) {
+                \Log::warning('Role column does not exist, skipping: ' . $roleError->getMessage());
+            }
         }
 
         // Handle foto profil upload - konsisten dengan UserController
@@ -109,15 +115,71 @@ class AuthController extends Controller
             }
             
             $file->move($fullPath, $filename);
-            $data['foto_profil'] = "users/$filename";
+            
+            // Only add foto_profil to data if column exists
+            try {
+                $hasFotoProfilColumn = \DB::select("SHOW COLUMNS FROM users LIKE 'foto_profil'");
+                if (!empty($hasFotoProfilColumn)) {
+                    $data['foto_profil'] = "users/$filename";
+                }
+            } catch (\Exception $e) {
+                \Log::warning('Could not check foto_profil column: ' . $e->getMessage());
+                // Fallback: try to add foto_profil anyway, catch if it fails
+                try {
+                    $data['foto_profil'] = "users/$filename";
+                } catch (\Exception $fotoError) {
+                    \Log::warning('foto_profil column does not exist, skipping: ' . $fotoError->getMessage());
+                }
+            }
             
             \Log::info('Register photo uploaded successfully', [
                 'filename' => $filename,
-                'file_path' => $data['foto_profil']
+                'file_path' => "users/$filename"
             ]);
         }
 
-        $user = User::create($data);
+        // Create user with error handling for missing columns
+        try {
+            $user = User::create($data);
+        } catch (\Illuminate\Database\QueryException $e) {
+            // If there's a column error, try creating with minimal data
+            if (strpos($e->getMessage(), 'Unknown column') !== false) {
+                \Log::warning('Column error during user creation, trying with minimal data: ' . $e->getMessage());
+                
+                $minimalData = [
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'password' => Hash::make($request->password),
+                ];
+                
+                $user = User::create($minimalData);
+                
+                // Try to update with additional fields if they exist
+                try {
+                    $updateData = [];
+                    
+                    $hasRoleColumn = \DB::select("SHOW COLUMNS FROM users LIKE 'role'");
+                    if (!empty($hasRoleColumn)) {
+                        $updateData['role'] = $request->role;
+                    }
+                    
+                    if (isset($data['foto_profil'])) {
+                        $hasFotoProfilColumn = \DB::select("SHOW COLUMNS FROM users LIKE 'foto_profil'");
+                        if (!empty($hasFotoProfilColumn)) {
+                            $updateData['foto_profil'] = $data['foto_profil'];
+                        }
+                    }
+                    
+                    if (!empty($updateData)) {
+                        $user->update($updateData);
+                    }
+                } catch (\Exception $updateError) {
+                    \Log::warning('Could not update user with additional fields: ' . $updateError->getMessage());
+                }
+            } else {
+                throw $e; // Re-throw if it's not a column error
+            }
+        }
 
         Auth::login($user);
 

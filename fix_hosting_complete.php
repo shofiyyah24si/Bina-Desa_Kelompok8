@@ -60,33 +60,67 @@ try {
     }
     
     // 3. Create admin user if not exists
-    echo "<h2>3. Creating Admin User</h2>";
+    echo "<h2>3. Adding Missing Columns to Users Table</h2>";
     try {
-        // First check if users table has role column
+        // Get current columns
         $stmt = $pdo->query("DESCRIBE users");
-        $columns = $stmt->fetchAll(PDO::FETCH_COLUMN);
-        $hasRole = in_array('role', $columns);
-        
-        if (!$hasRole) {
-            // Add role column if it doesn't exist
-            $pdo->exec("ALTER TABLE users ADD COLUMN role VARCHAR(50) DEFAULT 'Warga' AFTER email");
-            echo "<p style='color: green;'>✅ Role column added to users table</p>";
+        $existingColumns = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $existingColumns[] = $row['Field'];
         }
         
+        // Required columns for users table
+        $requiredColumns = [
+            'role' => "VARCHAR(50) DEFAULT 'Warga'",
+            'foto_profil' => "VARCHAR(255) NULL",
+            'avatar' => "VARCHAR(255) NULL",
+            'last_login' => "TIMESTAMP NULL",
+            'last_login_at' => "TIMESTAMP NULL"
+        ];
+        
+        foreach ($requiredColumns as $column => $definition) {
+            if (!in_array($column, $existingColumns)) {
+                $sql = "ALTER TABLE users ADD COLUMN `$column` $definition";
+                $pdo->exec($sql);
+                echo "<p style='color: green;'>✅ Added column '$column' to users table</p>";
+            } else {
+                echo "<p style='color: blue;'>ℹ️ Column '$column' already exists</p>";
+            }
+        }
+        
+    } catch (Exception $e) {
+        echo "<p style='color: orange;'>⚠️ Adding columns: " . $e->getMessage() . "</p>";
+    }
+    
+    // 4. Create admin user if not exists
+    echo "<h2>4. Creating Admin User</h2>";
+    try {
         $stmt = $pdo->query("SELECT COUNT(*) FROM users WHERE email = 'admin@admin.com'");
         $adminExists = $stmt->fetchColumn();
         
         if ($adminExists == 0) {
-            $sql = "
-            INSERT INTO users (name, email, password, role, created_at, updated_at) 
-            VALUES (
-                'Admin', 
-                'admin@admin.com', 
-                '$2y$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 
-                'Admin', 
-                NOW(), 
-                NOW()
-            )";
+            // Check which columns exist before inserting
+            $stmt = $pdo->query("DESCRIBE users");
+            $columns = [];
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $columns[] = $row['Field'];
+            }
+            
+            $insertColumns = ['name', 'email', 'password', 'created_at', 'updated_at'];
+            $insertValues = [
+                "'Admin'", 
+                "'admin@admin.com'", 
+                "'$2y$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'", 
+                'NOW()', 
+                'NOW()'
+            ];
+            
+            if (in_array('role', $columns)) {
+                $insertColumns[] = 'role';
+                $insertValues[] = "'Admin'";
+            }
+            
+            $sql = "INSERT INTO users (" . implode(', ', $insertColumns) . ") VALUES (" . implode(', ', $insertValues) . ")";
             $pdo->exec($sql);
             echo "<p style='color: green;'>✅ Admin user created! Email: admin@admin.com, Password: password</p>";
         } else {
@@ -94,32 +128,10 @@ try {
         }
     } catch (Exception $e) {
         echo "<p style='color: orange;'>⚠️ Admin user: " . $e->getMessage() . "</p>";
-        
-        // Try creating user without role if role column doesn't exist
-        try {
-            $stmt = $pdo->query("SELECT COUNT(*) FROM users WHERE email = 'admin@admin.com'");
-            $adminExists = $stmt->fetchColumn();
-            
-            if ($adminExists == 0) {
-                $sql = "
-                INSERT INTO users (name, email, password, created_at, updated_at) 
-                VALUES (
-                    'Admin', 
-                    'admin@admin.com', 
-                    '$2y$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 
-                    NOW(), 
-                    NOW()
-                )";
-                $pdo->exec($sql);
-                echo "<p style='color: green;'>✅ Basic admin user created! Email: admin@admin.com, Password: password</p>";
-            }
-        } catch (Exception $e2) {
-            echo "<p style='color: red;'>❌ Could not create admin user: " . $e2->getMessage() . "</p>";
-        }
     }
     
-    // 4. Clear cache and sessions
-    echo "<h2>4. Clearing Cache</h2>";
+    // 5. Clear cache and sessions
+    echo "<h2>5. Clearing Cache</h2>";
     try {
         $pdo->exec("DELETE FROM sessions WHERE last_activity < " . (time() - 3600));
         echo "<p style='color: green;'>✅ Old sessions cleared</p>";
