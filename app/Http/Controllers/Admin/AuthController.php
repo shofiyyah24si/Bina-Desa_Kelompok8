@@ -82,6 +82,13 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         try {
+            \Log::info('Registration attempt started', [
+                'request_data' => $request->except('password'),
+                'has_photo' => $request->hasFile('foto_profil'),
+                'request_method' => $request->method(),
+                'content_type' => $request->header('Content-Type')
+            ]);
+
             // Validasi input
             $request->validate([
                 'name' => 'required|string|max:255',
@@ -148,6 +155,11 @@ class AuthController extends Controller
 
             // Login user
             Auth::login($user);
+
+            \Log::info('User logged in after registration', [
+                'user_id' => $user->id,
+                'auth_check' => Auth::check()
+            ]);
 
             return redirect()->route('dashboard')->with('success', 'Akun berhasil dibuat!');
 

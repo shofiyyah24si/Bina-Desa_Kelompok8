@@ -442,7 +442,20 @@
         <h2>Register</h2>
         <div class="subtitle">Buat akun baru untuk mengakses sistem</div>
 
-        <form action="{{ route('register.post') }}" method="POST" enctype="multipart/form-data">
+        {{-- Display general error messages --}}
+        @if(session('error'))
+            <div style="background: rgba(255, 182, 182, 0.9); color: #721c24; padding: 12px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #f5c6cb;">
+                {{ session('error') }}
+            </div>
+        @endif
+
+        @if(session('success'))
+            <div style="background: rgba(182, 255, 182, 0.9); color: #155724; padding: 12px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #c3e6cb;">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        <form action="{{ route('register.post') }}" method="POST" enctype="multipart/form-data" id="registerForm">
             @csrf
 
             {{-- NAMA --}}
@@ -511,7 +524,7 @@
                 <img id="preview-gambar" class="preview-img">
             </div>
 
-            <button class="btn-register">Buat Akun</button>
+            <button type="submit" class="btn-register" id="submitBtn">Buat Akun</button>
         </form>
 
         <div class="login-text">
@@ -534,6 +547,30 @@
             img.src = URL.createObjectURL(event.target.files[0]);
             img.style.display = "block";
         }
+
+        /* Form submission handling */
+        document.getElementById("registerForm").addEventListener("submit", function(e) {
+            const submitBtn = document.getElementById("submitBtn");
+            
+            // Disable button to prevent double submission
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Memproses...";
+            
+            // Re-enable after 5 seconds in case of error
+            setTimeout(function() {
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Buat Akun";
+            }, 5000);
+        });
+
+        /* Debug form data */
+        document.getElementById("registerForm").addEventListener("submit", function(e) {
+            console.log("Form submitted");
+            const formData = new FormData(this);
+            for (let [key, value] of formData.entries()) {
+                console.log(key + ': ' + value);
+            }
+        });
     </script>
 
 </body>
