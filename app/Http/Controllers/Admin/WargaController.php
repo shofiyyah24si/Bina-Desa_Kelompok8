@@ -75,7 +75,7 @@ class WargaController extends Controller
     {
         $request->validate([
             'nama'          => 'required|string|max:255',
-            'nik'           => 'nullable|string|max:20',
+            'no_ktp'           => 'nullable|string|max:20',
             'alamat'        => 'nullable|string',
             'rt'            => 'nullable|string|max:5',
             'rw'            => 'nullable|string|max:5',
@@ -85,7 +85,7 @@ class WargaController extends Controller
 
         $data = [
             'nama'    => $request->nama,
-            'nik'     => $request->nik,
+            'no_ktp'     => $request->no_ktp,
             'alamat'  => $request->alamat,
             'rt'      => $request->rt,
             'rw'      => $request->rw,
@@ -163,7 +163,7 @@ class WargaController extends Controller
 
         $request->validate([
             'nama'          => 'required|string|max:255',
-            'nik'           => 'nullable|string|max:20',
+            'no_ktp'           => 'nullable|string|max:20',
             'alamat'        => 'nullable|string',
             'rt'            => 'nullable|string|max:5',
             'rw'            => 'nullable|string|max:5',
@@ -173,7 +173,7 @@ class WargaController extends Controller
 
         $data = [
             'nama'    => $request->nama,
-            'nik'     => $request->nik,
+            'no_ktp'     => $request->no_ktp,
             'alamat'  => $request->alamat,
             'rt'      => $request->rt,
             'rw'      => $request->rw,
