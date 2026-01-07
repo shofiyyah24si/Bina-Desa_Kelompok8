@@ -61,11 +61,11 @@ class DistribusiLogistik extends Model
     {
         try {
             if ($file->isValid()) {
-                // Simpan file ke public/uploads/distribusi_logistik (sama seperti modul lain)
+                
                 $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
                 $uploadPath = "uploads/distribusi_logistik";
                 
-                // Pastikan folder ada (sama seperti modul lain)
+           
                 $fullPath = public_path($uploadPath);
                 if (!file_exists($fullPath)) {
                     mkdir($fullPath, 0755, true);

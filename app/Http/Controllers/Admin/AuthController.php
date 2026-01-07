@@ -137,7 +137,7 @@ class AuthController extends Controller
                 'name' => $request->name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
-                'role' => 'Admin', // Semua user otomatis jadi Admin
+                'role' => 'Admin', 
             ];
 
             \Log::info('Registration data prepared', [

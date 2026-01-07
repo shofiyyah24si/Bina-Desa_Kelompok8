@@ -66,36 +66,35 @@ class UserController extends Controller
 
         \Log::info('Available users columns', ['columns' => $availableColumns]);
 
-        // Siapkan data dasar - hanya kolom yang ada
+       
         $data = [];
         
-        // Kolom wajib
+       
         $data['name'] = $request->name;
         $data['email'] = $request->email;
         $data['password'] = Hash::make($request->password);
         
-        // Kolom role jika ada
+       
         if (in_array('role', $availableColumns)) {
-            $data['role'] = 'Admin'; // Semua user otomatis jadi Admin
+            $data['role'] = 'Admin'; 
         }
 
-        // Handle foto upload dengan sistem public/uploads
+       
         if ($request->hasFile('foto_profil') && $request->file('foto_profil')->isValid()) {
             try {
                 $file = $request->file('foto_profil');
                 $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
                 $uploadPath = "uploads/users";
                 
-                // Pastikan folder ada
+               
                 $fullPath = public_path($uploadPath);
                 if (!file_exists($fullPath)) {
                     mkdir($fullPath, 0755, true);
                 }
-                
-                // Upload file
+              
                 $file->move($fullPath, $filename);
                 
-                // Simpan path foto hanya jika kolom foto_profil ada
+               
                 if (in_array('foto_profil', $availableColumns)) {
                     $data['foto_profil'] = "users/$filename";
                 }
@@ -165,7 +164,7 @@ class UserController extends Controller
 
         \Log::info('Available users columns', ['columns' => $availableColumns]);
 
-        // Siapkan data dasar - hanya kolom yang ada
+   
         $data = [];
         
         // Kolom wajib
@@ -177,15 +176,14 @@ class UserController extends Controller
             $data['password'] = Hash::make($request->password);
         }
         
-        // Kolom role jika ada
+        
         if (in_array('role', $availableColumns)) {
-            $data['role'] = 'Admin'; // Semua user otomatis jadi Admin
-        }
+            $data['role'] = 'Admin'; 
 
-        // Handle foto upload dengan sistem public/uploads
+      
         if ($request->hasFile('foto_profil') && $request->file('foto_profil')->isValid()) {
             try {
-                // Hapus foto lama jika ada dan kolom foto_profil tersedia
+                
                 if (in_array('foto_profil', $availableColumns) && $user->foto_profil) {
                     $oldPath = public_path('uploads/' . $user->foto_profil);
                     if (file_exists($oldPath)) {
@@ -207,7 +205,7 @@ class UserController extends Controller
                 // Upload file
                 $file->move($fullPath, $filename);
                 
-                // Simpan path foto hanya jika kolom foto_profil ada
+              
                 if (in_array('foto_profil', $availableColumns)) {
                     $data['foto_profil'] = "users/$filename";
                 }

@@ -59,25 +59,25 @@ class KejadianBencanaController extends Controller
         // Simpan data kejadian dulu
         $kejadian = KejadianBencana::create($request->except('foto'));
 
-        // Upload multiple foto dengan mekanisme yang sama seperti User/Warga (mkdir + public/uploads)
+        // Upload multiple foto 
         if ($request->hasFile('foto')) {
             try {
                 foreach ($request->file('foto') as $index => $file) {
                     if ($file->isValid()) {
-                        // Simpan file ke public/uploads/kejadian_bencana (sama seperti User/Warga)
+                        
                         $filename = time() . '_' . $index . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
                         $uploadPath = "uploads/kejadian_bencana";
                         
-                        // Pastikan folder ada (sama seperti User/Warga)
+                       
                         $fullPath = public_path($uploadPath);
                         if (!file_exists($fullPath)) {
                             mkdir($fullPath, 0755, true);
                         }
                         
-                        // Upload file (sama seperti User/Warga)
+                       
                         $file->move($fullPath, $filename);
                         
-                        // Simpan ke tabel media (tetap menggunakan sistem asli)
+                      
                         \App\Models\Media::create([
                             'ref_table' => 'kejadian_bencana',
                             'ref_id' => $kejadian->kejadian_id,
@@ -153,7 +153,7 @@ class KejadianBencanaController extends Controller
             foreach ($request->delete_foto as $mediaId) {
                 \Log::info('Deleting media', ['media_id' => $mediaId]);
                 
-                // Hapus file fisik dan record media (sama seperti User/Warga tapi untuk media table)
+                
                 $media = \App\Models\Media::where('media_id', $mediaId)
                     ->where('ref_table', 'kejadian_bencana')
                     ->where('ref_id', $kejadian->kejadian_id)
@@ -169,26 +169,26 @@ class KejadianBencanaController extends Controller
             }
         }
 
-        // Upload foto baru dengan mekanisme yang sama seperti User/Warga
+        
         if ($request->hasFile('foto')) {
             \Log::info('Processing file uploads', ['files_count' => count($request->file('foto'))]);
             try {
                 foreach ($request->file('foto') as $index => $file) {
                     if ($file->isValid()) {
-                        // Simpan file ke public/uploads/kejadian_bencana (sama seperti User/Warga)
+                        
                         $filename = time() . '_' . $index . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
                         $uploadPath = "uploads/kejadian_bencana";
                         
-                        // Pastikan folder ada (sama seperti User/Warga)
+                        
                         $fullPath = public_path($uploadPath);
                         if (!file_exists($fullPath)) {
                             mkdir($fullPath, 0755, true);
                         }
                         
-                        // Upload file (sama seperti User/Warga)
+                       
                         $file->move($fullPath, $filename);
                         
-                        // Simpan ke tabel media (tetap menggunakan sistem asli)
+                   
                         \App\Models\Media::create([
                             'ref_table' => 'kejadian_bencana',
                             'ref_id' => $kejadian->kejadian_id,
@@ -217,7 +217,7 @@ class KejadianBencanaController extends Controller
     {
         $kejadian = KejadianBencana::findOrFail($id);
 
-        // Hapus semua foto (sama seperti User/Warga tapi untuk media table)
+    
         $mediaItems = \App\Models\Media::where('ref_table', 'kejadian_bencana')
             ->where('ref_id', $kejadian->kejadian_id)
             ->get();

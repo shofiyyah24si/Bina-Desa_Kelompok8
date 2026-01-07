@@ -76,25 +76,24 @@ class PoskoBencanaController extends Controller
         // Simpan data posko dulu
         $posko = PoskoBencana::create($request->except('foto'));
 
-        // Upload multiple foto dengan mekanisme yang sama seperti KejadianBencana
         if ($request->hasFile('foto')) {
             try {
                 foreach ($request->file('foto') as $index => $file) {
                     if ($file->isValid()) {
-                        // Simpan file ke public/uploads/posko_bencana (sama seperti KejadianBencana)
+
                         $filename = time() . '_' . $index . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
                         $uploadPath = "uploads/posko_bencana";
                         
-                        // Pastikan folder ada (sama seperti KejadianBencana)
+                        
                         $fullPath = public_path($uploadPath);
                         if (!file_exists($fullPath)) {
                             mkdir($fullPath, 0755, true);
                         }
                         
-                        // Upload file (sama seperti KejadianBencana)
+                        
                         $file->move($fullPath, $filename);
                         
-                        // Simpan ke tabel media (sama seperti KejadianBencana)
+                        
                         \App\Models\Media::create([
                             'ref_table' => 'posko_bencana',
                             'ref_id' => $posko->posko_id,
@@ -169,7 +168,7 @@ class PoskoBencanaController extends Controller
             foreach ($request->delete_foto as $mediaId) {
                 \Log::info('Deleting media', ['media_id' => $mediaId]);
                 
-                // Hapus file fisik dan record media (sama seperti KejadianBencana)
+                
                 $media = \App\Models\Media::where('media_id', $mediaId)
                     ->where('ref_table', 'posko_bencana')
                     ->where('ref_id', $posko->posko_id)
@@ -185,26 +184,26 @@ class PoskoBencanaController extends Controller
             }
         }
 
-        // Upload foto baru dengan mekanisme yang sama seperti KejadianBencana
+        
         if ($request->hasFile('foto')) {
             \Log::info('Processing file uploads', ['files_count' => count($request->file('foto'))]);
             try {
                 foreach ($request->file('foto') as $index => $file) {
                     if ($file->isValid()) {
-                        // Simpan file ke public/uploads/posko_bencana (sama seperti KejadianBencana)
+                       
                         $filename = time() . '_' . $index . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
                         $uploadPath = "uploads/posko_bencana";
                         
-                        // Pastikan folder ada (sama seperti KejadianBencana)
+                       
                         $fullPath = public_path($uploadPath);
                         if (!file_exists($fullPath)) {
                             mkdir($fullPath, 0755, true);
                         }
                         
-                        // Upload file (sama seperti KejadianBencana)
+                      
                         $file->move($fullPath, $filename);
                         
-                        // Simpan ke tabel media (sama seperti KejadianBencana)
+                      
                         \App\Models\Media::create([
                             'ref_table' => 'posko_bencana',
                             'ref_id' => $posko->posko_id,
@@ -233,7 +232,7 @@ class PoskoBencanaController extends Controller
     {
         $posko = PoskoBencana::findOrFail($id);
 
-        // Hapus semua foto (sama seperti KejadianBencana)
+      
         $mediaItems = \App\Models\Media::where('ref_table', 'posko_bencana')
             ->where('ref_id', $posko->posko_id)
             ->get();
